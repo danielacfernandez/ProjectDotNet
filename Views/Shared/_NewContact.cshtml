@@ -1,0 +1,71 @@
+﻿<!-- ko with:newContactDialog -->
+<div class="modal fade modal--forms" data-bind="showModal:isDialogDisplaying" id="newContactModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newCustomerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="newCustomerLabelc" data-bind="visible: contact_type() === 'customer'" style="display:none">NEW CUSTOMER CONTACT</h5>
+                <h5 class="modal-title mr-auto" id="newCustomerLabell" data-bind="visible: contact_type() === 'job_location'" style="display:none">NEW LOCATION CONTACT</h5>
+                <h5 class="modal-title mr-auto" id="newCustomerLabeln" data-bind="visible: contact_type() === 'hscontact'" style="display:none">NEW HOT SHEET ORIGIN CONTACT</h5>
+                <h5 class="modal-title mr-auto" id="newCustomerLabelm" data-bind="visible: contact_type() === 'bldg_mgmt_co'" style="display:none">NEW BUILDING MANAGER CONTACT</h5>
+            </div>
+            <div class="modal-body">
+
+                <form>
+                    <div class="form-row mb-3">
+                        <div class="col-6">
+                            <label>Contact Name</label>
+                            <input type="text" class="form-control" data-bind="value: name" />
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: name"></div>
+                        </div>
+                        <div class="col-6">
+                            <label>Email</label>
+                            <input type="email" class="form-control" data-bind="value: email" />
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: email"></div>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col-4">
+                            <label>Work Phone</label>
+                            <input type="text" class="form-control phone-input" data-bind="value: workphone" />
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: workphone"></div>
+                        </div>
+                        <div class="col-4">
+                            <label>Cell Phone</label>
+                            <input type="text" class="form-control phone-input" data-bind="value: cellphone" />
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: cellphone"></div>
+                        </div>
+
+                        <div class="col-4">
+                            <label>Home Phone</label>
+                            <input type="text" class="form-control phone-input" data-bind="value: homephone" />
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: homephone"></div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <!-- ko if:isCreatingContact -->
+                    <div class="col-4">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="click:saveNewContact">
+                            SAVE
+                        </button>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if:isUpdatingContact -->
+                    <div class="col-4">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="click:updateContact">
+                            UPDATE
+                        </button>
+                    </div>
+                    <!-- /ko -->
+                    <div class="col-4">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click:closeDialog">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

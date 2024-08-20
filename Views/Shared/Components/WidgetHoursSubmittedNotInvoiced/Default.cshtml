@@ -1,0 +1,44 @@
+﻿@model ServiceTRAX.ViewComponents.WidgetHoursSubmittedNotInvoicedViewComponent.WidgetHoursSubmittedNotInvoicedViewComponentViewModel
+
+<style type="text/css">
+    .card-borders {
+        margin: 5px;
+        height: 96%;
+    }
+
+    .hsbni-count-text {
+        font-size: 6em;
+    }
+
+    .centered-counter {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+    }
+</style>
+
+
+
+<div class="card card-borders">
+    <div class="card-body">
+        <div class="centered-counter d-flex flex-column">
+            @*<div>
+                <p class="text-center hsbni-count-text mb-1">@Model.Totals.TotalBillQty.GetValueOrDefault().ToString("0.00") Hs</p>
+            </div>*@
+            <div>
+                <p class="text-center hsbni-count-text mb-1">@Model.Totals.BillableTotal.GetValueOrDefault().ToString("C2")</p>
+            </div>
+            <div>
+                <a asp-controller="Billing"
+                   asp-action="Open"
+                   asp-route-OrganizationID="@Model.OrganizationID"
+                   asp-route-UserType="WIDGET">
+                    <h4 class="text-center"><strong>Hours Submitted but not Invoiced</strong></h4>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

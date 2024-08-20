@@ -1,0 +1,58 @@
+﻿<div class="modal fade modal--forms" id="AddExceptionModal" data-bind="showModal:addExceptionDialog.isDialogDisplaying"
+     tabindex="-1" role="dialog" aria-labelledby="AddExceptionModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document" data-bind="with:addExceptionDialog">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h6 class="modal-title mr-auto">Please add comments for HR regarding attendance & performance</h6>
+                <button type="button" class="btn icon-only" data-bind="click: function() { isDialogDisplaying(false); }">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <!-- ko ifnot:hasExceptionSet -->
+            <div class="modal-body pt-0 pb-0">
+                <form>
+                    <div class="form-group">
+                        <label for="Exception Type" class="col-form-label">Type</label>
+                        <select data-style="btn-white shadow-sm"
+                                data-bind="selectPicker:true, options: noShowOptions, optionsText: 'name', optionsValue: 'id', value: selectedExceptionReason, valueAllowUnset: true"
+                                data-none-selected-text="...">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="AddExceptionComment" class="col-form-label">Notes</label>
+                        <textarea type="text" class="form-control" id="AddExceptionComment" placeholder="Add Comment..." rows="3" aria-describedby="VisibleClient" data-bind="value:exceptionNotes"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="enable:selectedExceptionReason() !== null, click: () => saveExceptionCallback(servicelinetimeentryid, serviceid, timeentrydate, resourceid, selectedExceptionReason(), exceptionNotes())">
+                            Add New
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko if:hasExceptionSet -->
+            <div class="modal-body pt-0 pb-0">
+                <form>
+                    <label class="mt-1">This resource has an exception set:</label>
+                    <div class="text-orange text-center mt-2" data-bind="text:currentExceptionDescription"></div>
+                    <textarea type="text" class="form-control mt-2" id="AddExceptionCommentTA" placeholder="Add Comment..." rows="3" aria-describedby="VisibleClient" data-bind="value:exceptionNotes" readonly></textarea>
+                    <label class="my-3">Click the button below to remove this exception.</label>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-danger btn-block" data-bind="click: function() { saveExceptionCallback(servicelinetimeentryid, serviceid, timeentrydate, resourceid, null); }">
+                            Remove Exception
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- /ko -->
+        </div>
+    </div>
+</div>

@@ -1,0 +1,2303 @@
+﻿@model ServiceTRAX.Models.ViewModels.QuoteRequestModel
+@using ServiceTRAX.Utils
+@using ServiceTRAX.Models.DBModels
+@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+@{
+    ViewData["Title"] = "Requests";
+    ViewBag.CanViewInternalWorkRequest = !Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestInternalWorkScopeReadAdd) || Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestInternalWorkScopeReadAdd);
+}
+
+@section SubMenu {
+    @await Html.PartialAsync("~/Views/Request/_RequestSubMenu.cshtml")
+
+    @if (User.UserHasThisPermission(Permissions.RequestSeeSideMenu))
+    {
+        @await Component.InvokeAsync("SideMenu", new { OrganizationID = Model.OrganizationID, ProjectID = Model.Request_Data.project_id, RequestID = Model.Request_Data.request_id, UserID=Model.CurrentUserID })
+    }
+}
+
+    @section StyleSheets {
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+    <link rel="stylesheet" href="~/css/datepicker.css" />
+    <link rel="stylesheet" href="~/lib/trumbowyg/trumbowyg.min.css" />
+}
+
+    @functions {
+
+    private void InsertBackToTopLink()
+    {
+        <div class="row back-to-top">
+            <div class="d-flex justify-content-end col-12">
+                <div class="submenujumpbutton hover-anchor-behavior" data-jumpto="topofpage">Back To Top  <i class="fas fa-arrow-circle-up"></i></div>
+            </div>
+        </div>
+    }
+}
+
+
+@section Scripts {
+
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+    <script type='text/javascript' src='~/lib/moment-business-days/index.js'></script>
+    <script type='text/javascript' src='~/lib/datepicker.js'></script>
+    <script type='text/javascript' src='~/lib/trumbowyg/trumbowyg.min.js'></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout.validation/knockout.validation.min.js'></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+    <script type="text/javascript" src="~/lib/maskedinput/jquery.maskedinput.js"></script>
+    <script type='text/javascript' src='~/js/colored-calendar.js' asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/Request/request.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/notification-dialog.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/Request/customcolumn-pv-editor.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/Request/import-existing-quote.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/document-signing.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/compressorjs/compressor.min.js'></script>
+
+
+
+
+    <style type="text/css">
+
+        .myGrid {
+            font-size: 80%;
+        }
+
+            .myGrid .gridTable {
+                top: 45px !important;
+            }
+
+            .myGrid .gridTitle {
+                padding-top: 6px;
+                padding-bottom: 2px;
+            }
+
+                .myGrid .gridTitle label {
+                    font-size: 130%;
+                }
+
+        .gridHeaderStatic .cell {
+            height: unset;
+        }
+
+        .myGrid .gridHeaderStaticRow {
+            height: unset;
+        }
+
+        .gridBody, .gridBodyStatic {
+            top: 29px;
+        }
+
+        .gridHeaderStatic {
+            bottom: 40px;
+        }
+
+        .gridRow {
+            height: 26px;
+        }
+
+        .gridHeader {
+            bottom: 40px;
+        }
+
+            .gridHeader label {
+                margin-top: 0px;
+            }
+
+        .gridBody .gridRow .cell {
+            height: 26px;
+        }
+
+        .gridRow .cell {
+            height: 26px;
+        }
+
+        .popupWindow {
+            bottom: unset;
+            height: calc(95vh - 50px);
+        }
+
+        .gridFooter {
+            height: 40px;
+            padding-top: 7px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .simulate-button:hover {
+            filter: brightness(0.80);
+        }
+
+
+        .modal.fade .modal-dialog {
+            transform: none;
+        }
+
+        .sticky {
+            z-index: 100;
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
+
+        .bg-dark-form__header > h5 {
+            color: white;
+        }
+
+        .bg-dark-form > h5 {
+            color: white;
+        }
+
+        .text-orangeish {
+            color: rgba(255, 102, 0, 0.55)
+        }
+
+        .text-infoblue {
+            color: #324972;
+        }
+
+        .text-infoblueish {
+            color: rgb(50 73 114 / 0.83);
+        }
+
+        .resource-select .dropdown-menu.show {
+            min-width: 100% !important;
+        }
+
+        .icon-button-like:hover {
+            cursor: pointer;
+            color: #4b77c6;
+        }
+
+        .ratesSubGridModalClass {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.4);
+            left: 0px;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            z-index: 1;
+        }
+
+        .ratesSubGridModalBodyClass {
+            position: absolute;
+            border-radius: 5px;
+            border: solid 2px #2d5daf;
+            background-color: rgba(45, 93, 175, 0.50);
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            left: 30px;
+            top: 185px;
+            right: 30px;
+            /*bottom: 60px;*/
+            height: calc(95vh - 185px);
+            z-index: 1;
+        }
+
+        .ratesSubGridCloseClass {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #aaa;
+            background-color: rgba(45, 93, 175, 0.15);
+            width: 25%;
+            margin: auto;
+            margin-top: 10px;
+            color: #aaa;
+        }
+
+            .ratesSubGridCloseClass:hover {
+                cursor: pointer;
+                background-color: rgba(45, 93, 175, 0.35);
+                color: white;
+            }
+
+        .ratesSubGridClass {
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            right: 2px;
+            bottom: 2px;
+        }
+    </style>
+
+
+    <script type="text/javascript">
+
+
+        $(function() {
+            // Initialize the Request JS code
+            initRequest(@Html.Raw(JSONUtils.JsonUTC(Model)));
+        });
+
+    </script>
+
+
+}
+
+    <script type="text/html" id="header-contact-info-template">
+        <ul class="list-unstyled">
+            <li>
+                <!-- ko if:phone  -->
+                <small class="text-infoblue" data-bind="text: phone"></small>
+                <!-- /ko -->
+                <!-- ko ifnot:phone -->
+                <small class="text-infoblueish">Phone information missing</small>
+                <!-- /ko -->
+                <br />
+                <!-- ko if:email -->
+                <small class="text-infoblue" data-bind="text: email">Email not available</small>
+                <!-- /ko -->
+                <!-- ko ifnot:email -->
+                <small class="text-infoblueish">Email information missing</small>
+                <!-- /ko -->
+            </li>
+        </ul>
+    </script>
+
+    <script type="text/html" id="comment-template">
+        <div class="comment card p-3 mb-3">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="avatar">
+                        <img data-bind="attr: {src: '/UserPhotos/' + userPhoto  }" alt="Avatar">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="comment-poster d-inline-block mr-3"><strong data-bind="text: createdByName"></strong></div>
+                    <div class="time-posted d-inline-block mr-3" data-bind="text: moment(createTime).format('LT')"></div>
+                    <div class="btn btn-xs btn-orange" data-bind="visible: clientVisible"><em class="fas fa-eye"></em> Client</div>
+                    <div class="comment-body">
+                        <p data-bind="text: comment"></p>
+                    </div>
+                </div>
+                <div class="col-auto text-center">
+                    <div class="comment-delete" data-bind="if: createdBy===@User.GetUserID()">
+                        <div class="btn icon-only" data-bind="click: function() { $root.removeComment(projectCommentID); }">
+                            <em class="fas fa-trash"></em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="contact-template">
+            <div class="form-row">
+                <div class="col mb-3">
+                    <div class="row">
+                        <div class="flex-fill px-3">
+                            <label class="" for="selectContactPerson1">
+                                Contact Person <span data-bind="text: ($index()+1)"></span>
+                            </label>
+
+                            <div class="d-flex">
+                                <select class="flex-grow-1"
+    data-style="btn-white shadow-sm"
+    data-live-search="true"
+    data-size="10"
+    data-none-selected-text="..."
+    data-bind="disable: $root.isReadOnly, selectPicker:true, options: $root.requestContactsNotAssignedYet(contact_ID), optionsText: 'contact_Name', optionsValue: 'contact_ID', value: contact_ID, valueAllowUnset: true">
+                                </select>
+                                <div class="pl-2 align-self-center">
+                                    <button class="btn btn-sm btn-danger" type="button" data-bind="hidden: $root.isReadOnly, click: function() { $root.removeRequestContact(contact_ID); }">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-2" data-bind="with: $root.findContact(contact_ID())">
+                        <div class="flex-grow-1">
+                            <ul class="list-unstyled mt-2 mb-0">
+                                <li>
+                                    <!-- ko if:contact_Phone -->
+                                    <small class="text-orange" data-bind="text: contact_Phone"></small>
+                                    <!-- /ko -->
+                                    <!-- ko ifnot:contact_Phone -->
+                                    <small class="text-orangeish">Phone information missing</small>
+                                    <!-- /ko -->
+                                    <br />
+                                    <!-- ko if:email -->
+                                    <small class="text-orange" data-bind="text: email">Email not available</small>
+                                    <!-- /ko -->
+                                    <!-- ko ifnot:email -->
+                                    <small class="text-orangeish">Email information missing</small>
+                                    <!-- /ko -->
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="align-self-center">
+                            <button type="button" class="btn btn-primary" title="Edit Contact Information..." data-bind="click:() => $root.editContact($data)">
+                                <i class="fas fa-user-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </script>
+
+    <script type="text/html" id="request-product-template">
+                        <div class="form-row mt-2">
+                            <div class="col">
+                                <select data-style="btn-white shadow-sm"
+    data-live-search="true"
+    data-size="10"
+    data-none-selected-text="..."
+    data-bind="selectPicker:true, disable: $root.isReadOnly, options: $root.systemsFurniture, optionsText: 'systemFurnitureName', optionsValue: 'systemFurnitureID', value: product_lookup_id">
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select data-style="btn-white shadow-sm"
+    data-live-search="true"
+    data-size="10"
+    data-none-selected-text="..."
+    data-bind="selectPicker:true, disable: $root.isReadOnly, options: $root.shippingMethod, optionsText: 'name', optionsValue: 'id', value: shipping_Method_Lookup_ID">
+                                </select>
+                            </div>
+                            <div class="col-1 align-self-center">
+                                <button class="btn btn-sm btn-danger" type="button" data-bind="hidden:$root.isReadOnly, click: function() { $root.requestProductRemove(product_lookup_id); }">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+    </script>
+
+
+    <script type="text/html" id="request-product-other-template">
+                        <div class="form-row mt-2">
+                            <div class="col">
+                                <input type="text" class="form-control" data-bind="disable: $root.isReadOnly, value: product_Other">
+                            </div>
+                            <div class="col">
+                                <select data-style="btn-white shadow-sm"
+    data-live-search="true"
+    data-size="10"
+    data-none-selected-text="..."
+    data-bind="selectPicker:true, disable: $root.isReadOnly, options: $root.shippingMethod, optionsText: 'name', optionsValue: 'id', value: shipping_Method_Lookup_ID">
+                                </select>
+                            </div>
+                            <div class="col-1 align-self-center">
+                                <button class="btn btn-sm btn-danger" type="button" data-bind="hidden: $root.isReadOnly, click: function() { $root.requestProductOtherRemove(product_Other); }">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+    </script>
+
+    <div id="topofpage"></div>
+    <div id="content" class="" data-bind="beforeUnloadText: beforeUnloadPrompt">
+
+
+        <div class="container-fluid" id="QuoteRequests">
+            <div class="row">
+                <div class="col mb-4 ">
+                    <h2 data-bind="visible: isNew && !isSR" style="display:none">NEW QUOTE REQUEST</h2>
+                    <h2 data-bind="visible: request_Data.record_type_code==='quote_request' && !isNew" style="display:none">QUOTE REQUEST</h2>
+                    <h2 data-bind="visible: isNew && isSR" style="display:none">NEW SERVICE REQUEST</h2>
+
+                    <div data-bind="visible: isSR && !isNew" class="d-flex align-items-center" style="display:none">
+                        <h2 data-bind="visible: isSR && !isNew" class="flex-grow-1 align-self-star">SERVICE REQUEST</h2>
+                        <div class="alert alert-danger p-2 m-0 ml-auto" role="alert" data-bind="visible:readonlyDueFiveDaysLimit" style="display:none">
+                            <strong><i class="fas fa-exclamation-circle"></i> Notice:</strong> The date on this Service Request is within @Model.Request_Data.srstart_lockperiod_days days so changes are not permitted. Please reach out to your Ops team for further assistance.
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary" data-bind="visible: isSR && !isNew, click:signServiceRequest"><i class="fas fa-signature mr-2"></i>SIGN REQUEST</button>
+
+                        @if (User.UserHasThisPermission (Permissions.ServiceRequestDailyStatusReport)) {
+                            <button type="button" style="margin-left:10px" class="btn btn-sm btn-primary" data-bind="visible: isSR && isDSRAvailable, click:function() { $root.dailyStatusReportDialog.showDialog(request_Data.serviceid, request_Data.project_no, request_Data.request_no, request_Data.version_no, request_Data.project_name) }"><i class="fas fa-signature mr-2"></i>DAILY STATUS REPORT</button>
+                        }
+                                        
+                    </div>
+                
+                    <h4>
+                        <small class="text-muted" data-bind="visible: request_Data.project_no !== 0">
+                            <span data-bind="text: isSR ? 'JOB #' : 'QUOTE #'"></span>
+                            <span data-bind="text: request_Data.project_no"></span>
+                        </small>
+                        
+                        
+                        <small class="text-muted" data-bind="visible: request_Data.project_no === 0">New Project</small>
+                        <button requires-permission="@Permissions.BillRatesRead" class="btn btn-primary btn-sm ml-4"
+                            type="button" style="display:none" title="Open Job Item Rates Table...."
+                            data-bind="visible:request_Data.jobid, click:openJobItemRatesTEG">
+                            JOB ITEM RATES
+                        </button>
+
+                    <small class="text-muted" data-bind="visible:  request_Data.showQuoteLink || request_Data.showQRLink|| request_Data.showOperationalPlanLink|| request_Data.showSRLink"> Jump to:</small>
+
+                    <button type="button"
+                            class="btn btn-primary  btn-sm ml-4"
+                            data-bind="click: function() { var url=buildQuoteLink(); window.location.href=url;}, visible: request_Data.showQuoteLink">
+                        Quote
+                    </button>
+                    
+                    <button type="button"
+                            class="btn btn-primary  btn-sm ml-4"
+                            data-bind="click:  function() { var url=buildQuoteRequestLink(); window.location.href=url; }, visible: request_Data.showQRLink">
+                        &nbsp;&nbsp;QR&nbsp;&nbsp;
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-primary  btn-sm ml-4"
+                            data-bind="click: function() {var url=buildOperationalPlanLink(); window.location.href=url; }, visible: request_Data.showOperationalPlanLink">
+                        &nbsp;Ops Plan
+                    </button>
+                    <button type="button"
+                            class="btn btn-primary  btn-sm ml-4"
+                            data-bind="click: function() {var url=buildServiceRequestLink(); window.location.href=url; }, visible: request_Data.showSRLink">
+                        &nbsp;&nbsp;SR&nbsp;&nbsp;
+                    </button>
+                    </h4>
+
+            </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <form novalidate>
+
+                        <div class="collapse-panel-control" id="requestHeaderPanelControl">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="collapse-panel__heading m-0">REQUEST HEADER</h5>
+                                </div>
+
+                                <div class="col">
+                                    <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#request-header">
+                                        <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapse-panel show" id="request-header">
+                            <div class="row">
+                                <div class="col-12 col-md-7">
+                                    <div class="form-row mb-3">
+                                        <div class="col-12 col-md-6">
+                                            <label>
+                                                <span data-bind="text: isSR ? 'Job Name' : 'Quote Name'"></span>
+                                                <span class="req">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" maxlength="50"
+                                               data-bind="enable: !isReadOnly,
+                                               value: request_Data.project_name,
+                                               validationElement: request_Data.project_name" disabled="disabled" />
+                                            <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.project_name"></div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label>Status</label>
+                                            <input type="text" class="form-control" data-bind="value: quoteRequestStatus" disabled="disabled" />
+                                        </div>
+                                        <div class="col-6 col-md-3 d-none print-only">
+                                            <label>Order/Line</label>
+                                            <input type="text" class="form-control" data-bind="value:$root.OrderLineHeaderText" disabled="disabled" />
+                                        </div>
+                                        <div class="col-6 col-md-3" style="align-self: flex-end;">
+                                            <button type="button" requires-permission="@Permissions.MACServiceRequestAssignResources"
+                                                class="btn btn-primary form-control"
+                                                style="display:none"
+                                                data-bind="disable: isReadOnly, click: function() { showResourcesModalDialog(true); }, visible: $root.request_Data.project_type_id() === 5 && isSR && !request_Data.isSendToSchedule()">
+                                                Resources
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row mb-3">
+
+                                        <div class="col-6 col-md-3">
+                                            <label data-bind="text: isSR ? 'SR #' : 'QR #'"></label>
+                                            <input type="text" class="form-control" data-bind="value: request_Data.quote_Number" disabled="disabled" />
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label data-bind="text: isSR ? 'JOB #' : 'QUOTE #'"></label>
+                                            <input type="text" class="form-control" data-bind="value: request_Data.project_no" disabled="disabled" />
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label>Request #</label>
+                                            <input type="text" class="form-control" data-bind="value: request_Data.request_no" disabled="disabled" />
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label>Version #</label>
+                                            <input type="text" class="form-control" data-bind="value: request_Data.version_no" disabled="disabled" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row mb-3">
+                                        <div class="col-12 @(Model.OrganizationLocationControl != "hidden" ? "col-md-3" : "col-md-4")">
+                                            <label>
+                                                Types of Service
+                                                <span class="req">*</span>
+                                            </label>
+                                            <div data-bind="validationElement: request_Data.project_type_id">
+                                                <select id="serviceTypes"
+                                                    data-style="btn-white shadow-sm"
+                                                    data-bind="selectPicker:true, enable: !isAdditionalRequest && !isReadOnly && isNew,
+                                                options: serviceTypes, optionsText: 'serviceName',
+                                                optionsValue: 'serviceTypeID', value: $root.request_Data.project_type_id,
+                                                valueAllowUnset: true"
+                                                    data-none-selected-text="...">
+                                                </select>
+                                            </div>
+                                            <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.project_type_id"></div>
+                                        </div>
+
+                                        <div class="col-12 @(Model.OrganizationLocationControl != "hidden" && Model.IsSR ? "col-md-6" : "col-md-8")">
+                                            <label>
+                                                Customer/Dealer Name
+                                                <span class="req">*</span>
+                                            </label>
+                                            <div>
+                                                <div class="d-flex">
+                                                    <div class="w-100" data-bind="validationElement: request_Data.customer_id">
+                                                        <select data-live-search="true"
+                                                            data-style="btn-white shadow-sm"
+                                                            id="customerName"
+                                                            data-bind="enable: !isAdditionalRequest && !isReadOnly && isNew, selectPicker:true, options: allCustomers, optionsText: 'customer_Name', optionsValue: 'customer_Id', value: request_Data.customer_id, valueAllowUnset: true"
+                                                            data-none-selected-text="...">
+                                                        </select>
+                                                    </div>
+                                                    @if (User.UserHasThisPermission(Permissions.ProspectReadCreateUpdateDelete))
+                                                {
+                                                    <button class="btn btn-primary align-self-end mt-0 ml-2"
+                                                        style="display:none" type="button"
+                                                        data-bind="visible: isNew && !isSR && !isAdditionalRequest, click:() => showNewCustomerModalDialog(true, 'prospect')">
+                                                        NEW
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+
+
+                                        
+
+                                    </div>
+                                    @if (Model.OrganizationLocationControl != "hidden")
+                                    {
+                                        <div class="col-12 col-md-3">
+                                            <label>
+                                                Organization Location
+                                                <span  data-bind="visible: isSR" class="req">*</span>
+                                            </label>
+                                            <div class="w-100" data-bind="validationElement: request_Data.locationLookupId">
+                                                <select id="serviceTypes"
+                                                    data-style="btn-white shadow-sm"
+                                                    data-bind="selectPicker:true, enable: !isAdditionalRequest && !isReadOnly && organizationLocationControl === 'editable',
+                                                options: organizationLocations, optionsText: 'locationName',
+                                                optionsValue: 'locationID', value: $root.request_Data.locationLookupId, valueAllowUnset: true"
+                                                    data-none-selected-text="...">
+                                                </select>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.locationLookupId"></div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-row mb-3" id="SendToScheduleControl" data-bind="visible: isSR">
+                                    <div class="col-3">
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="isSendToScheduleCheck" data-bind="disable: isReadOnly, checked: request_Data.isSendToSchedule" />
+                                            <label for="isSendToScheduleCheck">Send to Schedule</label>
+                                        </div>
+                                    </div>
+                                    @if (Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestCanSetIternalRequest))
+                                    {
+                                        <div class="col-3" data-bind="hidden:hideIsInternalRequestCheck">
+                                            <div class="magic-checkbox-wrapper">
+                                                <input class="magic-checkbox" type="checkbox" id="isInternalRequestCheck"
+                                                   data-bind="disable: isReadOnly || !isNew, checked: request_Data.isInternalRequest" />
+                                                <label for="isInternalRequestCheck">Pooled Hours</label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+
+                                <div class="form-row mb-3">
+                                    <div class="col-12 @(User.UserHasThisPermission(Permissions.QuoteRequestViewLSPListCreate) ? "col-md-4" : "col-md-6")">
+                                        <label>
+                                            Installation Manager or Project Manager
+                                            <span class="req">*</span>
+                                        </label>
+                                        <div data-bind="validationElement: request_Data.project_Manager_Id">
+                                            <select data-style="btn-white shadow-sm"
+                                                    data-bind="selectPicker:true,
+                                                disable: isReadOnly,
+                                                options: projectManagers,
+                                                optionsText: 'projectManagerName',
+                                                optionsValue: 'projectManagerID',
+                                                value: request_Data.project_Manager_Id,
+                                                valueAllowUnset: true,
+                                                optionsAfterRender: projectManagerOptionsAfterRender"
+                                                    data-none-selected-text="..."
+                                                    required>
+                                            </select>
+                                        </div>
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.project_Manager_Id"></div>
+
+                                        <div class="ml-2" data-bind="with:selectedProjectManagerInfo">
+                                            <div data-bind="template: {name: 'header-contact-info-template' }"></div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-12 @(User.UserHasThisPermission(Permissions.QuoteRequestViewLSPListCreate) ? "col-md-4" : "col-md-6")">
+                                        <label>
+                                            Salesperson
+                                            <span class="req">*</span>
+                                        </label>
+                                        <div data-bind="validationElement: request_Data.a_m_sales_contact_id">
+                                            <select data-style="btn-white shadow-sm"
+                                                    data-bind="selectPicker:true,
+                                                disable: isReadOnly,
+                                                options: salespersons,
+                                                optionsText: 'salespersonName',
+                                                optionsValue: 'salespersonID',
+                                                value: request_Data.a_m_sales_contact_id,
+                                                valueAllowUnset: true,
+                                                optionsAfterRender: salesPersonOptionsAfterRender"
+                                                    data-none-selected-text="...">
+                                            </select>
+                                        </div>
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.a_m_sales_contact_id"></div>
+                                        <div class="ml-2" data-bind="with:selectedSalespersonInfo">
+                                            <div data-bind="template: {name: 'header-contact-info-template' }"></div>
+                                        </div>
+                                        
+                                    </div>
+                                    @if (User.UserHasThisPermission(Permissions.QuoteRequestViewLSPListCreate))
+                                    {
+                                        <div class="col-12 col-md-4">
+                                            <label>
+                                                Local Service Provider
+
+                                            </label>
+
+                                            <div data-bind="validationElement: request_Data.lspId">
+                                                <select id="localServiceProviders"
+                                                        data-style="btn-white shadow-sm"
+                                                        data-bind="selectPicker:true,
+                                                        enable: (!isSR || isNew) && (!isReadOnly || !readOnlyLSP),
+                                                        options: localServiceProviders,
+                                                        optionsText: 'lspName',
+                                                        optionsValue: 'lspId',
+                                                        value: request_Data.lspId,
+                                                        valueAllowUnset: true"
+                                                        data-none-selected-text="...">
+                                                </select>
+                                            </div>
+
+                                            <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.lspId"></div>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-row mb-3">
+                                    <div class="col-9 col-md-6" data-bind="visible:isSR">
+                                        <div >
+                                            <label>
+                                                Scheduler / Proj.Mgr.
+                                            </label>
+                                            <select data-style="btn-white shadow-sm"
+                                                    data-bind="selectPicker:true,
+                                                        disable: isReadOnly,
+                                                        options: projectManagers,
+                                                        optionsText: 'projectManagerName',
+                                                        optionsValue: 'projectManagerID',
+                                                        value: request_Data.schedulerPMContactID,
+                                                        valueAllowUnset: true,
+                                                        optionsAfterRender: projectManagerOptionsAfterRender"
+                                                    data-none-selected-text="..."
+                                                    required>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-5 pt-3">
+                                <div class="bg-dark-form" data-bind="validationElement: requestContactsCount">
+                                    <div class="bg-dark-form__header">
+                                        <h5>
+                                            Customer/Dealer Contacts
+                                            <span class="req">*</span>
+                                        </h5>
+                                    </div>
+                                    <div class="bg-dark-form__body">
+                                        <div data-bind="template: {name: 'contact-template', foreach: requestContacts, afterAdd: applyBootstrapStyles }">
+                                        </div>
+
+                                        <div class="mb-3" data-bind="visible: allCustomerContacts().length === 0 && !isReadOnly && request_Data.customer_id() === null" style="display:none">Select a Customer to enable this section</div>
+                                        <div class="mb-3" data-bind="visible: allCustomerContacts().length === 0 && !isReadOnly && request_Data.customer_id() !== null" style="display:none">No contacts found for this customer</div>
+                                        <div class="mb-3" data-bind="visible: requestContacts().length === 0 && isReadOnly" style="display:none">No contacts were added to this Request</div>
+
+                                        <div class="bg-dark-form__footer" data-bind="hidden:isReadOnly">
+                                            <!-- ko if: allCustomerContacts().length > 0 -->
+                                            <button type="button" class="btn btn-primary" title="Append existing Contact"
+                                                    data-bind="disable: isNew && !request_Data.customer_id(),click: addContact">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <!-- /ko -->
+                                            <button type="button" class="btn btn-primary" title="Create a new Contact" data-bind="disable:isNew && !request_Data.customer_id(), click: function() { newContactDialog.displayDialog('customer'); }">New</button>
+                                        </div>
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: requestContactsCount"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!------------------------>
+                    <div class="collapse-panel-control" id="jobScopePanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">JOB SCOPE</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#job-scope">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="collapse-panel show" id="job-scope">
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-row mb-3">
+                                    <div class="col-12 col-md-3">
+                                        <label>
+                                            <span>Request Name</span>
+                                        </label>
+                                        <input type="text" class="form-control" maxlength="50"
+                                               data-bind="enable: !isReadOnly,
+                                               value: request_Data.request_Name,
+                                               validationElement: request_Data.request_Name" disabled="disabled" />
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.request_Name"></div>
+                                    </div>
+                                    
+                                    <div class="col-6 col-md-2">
+                                        <label>Schedule Type</label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, disable: isReadOnly, options: scheduleTypes, optionsText: 'name', optionsValue: 'id', value: request_Data.schedule_type_id"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-6 col-md-2">
+                                        <div class="form-check-custom">
+                                            <label class="form-check-label" for="scheduledWithClientCheck">
+                                                Schedule with client?
+                                            </label>
+                                            <div class="magic-checkbox-wrapper">
+                                                <input class="magic-checkbox" type="checkbox" id="scheduledWithClientCheck"
+                                                       data-bind="disable: isReadOnly, yesnoCheckboxValue: request_Data.schedule_with_client_flag" />
+                                                <label for="scheduledWithClientCheck">Yes</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-2">
+                                        <div class="form-check-custom" data-bind="visible:isSR">
+                                            <label class="form-check-label" for="punchListCheck">
+                                                Punch List
+                                            </label>
+                                            <div class="magic-checkbox-wrapper">
+                                                <input class="magic-checkbox" type="checkbox" id="punchListCheck"
+                                                       data-bind="disable: isReadOnly, checked: request_Data.ispunchlist" />
+                                                <label for="punchListCheck">Yes</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-lg-9">
+                                        <div class="form-row mb-3 align-items-end">
+                                            <div class="col-12 col-md-3">
+                                                <label for="estimatedServiceDate">
+                                                    Estimated Service Date
+                                                    <span class="req" data-bind="visible: !($root.request_Data.project_type_id() === 5 && isSR)">*</span>
+                                                </label>
+                                                <div class="input-group" id="triggerCalendarStartDate" data-bind="validationElement: request_Data.est_start_date">
+                                                    <input type="text" class="form-control"
+                                                           autocomplete="off"
+                                                           id="estimatedServiceDate"
+                                                           data-bind="disable: readOnlyServiceDate, datepicker: request_Data.est_start_date, datepickerOptions: est_start_date_options(readOnlyServiceDate)"
+                                                           required />
+                                                    <div class="input-group-append simulate-button">
+                                                        <span class="input-group-text input-group-append-custom">
+                                                            <i class="fas fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.est_start_date"></div>
+                                            </div>
+
+                                            <!-- ko if:needsSchedulerHour -->
+                                            <div class="col-12 col-md-3">
+                                                <label for="estimatedServiceHour">
+                                                    Est. Service Hour
+                                                    <span class="req" data-bind="visible: !($root.request_Data.project_type_id() === 5 && isSR)">*</span>
+                                                </label>
+                                                <input type="time" class="form-control" data-bind="disable: estimatedServiceHourDisable || readOnlyServiceDate, attr: {title: estimatedServiceHourTitle }, value: estimatedServiceHour" required />
+                                            </div>
+                                            <!-- /ko -->
+
+                                            <div class="col-12 col-md-3">
+                                                <label for="validationServerUsername">
+                                                    Estimated Completion Date
+                                                </label>
+                                                <div class="input-group" id="triggerCalendarEndDate">
+                                                    <input type="text"
+                                                           autocomplete="off"
+                                                           class="form-control"
+                                                           id="estimatedEndDate"
+                                                           data-bind="disable: readOnlyServiceDate, datepicker: request_Data.est_end_date,
+                                                        datepickerOptions: est_end_date_options(readOnlyServiceDate)"
+                                                           required />
+                                                    <div class="input-group-append simulate-button">
+                                                        <span class="input-group-text input-group-append-custom">
+                                                            <i class="fas fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <label for="daysToComplete">
+                                                    # of days to Complete
+                                                    <span class="req">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="daysToComplete"
+                                                           data-bind="disable: readOnlyServiceDate, value: request_Data.days_to_complete, validationElement: request_Data.days_to_complete" required />
+
+                                                    <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.days_to_complete"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-lg-9">
+                                        <div class="form-row mb-3">
+                                            <div class="col-6 col-md-2">
+                                                <label>
+                                                    Work Type
+                                                    <span class="req">*</span>
+                                                </label>
+                                                <div class="w-100" data-bind="validationElement: request_Data.work_type_lookup_id">
+                                                    <select data-style="btn-white shadow-sm"
+                                                            data-bind="selectPicker:true, disable: isReadOnly, options: workTypes, optionsText: 'name', optionsValue: 'id', value: request_Data.work_type_lookup_id, valueAllowUnset: true"
+                                                            data-none-selected-text="...">
+                                                    </select>
+                                                </div>
+                                                <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.work_type_lookup_id"></div>
+                                            </div>
+                                            <div class="col-6 col-md-2">
+                                                <label>Weekend</label>
+                                                <div class="magic-checkbox-wrapper">
+                                                    <input class="magic-checkbox" type="checkbox" id="weekendCheck" data-bind="disable: isReadOnly, yesnoCheckboxValue: request_Data.include_weekends_flag" />
+                                                    <label for="weekendCheck">Yes</label>
+                                                </div>
+                                            </div>
+                                            @if (User.UserHasThisPermission(Permissions.QuoteRequestQuoteOrOrderViewUpdate))
+                                            {
+                                            <!-- ko ifnot:isSR -->
+                                            <div class="col-6 col-md-2">
+                                                <label>
+                                                    Quote or Order
+                                                    <span class="req" data-bind="visible:enableExternalQuoteField">*</span>
+                                                    <!
+                                                </label>
+                                                <div class="w-100" data-bind="validationElement: request_Data.quote_or_order_type_id">
+                                                    <select data-style="btn-white shadow-sm"
+                                                            data-bind="selectPicker:true, enable: !isReadOnly, options: quoteOrOrderTypes, optionsText: 'name', optionsValue: 'id', value: request_Data.quote_or_order_type_id, valueAllowUnset: true"
+                                                            data-none-selected-text="..."
+                                                            required>
+                                                    </select>
+                                                </div>
+                                                <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.quote_or_order_type_id"></div>
+                                            </div>
+                                            <!-- /ko -->
+                                            }
+                                            @if (User.UserHasThisPermission(Permissions.QuoteRequestHedbergQuoteViewUpdate))
+                                            {
+                                                <!-- ko ifnot:isSR -->
+                                                <div class="col-12 col-md-2">
+                                                    <label for="daysToComplete">
+                                                        Hedberg #
+                                                        <span class="req" data-bind="visible:enableExternalQuoteFieldRq">*</span>
+                                                    </label>
+                                                    <div class="w-100" data-bind="validationElement: request_Data.externalHeaderNumber">
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control" id="externalHeaderNumber"
+                                                               data-bind="enable: enableExternalQuoteField, value: request_Data.externalHeaderNumber, required: enableExternalQuoteFieldRq" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.externalHeaderNumber, enabled: enableExternalQuoteFieldRq"></div>
+                                                </div>
+                                                <!-- /ko -->
+                                            }
+                                            <div class="col-6 col-md-2">
+                                                <label>
+                                                    Customer Costing
+                                                    <span class="req" data-bind="visible:isSR || enableExternalQuoteField">*</span>
+                                                </label>
+                                                <div class="w-100" data-bind="validationElement: request_Data.customer_costing_type_id">
+                                                    <select data-style="btn-white shadow-sm"
+                                                            data-bind="selectPicker:true, enable: !isReadOnly || (isSavingSRMissingFieldsOnSoftSchedule() && customer_costing_type_id_originallynull), options: customerCostingTypes, optionsText: 'name', optionsValue: 'id', value: request_Data.customer_costing_type_id, valueAllowUnset: true"
+                                                            data-none-selected-text="...">
+                                                    </select>
+                                                </div>
+                                                <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.customer_costing_type_id"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-row mb-3">
+                                    <div class="col-12 col-md-6 pt-3 pt-md-0">
+                                        <div class="bg-dark-form" data-bind="validationElement: requestProductCount">
+                                            <div class="bg-dark-form__header">
+                                                <h5>
+                                                    Systems Furniture / Shipping Method
+                                                    <span class="req">*</span>
+                                                </h5>
+                                            </div>
+                                            <div class="bg-dark-form__body">
+                                                <div data-bind="template: {name: 'request-product-template', foreach: requestProduct, afterAdd: applyBootstrapStyles }"></div>
+                                                <button type="button" class="btn btn-primary mt-3" title="Append Systems Furniture / Shipping Method"
+                                                        data-bind="hidden:isReadOnly, click: addRequestProduct">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="help-block invalid-feedback" data-bind="validationMessage: requestProductCount"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 pt-3 pt-md-0">
+                                        <div class="bg-dark-form">
+                                            <div class="bg-dark-form__header">
+                                                <h5>
+                                                    Other Product or Service & Shipping Method
+                                                </h5>
+                                            </div>
+                                            <div class="bg-dark-form__body">
+                                                <div data-bind="template: {name: 'request-product-other-template', foreach: requestProductOther, afterAdd: applyBootstrapStyles }"></div>
+                                                <button type="button" class="btn btn-primary mt-3" title="Append Other Product / Shipping Method Other"
+                                                        data-bind="hidden:isReadOnly, click: addRequestProductOther">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="help-block invalid-feedback" data-bind="validationMessage: requestProductOtherCount"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4" data-bind="visible: $root.request_Data.project_type_id() === 5 && isSR && !request_Data.isSendToSchedule()">
+                                        <div class="bg-dark-form">
+                                            <div class="bg-dark-form__header">
+                                                <h5>
+                                                    Resources
+                                                </h5>
+                                            </div>
+                                            <div class="bg-dark-form__body">
+                                                <select data-style="btn-white shadow-sm"
+                                                        data-bind="selectPicker:true, enable: !isAdditionalRequest && !isReadOnly, options: scopeResources, optionsText: 'resourceName', optionsValue: 'resourceID', valueAllowUnset: true, selectedOptions: $root.scopeSelResources"
+                                                        data-none-selected-text="N/A"
+                                                        multiple>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row col-12 mb-3  mt-4" >
+                                        <div class="col-12 @(ViewBag.CanViewInternalWorkRequest ? "col-md-6" : "col-md-12") col-print-12" style="margin-top: -20px">
+                                            <div class="col-3" style="display:inline-block">
+                                            <label>
+                                                Work Request
+                                                <span class="req">*</span>
+                                            </label>
+                                            </div>
+                                            @if (User.UserHasThisPermission(Permissions.QuoteRequestViewLSPListCreate))
+                                            {
+                                                <div class="col-4" data-bind="visible: request_Data.lspId()!=0, style: {display:  request_Data.lspId()==0 ? 'none':'inline-block'}">
+                                                    <div style="display:inline-block">
+                                                        <label>Requires conditional lien waivers</label>
+                                                        <div class="magic-checkbox-wrapper" style="padding-bottom:2px">
+                                                            <input class="magic-checkbox" type="checkbox" id="reqConditionalCheck" data-bind="checked: request_Data.conditionalLW, enable:(!isSR || isNew) && (!isReadOnly || !readOnlyLSP)" />
+                                                            <label for="reqConditionalCheck">Yes</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4" data-bind="visible: request_Data.lspId()!=0, style: {display:request_Data.lspId()==0 ? 'none':'inline-block'}">
+                                                    <div style="display:inline-block">
+                                                        <label>Requires unconditional lien waivers</label>
+                                                        <div class="magic-checkbox-wrapper" style="padding-bottom:2px">
+                                                            <input class="magic-checkbox" type="checkbox" id="reqUnconditionalCheck" data-bind="checked: request_Data.unconditionalLW, enable:(!isSR || isNew) && (!isReadOnly || !readOnlyLSP)" />
+                                                            <label for="reqUnconditionalCheck">Yes</label>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            }
+                                            <span class="custom-editor"
+                                                  data-bind="trumbowyg: request_Data.description,
+                                                  trumbowygOptions: { disabled: isReadOnly },
+                                                  validationElement: request_Data.description"></span>
+                                            <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.description"></div>
+
+                                        </div>
+                                        @if (ViewBag.CanViewInternalWorkRequest)
+                                        {
+                                            <div class="col-12 col-md-6" id="workRequestInternal">
+                                                <label>
+                                                    Work Request (Internal)
+                                                </label>
+                                                <span class="custom-editor" data-bind="trumbowyg: request_Data.other_conditions, trumbowygOptions: { disabled: isReadOnly }"></span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @{
+
+                            InsertBackToTopLink();
+
+                        }
+                    </div>
+
+                    <!------------------------>
+                    <div class="collapse-panel-control" id="endUserInformationPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">END USER/DEALER CUSTOMER INFO</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#endUserInformation">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="endUserInformation">
+
+                        <div class="col-12 my-4">
+                            <div class="form-row mb-3">
+                                <div class="col-9 col-md-4">
+                                    <label>
+                                        End User/Dealer Customer Name
+                                        <span class="req">*</span>
+                                    </label>
+                                    <div class="d-flex">
+                                        <div class="w-100" data-bind="validationElement: request_Data.end_user_id">
+                                            <!-- ko if:endUsers().length > 10 -->
+                                            <select data-style="btn-white shadow-sm"
+                                                    data-live-search="true"
+                                                    data-size="10"
+                                                    data-bind="enable: !isAdditionalRequest && !isReadOnly && request_Data.customer_id() !== null && isNew, selectPicker:true, options: endUsers, optionsText: 'end_user_name', optionsValue: 'end_user_id', value: request_Data.end_user_id, valueAllowUnset: true"
+                                                    data-none-selected-text="...">
+                                            </select>
+                                            <!-- /ko -->
+                                            <!-- ko ifnot:endUsers().length > 10 -->
+                                            <select data-style="btn-white shadow-sm"
+                                                    data-bind="enable: !isAdditionalRequest && !isReadOnly && request_Data.customer_id() !== null && isNew, selectPicker:true, options: endUsers, optionsText: 'end_user_name', optionsValue: 'end_user_id', value: request_Data.end_user_id, valueAllowUnset: true"
+                                                    data-none-selected-text="...">
+                                            </select>
+                                            <!-- /ko -->
+                                        </div>
+                                        <button class="btn btn-primary align-self-end ml-2 mt-0"
+                                                title="Create new End User..."
+                                                type="button"
+                                                data-bind="hidden: isReadOnly || !isNew, enable: request_Data.customer_id() !== null, click:function() { showNewCustomerModalDialog(true, 'end_user'); }">
+                                            NEW
+                                        </button>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.end_user_id"></div>
+                                    </div>
+
+                                </div>
+                                <div class="col-9 col-md-4">
+                                    <label>
+                                        Job Location
+                                        <span class="req">*</span>
+                                    </label>
+                                    <div class="d-flex">
+                                        <div class="w-100" data-bind="validationElement: request_Data.job_location_id">
+                                            <div class="dummy">
+                                                <select data-style="btn-white shadow-sm"
+                                                        data-bind="selectPicker:true, disable: isReadOnly || request_Data.customer_id() === null || request_Data.end_user_id() === null,  options: jobLocations, optionsText: 'job_location_name', optionsValue: 'job_location_id', value: request_Data.job_location_id, valueAllowUnset: true"
+                                                        data-none-selected-text="...">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-primary align-self-end ml-2 mt-0"
+                                                title="Create new Job Location..."
+                                                type="button"
+                                                data-bind="hidden: isReadOnly, disable: request_Data.customer_id() === null || request_Data.end_user_id() === null, click:function() { showNewLocationModalDialog(true); }">
+                                            NEW
+                                        </button>
+                                        <button class="btn btn-primary align-self-end ml-2 mt-0"
+                                                title="Edit Job Location..."
+                                                type="button"
+                                                data-bind="hidden: isReadOnly, enable:  elocedit(),  click:function() { showEditLocationModalDialog(true); }">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.job_location_id"></div>
+                                    </div>
+                                </div>
+                                <div class="col-4" style="align-self: flex-end;">
+                                    <label>
+                                        <strong>
+                                            <span data-bind="text: showedAddress()" style="font-size:1.2em;"></span>
+                                        </strong>
+                                    </label>
+                                    <div>
+                                        <a class="btn btn-green px-4" title="Open Location on Google Maps..." data-bind="visible: googleMapsVisible, attr: { href: googleMapsURL, target: '_blank' }"><span class="fa fa-map-marker-alt"></span></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row mb-3">
+
+                                <div class="col-12 col-md-4">
+                                    <div class="bg-dark-form">
+                                        <h5>
+                                            Building Mgmt Contact
+                                        </h5>
+                                        <button type="button" class="btn btn-primary" title="Create New Building Mgmt Contact"
+                                                data-bind="hidden:isReadOnly || job_location_details().buildingmgmtcontactid !== null , disable: request_Data.job_location_id() === null, click: function() { newContactDialog.displayDialog('bldg_mgmt_co'); }">
+                                            Create Manager Contact For This Location
+                                            <span data-bind="text: job_location_details().buildingmgmtcontactid"></span>
+                                        </button>
+                                        <div data-bind="visible:job_location_details().buildingmgmtcontactid ">
+
+                                            <input type="text" class="form-control" data-bind="disable: true, value: job_location_details().buildingmgmtcontactname" />
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <ul class="list-unstyled">
+                                                        <li>
+                                                            <br />
+                                                            <small class="text-orange" data-bind="text: job_location_details().buildingmgmtcontactphone">Phone not available</small>
+                                                            <br />
+                                                            <small class="text-orange" data-bind="text: job_location_details().buildingmgmtcontactemail">Email not available</small>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <div class="align-self-center">
+                                                    <button type="button" class="btn btn-primary" title="Edit Contact Information..." data-bind="click:() => $root.editContact({ 'contact_ID': job_location_details().buildingmgmtcontactid })">
+                                                        <i class="fas fa-user-edit"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @*<div data-bind="visible:addedBuildingManager()" style="display:none">
+                                        <input type="text" class="form-control" data-bind="disable: true, value: addedBuildingManagerName()" />
+                                        <ul class="list-unstyled">
+                                        <li>
+                                        <br />
+                                        <small class="text-orange" data-bind="text: addedBuildingManagerPhone()">Email not available</small>
+                                        <br />
+                                        <small class="text-orange" data-bind="text: addedBuildingManagerEmail()">Email not available</small>
+                                        </li>
+                                        </ul>
+                                        <div class="align-self-center">
+                                        <button type="button" class="btn btn-primary" title="Edit Contact Information..." data-bind="click:() => $root.editContact($data)">
+                                        <i class="fas fa-user-edit"></i>
+                                        </button>
+                                        </div>
+                                        </div>*@
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4 pt-3 pt-md-0">
+                                    <div class="bg-dark-form" data-bind="validationElement: requestLocationContactsCount">
+
+                                        <h5>
+                                            On-Site Contacts
+                                            @if (Model.IsSR)
+                                            {
+                                                <span class="req">*</span>
+                                            }
+                                        </h5>
+
+                                        <!-- ko foreach: requestLocationContacts -->
+                                        <div class="form-row">
+                                            <div class="col-11">
+                                                <select class="mb-2"
+                                                        data-style="btn-white shadow-sm"
+                                                        data-bind="selectPicker:true, enable: !$root.isReadOnly || $root.isSavingSRMissingFieldsOnSoftSchedule(), options: $root.locationContactsNotAssignedYet(contact_ID), optionsText: 'contact_Name', optionsValue: 'contact_ID', value: contact_ID, valueAllowUnset: true"
+                                                        data-none-selected-text="...">
+                                                </select>
+                                            </div>
+                                            <div class="col-1">
+                                                <button class="btn btn-sm btn-danger" type="button" data-bind="visible: !$root.isReadOnly || $root.isSavingSRMissingFieldsOnSoftSchedule(), click: function() { $root.removeRequestLocationContact(contact_ID); }">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex mb-2" data-bind="with: $root.findLocationContact(contact_ID())">
+                                            <div class="flex-grow-1">
+                                                <ul class="list-unstyled">
+                                                    <li>
+                                                        <!-- ko if:contact_Phone -->
+                                                        <small class="text-orange" data-bind="text: contact_Phone"></small>
+                                                        <!-- /ko -->
+                                                        <!-- ko ifnot:contact_Phone -->
+                                                        <small class="text-orangeish">Phone information missing</small>
+                                                        <!-- /ko -->
+                                                        <br />
+                                                        <!-- ko if:email -->
+                                                        <small class="text-orange" data-bind="text: email">Email not available</small>
+                                                        <!-- /ko -->
+                                                        <!-- ko ifnot:email -->
+                                                        <small class="text-orangeish">Email information missing</small>
+                                                        <!-- /ko -->
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <button type="button" class="btn btn-primary" title="Edit Contact Information..." data-bind="click:() => $root.editContact($data)">
+                                                    <i class="fas fa-user-edit"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- /ko -->
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.job_location_contact_id"></div>
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <button type="button" class="btn btn-primary" title="Add On-Site Contact"
+                                                        data-bind="visible:!isReadOnly || isSavingSRMissingFieldsOnSoftSchedule(), disable: request_Data.job_location_id() === null, click: function() {  addRequestLocationContacts(); }">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-primary" title="Create New On-Site Contact"
+                                                        data-bind="visible:!isReadOnly || isSavingSRMissingFieldsOnSoftSchedule(), disable: request_Data.job_location_id() === null, click: function() { newContactDialog.displayDialog('job_location'); }">
+                                                    NEW
+                                                    @*<i class="fas fa-plus"></i>*@
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="help-block invalid-feedback" data-bind="validationMessage: requestLocationContactsCount"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @{
+
+                            InsertBackToTopLink();
+
+                        }
+                    </div>
+
+
+                    <div class="collapse-panel-control" id="deliveryConditionsPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">DELIVERY CONDITIONS</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#deliveryConditions">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="deliveryConditions">
+                        <div class="my-4">
+                            <h5 class="collapse-panel__heading mb-2">DOCK OPTIONS</h5>
+
+                            <div class="form-row mb-3">
+                                <div class="col-12 col-md-3">
+                                    <label>Loading Dock Available</label>
+                                    <div class="magic-checkbox-wrapper">
+                                        <input class="magic-checkbox" type="checkbox" id="loadingDockAvailableCheck" data-bind="disable: true, yesnoCheckboxValue: job_location_details().loading_dock_type" />
+                                        <label for="loadingDockAvailableCheck">Yes</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-2">
+                                    <label for="dockHeight">
+                                        Dock Height
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="dockHeight" data-bind="disable:true, value: job_location_details().dock_height" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-2">
+                                    <label for="dockAvailTime1">
+                                        Dock Avail Time
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="dockAvailTime1" data-bind="disable: isReadOnly, value: request_Data.dock_available_time" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label>Dock Reserve Required</label>
+                                    <div class="magic-checkbox-wrapper">
+                                        <input class="magic-checkbox" type="checkbox" id="dockReserveRequiredCheck" data-bind="disable: true, yesnoCheckboxValue: job_location_details().dock_reserv_req_type" />
+                                        <label for="dockReserveRequiredCheck">Yes</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5 class="collapse-panel__heading mb-3">ELEVATOR OPTIONS</h5>
+                            <div class="my-4">
+                                <div class="form-row mb-3">
+                                    <div class="col-6">
+                                        <label>
+                                            Elevator Available
+                                        </label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, options: elevatorTypes, optionsText: 'name', optionsValue: 'id', value: job_location_details().elevator_avail_type_id, valueAllowUnset: true"
+                                                disabled="disabled"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label>Elevator Reserve Required</label>
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="elevatorReserveRequiredCheck" data-bind="disable: isReadOnly, yesnoCheckboxValue: job_location_details().elevator_reserv_req_type" />
+                                            <label for="elevatorReserveRequiredCheck">Yes</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <h5 class="collapse-panel__heading mb-3">SECURITY OPTIONS</h5>
+
+                            <div class="form-row mb-3">
+                                <div class="col-6">
+                                    <label>
+                                        Security Access
+                                    </label>
+                                    <select data-style="btn-white shadow-sm"
+                                            data-bind="selectPicker:true, disable: isReadOnly, options: securityAccessKinds, optionsText: 'name', optionsValue: 'id', value: request_Data.security_type_id, valueAllowUnset: true"
+                                            data-none-selected-text="...">
+                                    </select>
+                                </div>
+
+                                <div class="col-6">
+                                    <label>Badge Access Required</label>
+                                    <div class="magic-checkbox-wrapper">
+                                        <input class="magic-checkbox" type="checkbox" id="badgeAccess" data-bind="disable: isReadOnly, yesnoCheckboxValue: request_Data.badge_access_required" />
+                                        <label for="badgeAccess">Yes</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <div class="my-4">
+                                <div class="form-row mb-3">
+                                    <div class="col-2">
+                                        <label>Floor Protection</label>
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="floorProtectionCheck"
+                                                   data-bind="disable: true, yesnoCheckboxValue: job_location_details().floor_prot_type"
+                                                   disabled="disabled" />
+                                            <label for="floorProtectionCheck">Yes</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <label>Wall Protection</label>
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="wallProtectionCheck"
+                                                   data-bind="disable: true, yesnoCheckboxValue: job_location_details().wall_protection_type" />
+                                            <label for="wallProtectionCheck">Yes</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <label>Doorway Protection</label>
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="doorwayProtectionCheck"
+                                                   data-bind="disable: true, yesnoCheckboxValue: job_location_details().doorway_prot_type" />
+                                            <label for="doorwayProtectionCheck">Yes</label>
+                                        </div>
+                                    </div>
+                                    <div class="offset-4 col-2" data-bind="visible:isSR">
+                                        <label>Bring PPE</label>
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="bringPPECheck" data-bind="disable: isReadOnly, yesnoCheckboxValue: request_Data.bring_ppe" />
+                                            <label for="bringPPECheck">Yes</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <h5 class="collapse-panel__heading mb-3">STAIRWAYS OPTIONS</h5>
+                            <div class="form-row mb-3">
+                                <div class="col-6 col-md-3">
+                                    <label>Stairway Carry Required</label>
+                                    <div class="magic-checkbox-wrapper">
+                                        <input class="magic-checkbox" type="checkbox" id="stairwayCarryRequired" data-bind="disable: isReadOnly, yesnoCheckboxValue: request_Data.stair_carry_req" />
+                                        <label for="stairwayCarryRequired">Yes</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-9">
+                                    <label for="dockHeight">
+                                        Building Conditions Addl. Info
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="stairwayCarryAdditionalInfo" data-bind="disable: isReadOnly, value: request_Data.stair_carry_addl_info" />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        @{
+
+                            InsertBackToTopLink();
+
+                        }
+
+                    </div>
+
+                    <!------------------------>
+                    <div class="collapse-panel-control" id="customFieldsPanelControl" data-bind="visible: isSR">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">CUSTOM FIELDS</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#customFields">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="customFields" data-bind="visible: isSR">
+                        <div class="my-4">
+                            <div class="form-row mb-3">
+                                <!-- ko foreach: $root.customFields() -->
+                                <!-- ko if: isDropList === 'Y' -->
+                                <div class="col-12 col-md-4">
+                                    <label>
+                                        <span data-bind="text: customFieldName"></span><span class="req" data-bind="visible: (isMandatory === 'Y')"> *</span>
+                                        <i title="Edit Custom Field values..." class="fas fa-edit ml-3 icon-button-like" data-bind="click:() => $root.editCustomFieldValues($data)"></i>
+                                    </label>
+                                    <div data-bind="validationElement: customFieldValue">
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, disable: $root.isReadOnly, options: dropListOptions, optionsText: 'name', optionsValue: 'id', value: customFieldValue, valueAllowUnset: true"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: customFieldValue"></div>
+                                </div>
+                                <!-- /ko -->
+                                <!-- ko if: isDropList === 'N' -->
+                                <div class="col-12 col-md-4">
+                                    <label>
+                                        <span data-bind="text: customFieldName"></span><span class="req" data-bind="visible: (isMandatory === 'Y')"> *</span>
+                                    </label>
+                                    <div class="input-group" data-bind="validationElement: customFieldValue">
+                                        <input type="text" class="form-control" data-bind="disable: $root.isReadOnly, value: customFieldValue, attr: { id: customFieldName }" />
+                                    </div>
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: customFieldValue"></div>
+                                </div>
+                                <!-- /ko -->
+                                <!-- /ko -->
+                                <!-- ko if: $root.customFields().length === 0 -->
+                                <div class="col-12" style="align-self: flex-end;">
+                                    <label><strong><span style="font-size:1.2em;">No Custom Fields for this Request</span></strong></label>
+                                </div>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        @{
+
+                            InsertBackToTopLink();
+
+                        }
+
+                    </div>
+
+                    @if (User.UserHasThisPermission(Permissions.RequestSeeBillingSection))
+                    {
+                        <div class="collapse-panel-control" id="billingInformationPanelControl">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="collapse-panel__heading m-0">BILLING INFORMATION</h5>
+                                </div>
+                                <div class="col">
+                                    <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#billingInformation">
+                                        <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapse-panel show" id="billingInformation">
+
+                            <div class="form-row mb-3">
+                                <div class="col-6 col-md-3">
+                                    <label>
+                                        Billing Type
+                                        <span class="req" data-bind="visible:isSR">*</span>
+                                    </label>
+                                    <div class="w-100" data-bind="validationElement: request_Data.quote_type_id">
+                                        <select data-style="btn-white shadow-sm"
+                                            data-bind="selectPicker:true, disable: isReadOnly, options: billingTypes, optionsText: 'name', optionsValue: 'id', value: request_Data.quote_type_id, valueAllowUnset: true"
+                                            data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.quote_type_id"></div>
+                                </div>
+                                <div class="col-6 col-md-1">
+                                    <label>
+                                        Sales Tax
+                                    </label>
+                                    <div class="magic-checkbox-wrapper">
+                                        <input class="magic-checkbox" type="checkbox" id="salesTaxCheck" data-bind="disable: isReadOnly, yesnoCheckboxValue: request_Data.taxable_flag" />
+                                        <label for="salesTaxCheck">Yes</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-2" data-bind="visible: isSR  && canSeeSurcharge">
+                                    <label>
+                                        Fuel Surcharge
+                                    </label>
+                                    <div class="d-flex">
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="fuelSurchargeCheck" data-bind="disable: isReadOnly, checked:$root.addFuelSurchargeChecked(), click:$root.addFuelSurchargeRateClick();" />
+                                            <label for="fuelSurchargeCheck">Yes</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="fuelSurchargeRate" style="margin-left: 10px; margin-top: 2px; width:70%"
+                                           data-bind="enable: (!isReadOnly && $root.addFuelSurchargeChecked()) || (isSavingSRMissingFieldsOnSoftSchedule() && dealer_po_no_originallynull),
+                                               value: request_Data.fuelSurchargeRate" />
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-2" data-bind="visible: isSR && canSeeSurcharge">
+                                    <label>
+                                        Admin Fee
+                                    </label>
+                                    <div class="d-flex">
+                                        <div class="magic-checkbox-wrapper">
+                                            <input class="magic-checkbox" type="checkbox" id="adminFeeCheck" data-bind="disable: isReadOnly, checked:$root.addAdminFeeChecked(), click:$root.addAdminFeeRateClick();" />
+                                            <label for="adminFeeCheck">Yes</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="adminFeeRate" style="margin-left: 10px; margin-top: 2px; width:70%"
+                                           data-bind="enable: (!isReadOnly && $root.addAdminFeeChecked()) || (isSavingSRMissingFieldsOnSoftSchedule() && dealer_po_no_originallynull),
+                                               value: request_Data.adminFeeRate" />
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-2" data-bind="visible: isSR">
+                                    <label for="dockHeight">
+                                        Purchase Order
+                                        <span class="req" data-bind="visible:isSR">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="purchaseOrder"
+                                           data-bind="enable: !isReadOnly || (isSavingSRMissingFieldsOnSoftSchedule() && dealer_po_no_originallynull),
+                                               value: request_Data.dealer_po_no,
+                                               validationElement: request_Data.dealer_po_no" />
+                                    </div>
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.dealer_po_no"></div>
+                                </div>
+                                <div class="col-6 col-md-2" data-bind="visible: isSR">
+                                    <label for="dockHeight">
+                                        PO Line Number
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="poLineNumber" data-bind="disable: isReadOnly, value: request_Data.dealer_po_line_no" />
+                                    </div>
+                                </div>
+                            </div>
+                            @{
+
+                                InsertBackToTopLink();
+
+                            }
+                        </div>
+                    }
+
+                    <!------------------------>
+                    <div class="collapse-panel-control" id="attachmentsPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">ATTACHMENTS</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#attachments">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="attachments">
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="drag-drop"
+                                     data-bind="hidden:isReadOnly, event: {drop: function (data,e) { dropFileHandler(e,data);}, dragover:   function(data, e){ dragover(e);}  }">
+                                    <h4>Drag and Drop Files Here</h4>
+                                    <label class="servicetrax-file-input">
+                                        <button class="btn btn-primary" type="button">
+                                            <i class="fas fa-plus"></i>
+                                            ADD DOCUMENT
+                                        </button>
+                                        <input type="file" multiple data-bind="fileInputSelection: insertFilesFromInput">
+                                    </label>
+                                </div>
+                                <div data-bind="visible: isReadOnly && attachments().length === 0">
+                                    <div class="my-4 text-muted">No attachments were added to this Request.</div>
+                                </div>
+                                <div class="table-responsive-lg" data-bind="hidden: isReadOnly && attachments().length === 0">
+                                    <table class="table table--dark-blue">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">DOCUMENT</th>
+                                                <th scope="col">UPLOADED BY</th>
+                                                <th scope="col">DATE ADDED</th>
+                                                <th scope="col">TIME ADDED</th>
+                                                <!-- ko if:isSR -->
+                                                <th scope="col">SIGNING</th>
+                                                <!-- /ko -->
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- ko foreach: attachments -->
+                                            <tr>
+                                                <td><a data-bind="text: name, attr: { href: `/ProjectFiles/${project_no}/${request_id}/${request_no}/${version_no}/${encodeURIComponent(name)}`, target: '_blank' }"></a></td>
+                                                <td data-bind="text: created_by"></td>
+                                                <td data-bind="text: moment(date_created).format('L')"></td>
+                                                <td data-bind="text: moment(date_created).format('LT')"></td>
+                                                <!-- ko if:$root.isSR -->
+                                                <td>
+                                                    <!-- ko if:signature_DeliveredBy_UserId  && signature_ReceivedBy -->
+                                                    <button type="button" class="btn btn-primary btn-disabled" title="Document is already signed by both parties..."
+                                                            data-bind="click:$root.signDocument">
+                                                        SIGNED
+                                                    </button>
+                                                    <!-- /ko -->
+                                                    <!-- ko if:signature_DeliveredBy_UserId && !signature_ReceivedBy -->
+                                                    <button type="button" class="btn btn-green" title="Document is awaiting for Recipient signature..."
+                                                            data-bind="click:$root.signDocument">
+                                                        PARTIAL
+                                                    </button>
+                                                    <!-- /ko -->
+                                                    <!-- ko ifnot:signature_DeliveredBy_UserId -->
+                                                    <button type="button" class="btn btn-primary" title="Click here to Sign the document..."
+                                                            data-bind="click:$root.signAttachedDocument">
+                                                        SIGN
+                                                    </button>
+                                                    <!-- /ko -->
+                                                </td>
+                                                <!-- /ko -->
+                                                <td>
+                                                    @if ((!Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestRemoveAttachments))
+                                                    || (Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestRemoveAttachments)))
+                                                    {
+                                                        <button class="btn btn-sm btn-danger"
+                                                            type="button"
+                                                            data-bind="hidden:$root.isReadOnly, click:() => $root.removeAttachment(request_document_id)">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                            <!-- ko foreach: newFiles -->
+                                            <tr>
+                                                <td><a data-bind="text: name"></a><span class="badge badge-primary ml-2"> NEW</span></td>
+                                                <td data-bind="text: created_by"></td>
+                                                <td data-bind="text: moment(date_created).format('L')"></td>
+                                                <td data-bind="text: moment(date_created).format('LT')"></td>
+                                                <!-- ko if:$root.isSR -->
+                                                <td><small>Save request to upload and sign document</small></td>
+                                                <!-- /ko -->
+                                                <td>
+                                                    @if ((!Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestRemoveAttachments))
+                                                    || (Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestRemoveAttachments)))
+                                                    {
+                                                        <button class="btn btn-sm btn-danger"
+                                                            type="button"
+                                                            data-bind="hidden:$root.isReadOnly, click:() => $root.removeNewFileAttachment(name)">
+
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        @{
+
+                            InsertBackToTopLink();
+
+                        }
+                    </div>
+
+                    @if (User.UserHasThisPermission(Permissions.QuoteReadQuoteDocuments))
+                    {
+                        <!------------------------>
+                        <div class="collapse-panel-control" id="quoteEstimatorPanelControl">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="collapse-panel__heading m-0">QUOTE ESTIMATOR</h5>
+                                </div>
+                                <div class="col">
+                                    <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#quote-estimator">
+                                        <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapse-panel show" id="quote-estimator">
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="mb-4 text-right">
+                                    </div>
+                                    <div data-bind="ifnot: quoteEstimatorData">
+                                        <div class="my-4 text-muted small">No quotes have been created for this Request yet.</div>
+                                    </div>
+                                    <div class="table-responsive-lg" data-bind="if: quoteEstimatorData">
+                                        <table class="table table--dark-blue">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">DOCUMENT</th>
+                                                    <th scope="col" requires-permission="@Permissions.QuoteRead">VIEW QUOTE</th>
+                                                    <th scope="col">DATE CREATED</th>
+                                                    <th scope="col">CREATED BY</th>
+                                                    <th scope="col">DATE SENT</th>
+                                                    <th scope="col">SENT BY</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <!-- ko if:moment(quoteEstimatorData.sentDate).isValid()-->
+                                                    <td>
+                                                        <a data-bind="attr: {href: quoteEstimatorData.quoteDocumentUrl, target: '_blank'}" title="Opens the Quote document">View Document</a>
+                                                    </td>
+                                                    <!-- /ko -->
+                                                    <!-- ko ifnot:moment(quoteEstimatorData.sentDate).isValid()-->
+                                                    <td title="Quote document is not avaialble yet.">
+                                                        N/A
+                                                    </td>
+                                                    <!-- /ko -->
+                                                    <td requires-permission="@Permissions.QuoteRead"><a data-bind="attr: {href: quoteEstimatorData.quoteUrl, target: '_blank'}" title="Opens Quote in a new page">View Quote</a></td>
+                                                    <td data-bind="text: moment(quoteEstimatorData.createdDate).format('L')"></td>
+                                                    <td data-bind="text: quoteEstimatorData.createdBy"></td>
+                                                    <td data-bind="text: moment(quoteEstimatorData.sentDate).isValid() ? moment(quoteEstimatorData.sentDate).format('L') : '-'"></td>
+                                                    <td data-bind="text: quoteEstimatorData.sentBy"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @{
+
+                                InsertBackToTopLink();
+
+                            }
+                        </div>
+                    }
+
+                    <div class="d-none print-only" id="quote-signature">
+                        <div class="row mt-5">
+                            <div class="col-12 col-md-9">
+                                <div class="signature-line"></div>
+                                <div class="signature-label">
+                                    Customer Signature
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <div class="signature-line"></div>
+                                <div class="signature-label">
+                                    Date
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.CommentsCanReadAdd)
+                    {
+                        <!------------------------>
+                        <div class="collapse-panel-control" id="commentsPanelControl" data-bind="visible: !isNew">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="collapse-panel__heading m-0">COMMENTS</h5>
+                                </div>
+                                <div class="col">
+                                    <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#comments-panel">
+                                        <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapse-panel show" id="comments-panel" data-bind="visible: !isNew">
+
+                            <div data-bind="if: requestComments().length === 0">
+                                <div class="my-4 text-muted small">This Quote Request does not have any comments yet...</div>
+                            </div>
+
+                            <div class="col-12 col-sm-6">
+                                <div class="day mb-3" data-bind="foreach: requestComments">
+                                    <div class="date-posted mb-1">Posted on: <strong data-bind="text: moment(date).format('ll')"></strong></div>
+                                    <div class="comment card p-3 mb-3" data-bind="foreach: comments" style="background-color: #f5f5f5">
+                                        <div data-bind="template: {name: 'comment-template'}"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-12 col-sm-6 mb-3">
+                                    <div class="position-relative custom-textarea">
+                                        <textarea type="text"
+                                              class="form-control"
+                                              id="AddComment"
+                                              placeholder="Add Comment..."
+                                              rows="3"
+                                              aria-describedby="VisibleClient" data-bind="textInput: newComment.commentText"></textarea>
+                                        <div class="d-block position-absolute custom-buttons">
+                                            <div class="btn btn-orange btn-sm mr-2" id="VisibleClientCommentBtn" style="display: none"
+                                             title="This comment will be visible to project Client..."
+                                             data-bind="visible: newComment.visibleToClient(), click: function() { newComment.toggleClientVisible(); }">
+                                                <em class="fas fa-eye"></em> Visible to Client
+                                            </div>
+                                            <div class="btn btn-white btn-sm mr-2" id="NotVisibleClientCommentBtn" style="display: none"
+                                             title="This comment will not be visible to project Client..."
+                                             data-bind="hidden: newComment.visibleToClient(), click: function() { newComment.toggleClientVisible(); }">
+                                                <em class="fas fa-eye-slash"></em> Not Visible to Client
+                                            </div>
+                                            <div class="btn btn-primary btn-sm"
+                                             id="SubmitCommentBtn"
+                                             data-bind="css: { 'btn-disabled': newComment.commentText().length === 0 }, click: function() { newComment.submitComment(); }">
+
+                                                Submit
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @{
+
+                                InsertBackToTopLink();
+
+                            }
+                        </div>
+                    }
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="text-muted text-right">
+                                <strong>Created By:</strong>
+                                <!-- ko if:request_Data.createdByName -->
+                                <span data-bind="text:request_Data.createdByName"></span>
+                                <!-- /ko -->
+                                <!-- ko ifnot:request_Data.createdByName -->
+                                <span>You</span>
+                                <!-- /ko -->
+                                <!-- ko if:request_Data.createTime -->
+                                <span data-bind="text: '(' + moment(request_Data.createTime).format('lll') + ')'"></span>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="text-muted text-right">
+                                <!-- ko if:request_Data.modifiedByName() -->
+                                <strong>Modified By:</strong>
+                                <span data-bind="text:request_Data.modifiedByName"></span>
+                                <!-- ko if:request_Data.modifyTime() -->
+                                <span data-bind="text: '(' + moment(request_Data.modifyTime()).format('lll') + ')'"></span>
+                                <!-- /ko -->
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                    </div>
+
+                    @*@await Html.PartialAsync("_DocSignatureDisplay")*@
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!----------- New customer modal ------------->
+
+    <div class="modal fade modal--forms" data-bind="showModal:showNewCustomerModal" id="newCustomerModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newCustomerLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content modal-content--dark-blue">
+                <div class="modal-header">
+                    <h5 class="modal-title mr-auto" id="newCustomerLabel">
+                        NEW
+                        <span data-bind="visible: newCustomer.customerTypeCode() === 'prospect'" style="display:none">PROSPECT CUSTOMER</span>
+                        <span data-bind="visible: newCustomer.customerTypeCode() === 'end_user'" style="display:none">END USER</span>
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group" data-bind="validationElement: newCustomer.name">
+                            <label for="recipient-name" class="col-form-label">
+                                <span data-bind="visible: newCustomer.customerTypeCode() === 'prospect'" style="display:none">Prospect Customer Name</span>
+                                <span data-bind="visible: newCustomer.customerTypeCode() === 'end_user'" style="display:none">End User Name</span>
+                            </label>
+                            <input type="text" class="form-control" id="recipient-name" data-bind="value: newCustomer.name" />
+                            <div class="help-block" data-bind="validationMessage: newCustomer.name"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+
+                    <div class="row">
+                        <div class="col-6">
+                            <!-- ko ifnot:savingNewCustomer -->
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click:saveNewCustomer">
+                                SAVE
+                            </button>
+                            <!-- /ko -->
+                            <!-- ko if:savingNewCustomer -->
+                            <button type="button" class="btn btn-primary btn-block" disabled>
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Saving...
+                            </button>
+                            <!-- /ko -->
+                        </div>
+                        <div class="col-6 pl-3">
+                            <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { showNewCustomerModalDialog(false); }">CANCEL</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!----------- New Contact modal ------------->
+    <!-- ko with:newContactDialog -->
+    <div class="modal fade modal--forms" data-bind="showModal:isDialogDisplaying" id="newContactModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newCustomerLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content modal-content--dark-blue">
+                <div class="modal-header">
+                    <h5 class="modal-title mr-auto" id="newCustomerLabelc" data-bind="visible: contact_type() === 'customer'" style="display:none">NEW CUSTOMER CONTACT</h5>
+                    <h5 class="modal-title mr-auto" id="newCustomerLabell" data-bind="visible: contact_type() === 'job_location'" style="display:none">NEW LOCATION CONTACT</h5>
+                    <h5 class="modal-title mr-auto" id="newCustomerLabelm" data-bind="visible: contact_type() === 'bldg_mgmt_co'" style="display:none">NEW BUILDING MANAGER CONTACT</h5>
+                </div>
+                <div class="modal-body">
+
+                    <form>
+                        <div class="form-row mb-3">
+                            <div class="col-6">
+                                <label>Contact Name</label>
+                                <input type="text" class="form-control" data-bind="value: name" />
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: name"></div>
+                            </div>
+                            <div class="col-6">
+                                <label>Email</label>
+                                <input type="email" class="form-control" data-bind="value: email" />
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: email"></div>
+                            </div>
+                        </div>
+                        <div class="form-row mb-3">
+                            <div class="col-4">
+                                <label>Work Phone</label>
+                                <input type="text" class="form-control phone-input" data-bind="value: workphone" />
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: workphone"></div>
+                            </div>
+                            <div class="col-4">
+                                <label>Cell Phone</label>
+                                <input type="text" class="form-control phone-input" data-bind="value: cellphone" />
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: cellphone"></div>
+                            </div>
+
+                            <div class="col-4">
+                                <label>Home Phone</label>
+                                <input type="text" class="form-control phone-input" data-bind="value: homephone" />
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: homephone"></div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <!-- ko if:isCreatingContact -->
+                        <div class="col-4">
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click:saveNewContact">
+                                SAVE
+                            </button>
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if:isUpdatingContact -->
+                        <div class="col-4">
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click:updateContact">
+                                UPDATE
+                            </button>
+                        </div>
+                        <!-- /ko -->
+                        <div class="col-4">
+                            <button type="button" class="btn btn-warning btn-block" data-bind="click:closeDialog">CANCEL</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    <!----------- New Location modal ------------->
+
+    <div class="modal fade modal--forms" data-bind="showModal:showNewLocationModal" id="newLocationModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newLocationLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content modal-content--dark-blue">
+                <div class="modal-header">
+                    <!--ko ifnot:newLocationDetails.isUpdating-->
+                    <h5 class="modal-title mr-auto">NEW JOB LOCATION</h5>
+                    <!-- /ko -->
+                    <!--ko if:newLocationDetails.isUpdating-->
+                    <h5 class="modal-title mr-auto">EDIT JOB LOCATION</h5>
+                    <!-- /ko -->
+                </div>
+                <div class="modal-body">
+
+                    <form>
+                        <div class="form-row mb-3">
+                            <div class="col-12">
+                                <label for="nlmLockName">
+                                    Location Name
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmLockName" data-bind="value: newLocationDetails.job_location_name" />
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: newLocationDetails.job_location_name"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row mb-3">
+                            <div class="col-6">
+                                <label for="nlmLocAddress1">
+                                    Location Address 1
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmLocAddress1" data-bind="value: newLocationDetails.street1" />
+                                    @*<div class="help-block invalid-feedback" data-bind="validationMessage: newLocationDetails.job_location_name"></div>*@
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label for="nlmLocAddress2">
+                                    Location Address 2
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmLocAddress2" data-bind="value: newLocationDetails.street2" />
+                                    @*<div class="help-block invalid-feedback" data-bind="validationMessage: newLocationDetails.job_location_name"></div>*@
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-row mb-3">
+                            <div class="col-4">
+                                <label for="nlmLocAddress3">
+                                    Location Address 3
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmLocAddress3" data-bind="value: newLocationDetails.street3" />
+                                    @*<div class="help-block invalid-feedback" data-bind="validationMessage: newLocationDetails.job_location_name"></div>*@
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <label for="nlmLocCity">
+                                    City
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmLocCity" data-bind="value: newLocationDetails.city" />
+                                    @*<div class="help-block invalid-feedback" data-bind="validationMessage: newLocationDetails.job_location_name"></div>*@
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <label for="nlmLocState">
+                                    State
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmLocState" data-bind="value: newLocationDetails.state" />
+                                    @*<div class="help-block invalid-feedback" data-bind="validationMessage: newLocationDetails.job_location_name"></div>*@
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <label for="nlmLocZip">
+                                    Zip
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmLocZip" data-bind="value: newLocationDetails.zip" />
+                                    @*<div class="help-block invalid-feedback" data-bind="validationMessage: newLocationDetails.job_location_name"></div>*@
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row mb-3">
+                            <div class="col-3">
+                                <label>Loading Dock Available</label>
+                                <div class="magic-checkbox-wrapper">
+                                    <input class="magic-checkbox" type="checkbox" id="nlmloadingDockAvailableCheck" data-bind="yesnoCheckboxValue: newLocationDetails.loading_dock_type" />
+                                    <label for="nlmloadingDockAvailableCheck">Yes</label>
+                                </div>
+                            </div>
+
+                            <div class="col-3">
+                                <label for="nlmdockHeight">
+                                    Dock Height
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nlmdockHeight" data-bind="value: newLocationDetails.dock_height" />
+                                </div>
+                            </div>
+
+                            <div class="col-3">
+                                <label>Dock Reserve Required</label>
+                                <div class="magic-checkbox-wrapper">
+                                    <input class="magic-checkbox" type="checkbox" id="nlmdockReserveRequiredCheck" data-bind="yesnoCheckboxValue: newLocationDetails.dock_reserv_req_type" />
+                                    <label for="nlmdockReserveRequiredCheck">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="form-row mb-3">
+
+                            <div class="col-5">
+                                <label>
+                                    Elevator Available
+                                </label>
+                                <select data-style="btn-white shadow-sm"
+                                        data-bind="selectPicker:true, options: elevatorTypes, optionsText: 'name', optionsValue: 'id', value: newLocationDetails.elevator_avail_type_id, valueAllowUnset: true"
+                                        data-none-selected-text="...">
+                                </select>
+                            </div>
+
+                            <div class="col-4">
+                                <label>Elevator Reserve Required</label>
+                                <div class="magic-checkbox-wrapper">
+                                    <input class="magic-checkbox" type="checkbox" id="nlmelevatorReserveRequiredCheck" data-bind="yesnoCheckboxValue: newLocationDetails.elevator_reserv_req_type" />
+                                    <label for="nlmelevatorReserveRequiredCheck">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="form-row mb-3">
+                            <div class="col-3">
+                                <label>Floor Protection</label>
+                                <div class="magic-checkbox-wrapper">
+                                    <input class="magic-checkbox" type="checkbox" id="nlmfloorProtectionCheck"
+                                           data-bind="yesnoCheckboxValue: newLocationDetails.floor_prot_type" />
+                                    <label for="nlmfloorProtectionCheck">Yes</label>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <label>Wall Protection</label>
+                                <div class="magic-checkbox-wrapper">
+                                    <input class="magic-checkbox" type="checkbox" id="nlmwallProtectionCheck"
+                                           data-bind="yesnoCheckboxValue: newLocationDetails.wall_protection_type" />
+                                    <label for="nlmwallProtectionCheck">Yes</label>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <label>Doorway Protection</label>
+                                <div class="magic-checkbox-wrapper">
+                                    <input class="magic-checkbox" type="checkbox" id="nlmDoorwayProtectionCheck"
+                                           data-bind="yesnoCheckboxValue: newLocationDetails.doorway_prot_type" />
+                                    <label for="nlmDoorwayProtectionCheck">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+
+                    <div class="row">
+                        <div class="col-4">
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click:upsertLocation">
+                                SAVE
+                            </button>
+                        </div>
+                        <div class="col-4">
+                            <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { showNewLocationModalDialog(false); }">CANCEL</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!----------- Soft Sched Response modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showSSRespModal" id="SSRespModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="SSRespLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="SSRespLabel">OPERATIONAL PLAN MISSING</h5>
+            </div>
+            <div class="modal-body">
+                <label>Your Service Request is not Ready to Schedule without an Ops Plan. Please click the link below to complete now and return to the SR to send to the Scheduler for approval.</label>
+                <a data-bind="attr: { href: $root.quotePageUrl }" class="text-white">Operational Plan Grid</a>
+            </div>
+            <div class="modal-footer">
+                <div class="col-12 justify-content-end">
+                    <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { showSSRespModalDialog(false); }">CANCEL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!----------- Resources modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showResourcesModal" id="ResourcesModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="ResourcesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="ResourcesLabel">Resources</h5>
+            </div>
+            <div class="modal-body">
+                <div class="bg-dark-form__body" data-bind="visible: !request_Data.isSendToSchedule()">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <select class="form-control resource-select"
+                                        data-width="100%"
+                                        data-size="10"
+                                        data-live-search="true"
+                                        data-style="btn-white shadow-sm"
+                                        data-bind="selectPicker:true, enable: !isAdditionalRequest && !isReadOnly, options: resources, optionsText: 'resourceName', optionsValue: 'resourceID', valueAllowUnset: true, selectedOptions: $root.headerSelResources"
+                                        data-none-selected-text="N/A"
+                                        multiple>
+                                </select>
+                            </div>
+                        </div>
+                        <br />
+                        <!-- ko foreach: $root.resources -->
+                        <!-- ko if: headerOption -->
+                        <label class="col-5 text-md-center text-uppercase" data-bind="text: resourceName"></label>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="col-12 justify-content-end">
+                    <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { showResourcesModalDialog(false); }">BACK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="ratesSubGridModal" class="ratesSubGridModalClass" style="display:none">
+    <div id="ratesSubGridCloseButton" class="ratesSubGridCloseClass" data-bind="click:closeSubGrid">
+        <i class="far fa-times-circle fa-3x"></i>
+        <div class="mt-2">Close Rates</div>
+    </div>
+    <div class="ratesSubGridModalBodyClass">
+        <div id="ratesSubGrid" class="ratesSubGridClass myGrid"></div>
+    </div>
+</div>
+
+
+@await Html.PartialAsync("_ColoredCalendar")
+@await Html.PartialAsync("_NotificationDialog")
+@await Html.PartialAsync("_CustomColumn_PV_Editor")
+@await Html.PartialAsync("_ImportExistingQuoteDialog")
+@await Html.PartialAsync("_DocSignatureInput")
+@await Html.PartialAsync("_DailyStatusReportDialog")

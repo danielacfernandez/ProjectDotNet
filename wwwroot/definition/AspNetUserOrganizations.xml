@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.210" author="" dateCreation="2020-03-27" dateLastChange="2020-09-11"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>User Organizations</title>
+        <defaultOrder>OrganizationId</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>True</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+	UO.AspNetUsersOrganizations,
+--	UO.UserId as AspNetUserOrganizationsUserID,
+	UO.OrganizationId,
+	ORGS.NAME as OrganizationName,
+	UO.IsDefaultLocation,
+	UO.IsActive
+from
+	[dbo].[AspNetUserOrganizations]	UO
+left join
+	dbo.Organizations ORGS
+on
+	ORGS.ORGANIZATION_ID=UO.ORGANIZATIONID AND ORGS.ISACTIVE = 1
+where
+	UserID=@USERID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="1=1" autoUpdateQuery="False" updateTable=""><![CDATA[-- ignore the insert if the USERID/ORGANIZATIONID pair already exists
+if not exists(select top 1 * from [dbo].[AspNetUserOrganizations] where UserId=@USERID and OrganizationId=@ORGANIZATIONID and AspNetUsersOrganizations<>@ASPNETUSERSORGANIZATIONS)	
+begin
+	-- If setting the Default Location then clear current Default location
+	if(isnull(@ISDEFAULTLOCATION, 0)=1)
+	begin
+		update [dbo].[AspNetUserOrganizations] set IsDefaultLocation=0 where UserId=@USERID 
+	end
+
+	update 
+		[dbo].[AspNetUserOrganizations]
+	set
+		OrganizationId=@ORGANIZATIONID,
+		IsDefaultLocation=isnull(@ISDEFAULTLOCATION, 0),
+		IsActive=CASE WHEN isnull(@ISDEFAULTLOCATION, 0) = 1 THEN 1 ELSE isnull(@ISACTIVE, 0) END,
+		ModifyTime=getutcdate(),
+		ModifiedBy=@RUNNING_AS_USERID
+	where	
+		AspNetUsersOrganizations=@ASPNETUSERSORGANIZATIONS
+end]]></sqlUpdate>
+        <sqlInsert where="[AspNetUsersOrganizations]=@@IDENTITY"><![CDATA[-- ignore the insert if the USERID/ORGANIZATIONID pair already exists
+if not exists(select top 1 * from [dbo].[AspNetUserOrganizations] where UserId=@USERID and OrganizationId=@ORGANIZATIONID)	
+begin
+	insert into
+		[dbo].[AspNetUserOrganizations] (UserId, OrganizationId, IsDefaultLocation, IsActive, CreateTime, CreatedBy)
+	values
+		(@USERID, @ORGANIZATIONID, isnull(@ISDEFAULTLOCATION, 0), isnull(@ISACTIVE, 0), getutcdate(), @RUNNING_AS_USERID)
+end]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="OrganizationId" label="Organization" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="listbox" visible="True" format="" labelField="OrganizationName" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select 
+ORGANIZATION_ID as OrganizationId, 
+[NAME] as OrganizationName 
+from  dbo.Organizations
+WHERE ISACTIVE = 1]]></dataSelect></column>
+<column id="IsDefaultLocation" label="Is Default Location" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="IsActive" label="Is Active" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="AspNetUsersOrganizations" label="AspNetUsersOrganizations" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textarea" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="OrganizationName" label="OrganizationName" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

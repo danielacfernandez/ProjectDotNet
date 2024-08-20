@@ -1,0 +1,101 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXSRListTEGViewModel
+@using ServiceTRAX.Models.DBModels
+@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+
+
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(Model.PageTitle) ? ViewData["Title"] = "View Service Requests" : Model.PageTitle;
+}
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 130px;
+            right: 20px;
+            bottom: 30px;
+        }
+
+        .gridContent-with-title {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 170px;
+            right: 20px;
+            bottom: 30px;
+        }
+
+      
+    </style>
+
+    @if (!User.UserHasThisPermission(Permissions.ServiceRequestClose))
+    {
+        <style>
+            .close-sr-teg-button-for-roles {
+                display: none;
+            }
+        </style>
+    }
+}
+
+@section Scripts {
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script language="javascript" type="text/javascript" src="~/lib/server.js" asp-append-version="true"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            var model =  @Html.Raw(Json.Serialize(Model));
+
+            let gridParameters = () => ({
+                'ORGANIZATION_ID': model.organizationID,
+                'USER_ID': model.userID,
+                'SRSTATUS': model.srStatus,
+                'USERTYPE': model.userType,
+                'XDAYS': model.xDays,
+                'ONLYNOTASSIGNED': model.onlyNotAssigned,
+                'INCLUDEPUNCHLIST': model.includePunchlist
+            });
+            let gridEvents = {
+                buttonClick: function (btn, row) {
+                    if (btn.id === 'OpenServiceRequestScreen') {
+                        redirectToPage('/Request', { 'RequestID': row.REQUEST_ID, 'OrganizationID': @Model.OrganizationID});
+                    }
+                }
+            };
+            let oGrid = new clsMyGrid('ServiceRequests', document.getElementById('SRListTEG'), null, gridEvents, true, gridParameters());
+        });
+
+        const openRequest = function (request_id) {
+            redirectToPage('/Request', { 'RequestID': request_id, 'OrganizationID': @Model.OrganizationID});
+        }
+    </script>
+
+}
+
+<div id="content">
+    <div class="container-fluid">
+        @if (!string.IsNullOrEmpty(Model.PageTitle))
+        {
+            <div class="row">
+                <div class="col pl-0 ml-0">
+                    <h2>@Model.PageTitle</h2>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="d-flex">
+                <div id="content-wrap">
+                    <div class="@(string.IsNullOrEmpty(Model.PageTitle) ?  "gridContent" : "gridContent-with-title")" id="SRListTEG"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

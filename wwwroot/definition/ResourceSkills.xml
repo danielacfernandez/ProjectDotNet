@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.144" author="" dateCreation="2020-03-27" dateLastChange="2020-11-04"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Resource Skills</title>
+        <defaultOrder>SkillName</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+RS.ResourceSkillId,
+RS.SkillID,
+S.SkillName, 
+S.SkillType,  
+RS.SkillLevel, 
+@RESOURCE_ID AS RESOURCE_ID_LOCALSCOPE
+from 
+dbo.ResourceSkill RS with(nolock)  
+inner join 
+dbo.Skills_V S with(nolock)  
+on 
+S.SkillId = RS.SkillId  
+where 
+ResourceId = @RESOURCE_ID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="ResourceSkillId=@RESOURCESKILLID" autoUpdateQuery="False" updateTable=""><![CDATA[update 
+	dbo.ResourceSkill 
+set 
+	SkillID=@SKILLID,
+	SkillLevel=@SKILLLEVEL
+where 
+	ResourceSkillId=@RESOURCESKILLID]]></sqlUpdate>
+        <sqlInsert where="[ResourceSkillId]=@@IDENTITY"><![CDATA[if not exists (select * from dbo.ResourceSkill with(nolock)
+where ResourceId = @RESOURCE_ID and SkillId = @SKILLID)
+insert into 
+	dbo.ResourceSkill (ResourceId, SkillId, SkillLevel)
+values
+	(@RESOURCE_ID, @SKILLID, isnull(@SKILLLEVEL, 0))]]></sqlInsert>
+        <sqlDelete><![CDATA[delete from dbo.ResourceSkill
+where RESOURCEID=@RESOURCE_ID_LOCALSCOPE
+and SKILLID=@SKILLID]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="SkillID" label="Skill" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="SkillName" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[select SkillId, SkillName from dbo.Skills_V order by SEQUENCE_NO]]></dataSelect></column>
+<column id="SkillName" label="Skill Name" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="SkillLevel" label="Skill Level" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="RESOURCE_ID_LOCALSCOPE" label="RESOURCE_ID" width="200" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" defaultFilter="" filterText="" size="0"></column>
+<column id="SkillType" label="Skill Type" width="250" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ResourceSkillId" label="ResourceSkillId" width="250" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textarea" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

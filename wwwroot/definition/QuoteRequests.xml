@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.59" author="" dateCreation="2020-03-27" dateLastChange="2023-06-26"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>REQUESTS</title>
+        <defaultOrder>request_id</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[SELECT
+ '<a href="#" onclick="openRequest('+cast(REQUEST_ID as varchar)+')">' + cast([quote_number] as varchar) + '</a>' as REQUEST_NO_LINK, 
+	[request_id],
+	[project_id],  
+	[project_no],  
+	[quote_number],
+	[Hedberg_Quote_No],  
+	[ext_dealer_id],  
+	[job_name],  
+	[request_date_created],  
+	[request_status],  
+	[dealer_project_no],  
+	[is_quoted],  
+	[is_new],  
+	[customer_id],  
+	[customer_name],  
+	[end_user_id],  
+	[end_user_name],  
+	[organization_id],  
+	[Customer_Type],
+	[CREATEDBYUSERNAME],
+	[MODIFIEDBYUSERNAME],
+	[PM],
+	[Request_Name],
+        [LSPId],
+        [LSPName],
+        [ConditionalLW],
+        [UnconditionalLW]
+FROM dbo.QuoteRequest_TEG_Select_FN(
+    @ORGANIZATION_ID, 
+    @USER_ID, 
+    @QRSTATUS, 
+    @USERTYPE
+)]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[REQUEST_ID]=@REQUEST_ID" autoUpdateQuery="False" updateTable=""><![CDATA[]]></sqlUpdate>
+        <sqlInsert where="[REQUEST_ID]=@@IDENTITY"><![CDATA[]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="request_id" label="request_id" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="project_id" label="project_id" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="REQUEST_NO_LINK" label="QR#" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Request_Name" label="Request Name" width="275" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Hedberg_Quote_No" label="HB Quote #" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="customer_name" label="Customer" width="275" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="customer_type" label="Customer Type" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="end_user_name" label="End User" width="275" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="job_name" label="Job Name" width="200" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="request_status" label="Status" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="project_no" label="Project No" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="dealer_project_no" label="Dealer Project #" width="200" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="is_quoted" label="Quoted" width="70" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="request_date_created" label="Date Created" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="ext_dealer_id" label="Dealer ID" width="800" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="is_new" label="is_new" width="800" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="customer_id" label="Customer ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="end_user_id" label="End User ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="organization_id" label="Organization" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="PM" label="PM Name" width="100" editable="False" filterable="True" filterItemsSize="200" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="CREATEDBYUSERNAME" label="Created By" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="MODIFIEDBYUSERNAME" label="Modified By" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="LSPName" label="LSP Name" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="ConditionalLW" label="Conditional Lien Waivers" width="25" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="UnconditionalLW" label="Unconditional Lien Waivers" width="25" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

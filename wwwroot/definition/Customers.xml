@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.197" author="" dateCreation="2020-03-27" dateLastChange="2020-12-03"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Customers</title>
+        <defaultOrder>CUSTOMER_NAME</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+	C.*,
+	UC.FullName as CreatedByUser,
+	UM.FullName as ModifiedByUser,
+	L.NAME as CustomerType
+from 
+	dbo.Customers C
+left join
+	dbo.AspNetUsers UC
+on
+	C.CREATED_BY = UC.UserId
+left join
+	dbo.AspNetUsers UM
+on
+	C.MODIFIED_BY = UM.UserId
+left join
+	dbo.LOOKUPS L
+on
+	L.LOOKUP_ID = C.customer_type_id
+
+
+]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="" autoUpdateQuery="False" updateTable=""><![CDATA[]]></sqlUpdate>
+        <sqlInsert where=""><![CDATA[]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="CUSTOMER_NAME" label="CUSTOMER NAME" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CustomerType" label="Customer Type" width="120" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" defaultFilter="" filterText="" size="0"></column>
+<column id="ACTIVE_FLAG" label="ACTIVE" width="70" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="street1" label="STREET 1" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="street2" label="STREET 2" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="city" label="CITY" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="county" label="COUNTY" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="state" label="STATE" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="zip" label="ZIP" width="80" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="DEALER_NAME" label="DEALER NAME" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="PriceLevel" label="PRICE LEVEL" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="DATE_CREATED" label="DATE CREATED" width="90" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="20"></column>
+<column id="CreatedByUser" label="Created By" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" defaultFilter="" filterText="" size="0"></column>
+<column id="DATE_MODIFIED" label="DATE MODIFIED" width="90" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="20"></column>
+<column id="ModifiedByUser" label="Modified By" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

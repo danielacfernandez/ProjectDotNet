@@ -1,0 +1,43 @@
+﻿<div class="modal fade modal--forms" id="AddTeamModal" data-bind="showModal:addTeamMemberDialog.isDialogDisplaying"
+     tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="AddTeamModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content modal-content--dark-blue"
+             data-bind="with:addTeamMemberDialog">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="newCustomerLabel">Add Team Member</h5>
+                <button type="button" class="btn icon-only" data-bind="click: function() { isDialogDisplaying(false); }">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body pt-0 pb-0">
+                <form>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Add new</label>
+                        <select data-style="btn-white shadow-sm"
+                                data-live-search="true"
+                                data-size="10"
+                                data-bind="selectPicker:true, options: members, optionsText: 'resourceName', optionsValue: 'resourceID', value: selectedMember, valueAllowUnset: true"
+                                data-none-selected-text="...">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Type of Addition</label>
+                        <select data-style="btn-white shadow-sm"
+                                data-bind="selectPicker:true, options: typeOfAddition, optionsText: 'name', optionsValue: 'id', value: selectedtypeOfAddition,  valueAllowUnset: true"
+                                data-none-selected-text="...">
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="enable:selectedMember() !== null && selectedtypeOfAddition() !== null, click: function() { addTeamMember(); }">
+                            Add New
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.251" author="" dateCreation="2020-03-27" dateLastChange="2023-06-06"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>User LSPs</title>
+        <defaultOrder>AspNetUserLSPId</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>True</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+	UL.AspNetUserLSPId, 
+	UL.UserID AS LspUserID, 
+	UL.LspID, 
+	L.LspName,
+	UL.CreatedBy, 
+        UL.CreateTime,
+	UL.IsActive, 
+	UL.ModifyTime, 
+	UL.ModifiedBy
+from
+	[dbo].[AspNetUserLSP] UL
+left join
+	[dbo].[LocalServiceProvider] L
+on
+	UL.LSPID=L.LSPID
+where
+	UL.UserID=@USERID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="AspNetUserLSPId=@ASPNETUSERLSPID" autoUpdateQuery="False" updateTable=""><![CDATA[-- ignore the insert if the USERID/LSPID pair already exists
+if not exists(select top 1 * from [dbo].[AspNetUserLSP] where UserId=@USERID and LspID=@LSPID and AspNetUserLSPId<>@ASPNETUSERLSPID)	
+begin
+	update 
+		[dbo].[AspNetUserLSP]
+	set
+		LspID=@LSPID,
+		IsActive=@ISACTIVE,
+		ModifyTime=getdate(),
+		ModifiedBy=@__UserId__
+	where	
+		AspNetUserLSPId=@ASPNETUSERLSPID
+
+--* Added by FernandoP 2024.01.21 Checks if contact type is already in the list of type of contacts for the contact of @UserID
+--* https://dev.azure.com/EIT2020/Omni%20Portal/_workitems/edit/20386/
+declare @ContactId bigint = (select top 1 Contact_Id from dbo.AspNetUsers with(nolock)
+where UserId = @USERID)
+
+if @ContactId is not null and not exists (select top 1 1 from dbo.CONTACT_GROUPS with(nolock)
+where CONTACT_ID = @ContactId and contact_type_id = dbo.getLookupId('LSP', 'contact_type'))
+  		INSERT INTO dbo.contact_groups (
+			contact_id,                            
+			contact_type_id,                            
+			created_by,                            
+			date_created
+		)  
+		VALUES (
+			@ContactId,  
+			dbo.getLookupId('LSP', 'contact_type'),
+			@CreatedBy, 
+			CURRENT_TIMESTAMP
+		)
+
+end]]></sqlUpdate>
+        <sqlInsert where="AspNetUserLSPId=@ASPNETUSERLSPID"><![CDATA[-- ignore the insert if the USERID/LsPId pair already exists
+if not exists(select top 1 * from [dbo].[AspNetUserLSP] where UserId=@USERID and LspID=@LSPID and IsActive = 1)	
+begin
+        exec dbo.AspNetUserLSP_Insert @UserID = @USERID, @LspID = @LSPID, @CreatedBy = @__UserId__, @ASPNETUSERLSPID = @ASPNETUSERLSPID out
+end]]></sqlInsert>
+        <sqlDelete><![CDATA[delete from [dbo].[AspNetUserLSP] where AspNetUserLSPId=@ASPNETUSERLSPID]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="LspId" label="LSP" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="LspName" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select LspId, LspName from [dbo].[LocalServiceProvider] where IsActive=1]]></dataSelect></column>
+<column id="IsActive" label="Is Active" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="AspNetUserLSPId" label="AspNetUserLSPId" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="LspUserID" label="LspUserID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="LspName" label="LspName" width="800" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CreateTime" label="CreateTime" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="ModifyTime" label="ModifyTime" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="ModifiedBy" label="ModifiedBy" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="CreatedBy" label="CreatedBy" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.135" author="" dateCreation="2020-03-27" dateLastChange="2020-08-29"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title></title>
+        <defaultOrder>po_no</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[
+	SELECT
+	PO_ID,
+	po_no, 
+	RequestedByID,
+	RequestedByName,
+	CustomerName,
+	RequestIDRO,
+	POQuoteAmt,
+	POServiceDate,
+	po_total,
+	[description],
+	VendorInvoiceNumber,
+	POComments,
+	EXT_VENDOR_ID,
+	VENDOR_NAME,
+	ROWORG_ID
+from dbo.GetPurchaseOrders_TEG_FN(@ORGANIZATION_ID, @PROJECT_ID)
+]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[PO_ID]=@PO_ID" autoUpdateQuery="False" updateTable=""><![CDATA[exec dbo.PO_Update 
+@PO_ID,
+@REQUESTEDBYID,
+@EXT_VENDOR_ID,
+@POQuoteAmt,
+@POSERVICEDATE,
+@PO_TOTAL,
+@DESCRIPTION,
+@VENDORINVOICENUMBER,
+@POCOMMENTS,
+@USER_ID]]></sqlUpdate>
+        <sqlInsert where="[PO_ID]=@@IDENTITY"><![CDATA[exec dbo.PO_Insert 
+@REQUESTEDBYID=@REQUESTEDBYID,
+@REQUEST_ID=@REQUEST_ID_G,
+@POQuoteAmt=@POQuoteAmt,
+@POSERVICEDATE=@POSERVICEDATE,
+@PO_TOTAL=@PO_TOTAL,
+@DESCRIPTION=@DESCRIPTION,
+@VENDORINVOICENUMBER=@VENDORINVOICENUMBER,
+@POCOMMENTS=@POCOMMENTS,
+@EXT_VENDOR_ID=@EXT_VENDOR_ID,
+@USER_ID=@USER_ID]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="RequestIDRO" label="Request Id" width="70" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="po_no" label="PO#" width="40" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="RequestedByID" label="Requested By" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="listbox" visible="True" format="" labelField="RequestedByName" dataSelectCacheOnClient="False" preloadDataSelect="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[select U.[USER_ID] as RequestedByID, U.FULL_NAME as RequestedByName
+from  dbo.USERS U
+inner join dbo.AspNetUserOrganizations O
+on O.UserId = U.USER_ID
+where O.OrganizationId = @ROWORG_ID
+ and U.ACTIVE_FLAG = 'Y'
+ ]]></dataSelect></column>
+<column id="po_id" label="PO ID" width="40" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="CustomerName" label="Customer Name" width="200" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="EXT_VENDOR_ID" label="Vendor Name" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="listbox" visible="True" format="" labelField="vendor_name" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[SELECT 
+LOOKUP_id as ext_vendor_id, 
+lookup_name as vendor_name
+FROM DBO.Lookups_Active_V WHERE type_code = 'VENDOR' AND ATTRIBUTE1 = cast(@ROWORG_ID as varchar(30))]]></dataSelect></column>
+<column id="POQuoteAmt" label="Quoted" width="80" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="po_total" label="Actual Price" width="80" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10"></column>
+<column id="VendorInvoiceNumber" label="Vendor Invoice No" width="120" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="POServiceDate" label="PO Service Date" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="20"></column>
+<column id="description" label="Description" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="POComments" label="Comments" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ROWORG_ID" label="ROWORG_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

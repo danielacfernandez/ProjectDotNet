@@ -1,0 +1,57 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXUserViewModel
+
+@{
+    ViewData["Title"] = "View Servece Requests";
+}
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 180px;
+            right: 20px;
+            bottom: 70px;
+        }
+    </style>
+}
+
+@section Scripts {
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js?1"></script>
+
+
+    <script type="text/javascript">
+
+        var gridName = 'User';
+        var oGrid = null;
+
+        $(document).ready(function () {
+            $('.qrsGrid').each(function () {
+                oGrid = new clsMyGrid(gridName, this, null, {
+                    buttonClick: function (btn, row) {
+
+                        if (btn.id === 'OpenServiceRequestScreen') {
+
+                            window.location = `@Url.Content("~/request")?requestid=${row.REQUEST_ID}&OrganizationID=@Model.OrganizationID`
+                            }
+                        }
+                }, true, { ORGANIZATION_ID: @Model.OrganizationID, USER_ID: @Model.UserID, REQUEST_ID: 815240 });
+            });
+        });
+        
+    </script>
+
+}
+<div class="row">
+    <div class="col-2 mt-3">
+        <h2>USER ADMIN</h2>
+    </div>
+</div>
+<div id="content-wrap">
+    <div class="gridContent qrsGrid"></div>
+</div>
+

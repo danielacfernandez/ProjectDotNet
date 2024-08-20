@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.242" author="" dateCreation="2020-03-27" dateLastChange="2023-09-12"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>User Roles</title>
+        <defaultOrder>UserRolesID</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>True</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+	U.UserRolesID, 
+	U.UserID AS RoleUserID, 
+	U.RoleID, 
+	R.Name as RoleName,
+	U.CreatedDT, 
+	U.IsActive, 
+	U.ModifyTime, 
+	U.ModifiedBy
+from
+	[dbo].[AspNetUserRoles] U
+left join
+	[dbo].[AspNetRoles] R
+on
+	U.RoleID=R.RoleID
+where
+	UserID=@USERID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="UserRolesID=@USERROLESID" autoUpdateQuery="False" updateTable=""><![CDATA[-- ignore the insert if the USERID/ROLEID pair already exists
+if not exists(select top 1 * from [dbo].[AspNetUserRoles] where UserId=@USERID and RoleID=@ROLEID and UserRolesID<>@USERROLESID)	
+begin
+	update 
+		[dbo].[AspNetUserRoles]
+	set
+		RoleID=@ROLEID,
+		--IsActive=@ISACTIVE,
+		ModifyTime=getutcdate(),
+		ModifiedBy=@RUNNING_AS_USERID
+	where	
+		UserRolesID=@USERROLESID
+end]]></sqlUpdate>
+        <sqlInsert where="[UserRolesID]=@@IDENTITY"><![CDATA[-- ignore the insert if the USERID/ROLEID pair already exists
+if not exists(select top 1 * from [dbo].[AspNetUserRoles] where UserId=@USERID and RoleID=@ROLEID)	
+begin
+	insert into
+		[dbo].[AspNetUserRoles] (UserId, RoleID, CreatedDT, IsActive, ModifyTime, ModifiedBy)
+	values
+		(@USERID, @ROLEID, getutcdate(), 1, getutcdate(), @RUNNING_AS_USERID)
+end]]></sqlInsert>
+        <sqlDelete><![CDATA[delete from [dbo].[AspNetUserRoles] where UserRolesID=@USERROLESID]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="RoleID" label="Role" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="RoleName" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select RoleID, Name as RoleName from [dbo].[AspNetRoles] where IsActive=1]]></dataSelect></column>
+<column id="IsActive" label="Is Active" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="UserRolesID" label="UserRolesID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="RoleUserID" label="RoleUserID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="RoleName" label="RoleName" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CreatedDT" label="CreatedDT" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="ModifyTime" label="ModifyTime" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="ModifiedBy" label="ModifiedBy" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

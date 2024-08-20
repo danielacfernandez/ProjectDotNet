@@ -1,0 +1,55 @@
+﻿@model ServiceTRAX.ViewComponents.UserWidgetListViewComponent.UserWidgetListViewComponentModel
+
+<style>
+    th.sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: #002a53;
+        padding: 2px 0px;
+        color: white;
+        text-align: center;
+    }
+
+    tbody {
+        font-size: 90%;
+    }
+
+    .row-style td {
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+
+    .row-style {
+        background-color: #008bff7a;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #008bff3b;
+    }
+
+    .check-box-td {
+        text-align: center;
+    }
+</style>
+<table class="table user-widget-selection-table">
+    <thead>
+        <tr>
+            <th class="sticky-header" width="30%">Name</th>
+            <th class="sticky-header" width="60%">Description</th>
+            <th class="sticky-header" width="10%">In Use</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var widget in Model.Widgets)
+        {
+            <tr class="row-style">
+                <td>@widget.WidgetName</td>
+                <td>@widget.WidgetTitle</td>
+                <td class="check-box-td">
+                    <input class="widget-enable-checkbox" data-widgetid="@widget.WidgetID" type="checkbox" @(widget.IsActive ? "checked" : string.Empty)>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

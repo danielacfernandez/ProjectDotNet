@@ -1,0 +1,42 @@
+﻿ <!-- Empty Jobs Modal -->
+<div class="modal fade" id="EmptyJobsModal" data-backdrop="static" tabindex="-1" data-bind="showModal:showEmptyJobsModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header align-items-center">
+                <!-- ko if:dayEmptyJobs().length > 0 -->
+                <h4 class="p-0 m-0"><em class="fas fa-ban mr-2 turquoise-icon"></em> <span data-bind="text:dayEmptyJobs().length"></span> Jobs with empty Resources</h4>
+                <!-- /ko -->
+                <!-- ko if:dayEmptyJobs().length === 0 -->
+                <h4 class="p-0 m-0"><em class="fas fa-check mr-2 turquoise-icon"></em> NO JOBS WITH EMPTY RESOURCES WERE FOUND</h4>
+                <!-- /ko -->
+                <button type="button" class="btn icon-only" data-bind="click:() => showEmptyJobsModal(false)">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body" data-bind="if:dayEmptyJobs().length > 0">
+                <table class="table grid table--blue">
+                    <thead>
+                        <tr>
+                            <th scope="col">Job</th>
+                            <th scope="col">Job Name</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Start</th>
+                            <th scope="col">End</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: dayEmptyJobs">
+                        <tr>
+                            <td data-bind="text:joB_NO"></td>
+                            <td data-bind="text:joB_NAME"></td>
+                            <td data-bind="text:roleName"></td>
+                            <td data-bind="text:moment(date).format('L')"></td>
+                            <td data-bind="text:moment(startTime).format('LT')"></td>
+                            <td data-bind="text:moment(endTime).format('LT')"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+﻿@model ServiceTRAX.Models.ViewModels.ProjectFilesViewModel
+@using ServiceTRAX.Identity
+
+@{
+    ViewData["Title"] = "Project Files";
+}
+
+@section SubMenu {
+    @await Component.InvokeAsync("SideMenu", new { OrganizationID = Model.OrganizationID, ProjectID = Model.ProjectID, RequestID = Model.RequestID, UserID = Model.UserID })
+}
+
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 40px;
+            top: 170px;
+            right: 20px;
+            bottom: 70px;
+        }
+    </style>
+}
+
+
+
+@section Scripts {
+
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js'></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+    <link rel="stylesheet" href="~/css/datepicker.css">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js?1"></script>
+
+
+    <script type="text/javascript">
+
+
+    var gridName = 'ProjectFiles';
+    var oGrid = null;
+
+
+    $(document).ready(function () {
+        $('.pfGrid').each(function () {
+            oGrid = new clsMyGrid(gridName, this, null, {
+                buttonClick: function (btn, row) {
+                    if (btn.id === 'OpenFile') {
+                        var win = window.open(`/ProjectFiles/${row.PROJECT_NO}/${row.REQUESTID}/${row.REQUESTNO}/${row.VERSIONNO}/${row.FILENAME}`, '_blank');
+                        win.focus();
+                    }
+                }
+            }, true, { PROJECT_ID: @Model.ProjectID, USER_ID: @Model.UserID  });
+
+        });
+    });
+
+
+    </script>
+
+}
+
+
+<div class="row">
+    <div class="col-2 mt-3">
+        <h2>PROJECT FILES</h2>
+    </div>
+</div>
+
+<div id="content-wrap">
+    <div class="gridContent pfGrid"></div>
+</div>

@@ -1,0 +1,168 @@
+﻿<script type="text/html" id="up-down-resource-template">
+    <div class="col-4 mb-3 px-1">
+        <div class="col-12">
+            <label data-bind="text:name, attr: {title: name}" class="text-truncate mb-0 w-100"></label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button class="input-group-text btn-orange" data-bind="click: function() { if(quantity() > qtyAssigned) { quantity(quantity() -1); } }"><em class="fas fa-minus"></em></button>
+                </div>
+                <input type="text" class="form-control" data-bind="value:quantity()">
+                <div class="input-group-append">
+                    <button class="input-group-text btn-orange" data-bind="click: function() { quantity(quantity() + 1); }"><em class="fas fa-plus"></em></button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</script>
+
+<!-- ko with:addMultipleRecordsModal -->
+<div class="modal fade" id="AddMultipleRecords" tabindex="-1" data-backdrop="static" data-bind="showModal:addMultipleRecordsDialogShown">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header align-items-center">
+                <h4 class="p-0 m-0"><em class="fas fa-edit mr-2"></em> Add Multilple Records</h4>
+                <button type="button" class="btn icon-only" data-bind="click:closeDialog">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row ">
+                    <div class="col-8">
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="addMRStartDate">
+                                    Start Date
+                                </label>
+                                <div class="input-group" id="addMRStartDate">
+                                    <input type="text"
+                                           id="inputMRStartDate"
+                                           class="form-control"
+                                           autocomplete="off"
+                                           data-bind="datepicker: mrStartDate, datepickerOptions: { trigger: '#addMRStartDate', zIndex: 2000 }"
+                                           required />
+                                    <div class="input-group-append simulate-button">
+                                        <span class="input-group-text input-group-append-custom">
+                                            <i class="fas fa-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label for="addMREndDate">
+                                    End Date
+                                </label>
+                                <div class="input-group" id="addMREndDate">
+                                    <input type="text"
+                                           id="inputMREndDate"
+                                           class="form-control"
+                                           autocomplete="off"
+                                           data-bind="datepicker: mrEndDate, datepickerOptions: { trigger: '#addMREndDate', zIndex: 2000 }"
+                                           required />
+                                    <div class="input-group-append simulate-button">
+                                        <span class="input-group-text input-group-append-custom">
+                                            <i class="fas fa-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="d-flex flex-column">
+                            <div>
+                                <label for="editJobHours">
+                                    Hrs/Shift
+                                </label>
+                                <input type="number" step=".25" name="editJobHours" class="form-control" data-bind="value:mrHrsPerShift" />
+                            </div>
+                            <div>
+                                <div class="magic-checkbox-wrapper" title="Set this checkbox to apply OverTime hours">
+                                    <input class="magic-checkbox" type="checkbox" id="applyOTChange" data-bind="checked: applyOTValue" />
+                                    <label for="applyOTChange"><small>OT</small></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-5">
+                    <div class="col-8">
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="addMRStartTime">
+                                    Start Time
+                                </label>
+                                <div class="input-group" id="addMRStartTime">
+                                    <select class="form-control col-12"
+                                            id="ddlMRStartTime"
+                                            data-style="btn-white shadow-sm"
+                                            data-bind="selectPicker:true, options: $root.time15min, optionsText: 'name', optionsValue: 'name', valueAllowUnset: true, value: mrStartTime"
+                                    @*data-none-selected-text="Select user roles..."
+                                            multiple*@>
+                                    </select>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label for="addMREndTime">
+                                    On-Site Time
+                                </label>
+                                <div class="input-group" id="addMROnSiteTime">
+                                    <select class="form-control col-12"
+                                            id="ddlMROnSiteTime"
+                                            data-style="btn-white shadow-sm"
+                                            data-bind="selectPicker:true, options: $root.time15min, optionsText: 'name', optionsValue: 'name', valueAllowUnset: true, value: mrOnSiteTime"
+                                            @*data-none-selected-text="Select user roles..."
+                                            multiple*@
+                                            >
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="d-flex flex-column">
+                            <div>
+                                <label for="editJobHours">
+                                    Description
+                                </label>
+                                <input type="text"name="editJobHours" class="form-control" data-bind="value:mrDescription" />
+                            </div>
+                           
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label># of Crew Resources needed by role</label>
+                    </div>
+                    <!-- ko foreach: dayRoleAndQuantitiesCrew() -->
+                    <!-- ko template: {name: 'up-down-resource-template'} -->
+                    <!-- /ko -->
+                    <!-- /ko -->
+                </div>
+
+                <!-- ko if:dayRoleAndQuantitiesVehicles().length > 0-->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label># of Vehicles needed</label>
+                    </div>
+                    <!-- ko foreach: dayRoleAndQuantitiesVehicles() -->
+                    <!-- ko template: {name: 'up-down-resource-template'} -->
+                    <!-- /ko -->
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bind="disable:savingChanges, click:saveChanges">SAVE</button>
+                <button type="button" class="btn btn-warning" data-bind="click:closeDialog">CANCEL</button>
+            </div>
+            
+        </div>
+    </div>
+</div>
+<!-- /ko -->

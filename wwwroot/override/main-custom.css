@@ -1,0 +1,35 @@
+.shadow {box-shadow: 0 0.2rem .75rem rgba(0, 0, 0, 0.1) !important;}
+
+.btn-light {background-color: #fff;}
+
+
+.quoterequest-nav, .quoterequest-nav .navbar-nav { justify-content: initial; }
+
+.quote-nav, .quote-nav .navbar-nav {
+    justify-content: initial;
+}
+
+.quote-nav {
+    padding-right: 30px;
+    padding-left: 50px;
+}
+
+.navbar-left {
+    justify-content: flex-start;
+}
+
+
+.navbar-left { justify-content: flex-start;}
+.navbar-right { justify-content: flex-end !important;}
+
+.side-nav a {
+    text-align: center;
+}
+
+.accordion-link-list {
+    margin-left: 10px;
+    padding-left: 0px;
+    border: 0px;
+}
+
+#mobile-sub-nav h3, #mobile-sub-nav h4 {font-size: 1rem; text-transform: uppercase;}

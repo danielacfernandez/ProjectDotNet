@@ -1,0 +1,65 @@
+﻿
+<div class="modal fade" id="MultiResourceActionModal"
+     data-backdrop-limit="1" tabindex="-1" role="dialog" aria-labelledby="AutoStartModal" aria-hidden="true"
+     data-bind="showModal:multiResourceAction.isDialogDisplaying"
+     data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 data-bind="text:multiResourceAction.dialogTitle()" class="modal-title mr-auto mb-0">Auto-Start</h5>
+                <button type="button" class="btn icon-only" data-bind="click: function() {multiResourceAction.isDialogDisplaying(false);}">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body pt-0">
+
+                <label data-bind="text:multiResourceAction.dialogSubTitle()"></label>
+
+                <div class="magic-checkbox-wrapper" data-bind="foreach: multiResourceAction.jobResources">
+
+                    <input class="magic-checkbox" type="checkbox" data-bind="attr: {id:serviceLineTimeEntryID}, checked:autoFlagValue, disable:(canAutoEnd===false && multiResourceAction.isAutoEnd()===true)">
+
+                    <!-- ko ifnot:multiResourceAction.isLunch() -->
+                    <label data-bind="attr: {for:serviceLineTimeEntryID}, text:resourceName"></label>
+                    <!-- /ko -->
+                    <!-- ko if:multiResourceAction.isLunch() -->
+                    <label data-bind="attr: {for:serviceLineTimeEntryID}, style: {color: lunchQty > 0 ? '#ffff33' : '#cccccc' }, text:resourceName + multiResourceAction.lunchText(lunchQty)"></label>
+                    <!-- /ko -->
+                    <!-- ko if:(multiResourceAction.isAutoEnd() && !canAutoEnd) -->
+                    <label data-bind="attr: {for:serviceLineTimeEntryID}, text:exceptionMsg"></label>
+                    <!-- /ko -->
+                </div>
+                <div data-bind="if: multiResourceAction.isLunch() && multiResourceAction.jobResources().length === 0">
+                    <div><label class="pl-2 m-0"><strong>Notice:</strong></label></div>
+                    <div><label class="pl-3 m-0">No Resources Available for Lunch were Found</label></div>
+                    <div><label class="pl-3 m-0">Please check if Jobs are Started</label></div>
+                </div>
+            </div>
+
+
+            <div class="modal-footer no-border">
+                <div class="row small-gutters">
+                    <div class="col">
+                        <!-- ko if:multiResourceAction.isAutoStart() -->
+                        <button data-bind="click: function() { multiResourceAction.saveAction(); }" type="button" class="btn btn-primary btn-block cmdStartDay" aria-label="Close">
+                            <div class="m-0">Start the Work Day</div>
+                            <div id="serverTime" class="m-0 text-turquoise"></div>
+                        </button>
+                        <!-- /ko -->
+                        <!-- ko if:multiResourceAction.isAutoEnd() -->
+                        <button data-bind="click: function() { multiResourceAction.saveAction(); }" type="button" class="btn btn-primary btn-block cmdStartDay" aria-label="Close">
+                            <div class="m-0">End the Work Day</div>
+                            <div id="serverTime" class="m-0 text-turquoise"></div>
+                        </button>
+                        <!-- /ko -->
+                        <!-- ko if:multiResourceAction.isLunch() -->
+                        <button data-bind="enable:multiResourceAction.someSelected(), click: function() { multiResourceAction.saveAction(); }" type="button" class="btn btn-primary btn-block cmdStartDay" aria-label="Close">
+                            <div class="m-0">Add Lunch</div>
+                        </button>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.239" author="" dateCreation="2020-03-27" dateLastChange="2020-11-06"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Contact Groups</title>
+        <defaultOrder>CONTACT_TYPE_ID</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>True</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+	G.CONTACT_GROUP_ID,
+--	G.CONTACT_ID,
+	G.CONTACT_TYPE_ID,
+	T.lookup_name as CONTACT_TYPE_NAME
+from
+	dbo.CONTACT_GROUPS G
+inner join
+	dbo.CONTACT_TYPES_V T
+on
+	G.CONTACT_TYPE_ID = T.LOOKUP_ID
+where
+	G.CONTACT_ID=@CONTACT_ID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="1=1" autoUpdateQuery="False" updateTable=""><![CDATA[-- ignore the update if the USERID/ORGANIZATIONID pair already exists
+if not exists(select top 1 * from [dbo].[CONTACT_GROUPS] where CONTACT_ID=@CONTACT_ID and CONTACT_TYPE_ID=@CONTACT_TYPE_ID and CONTACT_GROUP_ID<>@CONTACT_GROUP_ID)	
+begin
+	update 
+		[dbo].[CONTACT_GROUPS]
+	set
+		CONTACT_TYPE_ID=@CONTACT_TYPE_ID,
+		MODIFIED_BY=@RUNNING_AS_USERID,
+		DATE_MODIFIED=getutcdate()
+	where	
+		CONTACT_GROUP_ID=@CONTACT_GROUP_ID
+end]]></sqlUpdate>
+        <sqlInsert where="[CONTACT_GROUP_ID]=@@IDENTITY"><![CDATA[if not exists(select top 1 * from dbo.CONTACT_GROUPS where CONTACT_ID=@CONTACT_ID and CONTACT_TYPE_ID=@CONTACT_TYPE_ID)
+begin
+	insert into
+		dbo.CONTACT_GROUPS  (CONTACT_ID, CONTACT_TYPE_ID, DATE_CREATED, CREATED_BY)
+	values
+		(@CONTACT_ID, @CONTACT_TYPE_ID, getutcdate(), @RUNNING_AS_USERID)
+end]]></sqlInsert>
+        <sqlDelete><![CDATA[delete from [dbo].[CONTACT_GROUPS] where CONTACT_GROUP_ID=@CONTACT_GROUP_ID]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="CONTACT_TYPE_ID" label="Contact Type" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="CONTACT_TYPE_NAME" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select LOOKUP_ID as CONTACT_TYPE_ID, LOOKUP_NAME as CONTACT_TYPE_NAME  from [dbo].[GetLooukpValuesByType] ('contact_type')]]></dataSelect></column>
+<column id="CONTACT_TYPE_NAME" label="CONTACT_TYPE_NAME" width="800" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CONTACT_GROUP_ID" label="CONTACT_GROUP_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

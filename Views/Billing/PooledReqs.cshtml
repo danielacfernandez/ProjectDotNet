@@ -1,0 +1,147 @@
+﻿@model ServiceTRAX.Models.ViewModels.InternalReqsViewModel
+
+@{
+    ViewData["Title"] = "Pooled Requisitions";
+}
+
+@section StyleSheets {
+
+    <style>
+        .table td {
+            vertical-align: inherit;
+            padding: .4rem;
+            text-align: center;
+        }
+
+        .table th {
+            text-align: center;
+        }
+    </style>
+}
+
+
+
+<div class="container-fluid">
+    <br />
+    <div class="row">
+        <div class="col pl-0 ml-0">
+            <h2>POOLED REQUISITIONS</h2>
+        </div>
+    </div>
+
+    @if (Model.Requisitions.Any())
+    {
+
+    <div class="form-group">
+        <label class="form-control col-2">Job No: @Model.Requisitions.FirstOrDefault().JOB_NO</label>
+        <label class="form-control col-4">Job Name: @Model.Requisitions.FirstOrDefault().JOB_NAME</label>
+    </div>
+    <div id="accordion">
+
+        @foreach (var item in Model.Reqs)
+        {
+            <div class="card">
+                <div class="card-header" id="heading-@item.ReqNo">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse-@item.ReqNo" aria-expanded="true" aria-controls="collapse-@item.ReqNo">
+                            <label>@item.ReqName</label>
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapse-@item.ReqNo" class="collapse show" aria-labelledby="heading-@item.ReqNo" data-parent="#accordion">
+                    <div class="card-body">
+                        @if (Model.Requisitions.Where(x => x.service_no == item.ReqNo && x.item_type_code == "hours").Any())
+                        {
+
+
+
+                            <h5>Hours</h5>
+                            <table class="table table-striped table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="width: 40%">Item</th>
+                                        <th scope="col" style="width: 10%">Rate</th>
+                                        <th scope="col" style="width: 10%">Qty Total</th>
+                                        <th scope="col" style="width: 10%">Qty Dist</th>
+                                        <th scope="col" style="width: 10%">Qty Left</th>
+                                        <th scope="col" style="width: 20%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var req in Model.Requisitions.Where(x => x.service_no == item.ReqNo))
+                                    {
+                                        if (req.item_type_code == "hours")
+                                        {
+                                            <tr>
+                                                <td>@req.item_name</td>
+                                                <td>@req.rate.ToString("0.00")</td>
+                                                <td>@req.qty_pooled.ToString("0.00")</td>
+                                                <td>@req.qty_dist.ToString("0.00")</td>
+                                                <td>@req.qty_left.ToString("0.00")</td>
+                                                @if (req.qty_left > 0)
+                                                {
+                                                    <td><a class="btn btn-primary btn-sm" href="@Url.Action("PooledReqDetail", "Billing", new { OrganizationID = Model.OrganizationID, JobID = Model.JobID, ServiceID = req.service_id, ItemID = req.item_id, RateID = req.rate_id })">Allocate</a></td>
+                                                }
+                                                else
+                                                {
+                                                    <td></td>
+                                                }
+
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        @if (Model.Requisitions.Where(x => x.service_no == item.ReqNo && x.item_type_code == "expense").Any())
+                        {
+                            <h5>Expense</h5>
+                            <table class="table table-striped table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="width: 40%">Item</th>
+                                        <th scope="col" style="width: 10%">Rate</th>
+                                        <th scope="col" style="width: 10%">Qty Total</th>
+                                        <th scope="col" style="width: 10%">Qty Dist</th>
+                                        <th scope="col" style="width: 10%">Qty Left</th>
+                                        <th scope="col" style="width: 20%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var req in Model.Requisitions.Where(x => x.service_no == item.ReqNo))
+                                    {
+                                        if (req.item_type_code == "expense")
+                                        {
+                                            <tr>
+                                                <td>@req.item_name</td>
+                                                <td>@req.rate</td>
+                                                <td>@req.qty_pooled</td>
+                                                <td>@req.qty_dist</td>
+                                                <td>@req.qty_left</td>
+                                                @if (req.qty_left > 0)
+                                                {
+                                                    <td><a class="btn btn-primary btn-sm" href="@Url.Action("PooledReqDetail", "Billing", new { OrganizationID = Model.OrganizationID, JobID = Model.JobID, ServiceID = req.service_id, ItemID = req.item_id, RateID = req.rate_id })">Allocate</a></td>
+                                                }
+                                                else
+                                                {
+                                                    <td></td>
+                                                }
+
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+    } else
+    {
+        <h3>No data found</h3>
+    }
+</div>

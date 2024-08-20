@@ -1,0 +1,181 @@
+﻿@model ServiceTRAX.Models.API.SideMenuData
+@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+
+<nav class="nav flex-column side-nav">
+    @if (Model.RequestID != null && Model.RequestID != 0)
+    {
+
+        <a class="side-nav__opener" href="#" title="Open Side Menu..."><i class="fas fa-align-right"></i></a>
+        <a class="nav-link side-nav__body--close" href="#" title="Close Side Menu...">
+            <i class="fas fa-times"></i>
+        </a>
+        <a class="nav-link" 
+           requires-permission="@Permissions.ProjectDocumentsAccess"
+           asp-controller="Search" asp-action="ProjectDocuments" asp-route-OrganizationID="@Model.OrganizationID" asp-route-ProjectID="@Model.ProjectID" 
+           title="See all Project Documents...">
+            <i class="fas fa-table"></i>
+        </a>
+        <a class="nav-link" href="#" data-modal-target="side-nav__modal--quote-requests" title="Open Request Documents Tree...">
+            <i class="fas fa-sitemap"></i>
+        </a>
+        <a class="nav-link"
+       asp-controller="ProjectFiles" asp-action="Index" asp-route-OrganizationID="@Model.OrganizationID" asp-route-requestid="@Model.RequestID" asp-route-projectid="@Model.ProjectID" title="Open Project Files...">
+            <i class="fas fa-file"></i>
+        </a>
+        if (User.UserHasThisPermission(Permissions.ServiceRequestCommentsReadAdd))
+        {
+            <a class="nav-link"
+       asp-controller="Comments" asp-action="Index" asp-route-OrganizationID="@Model.OrganizationID" asp-route-requestid="@Model.RequestID" asp-route-projectid="@Model.ProjectID" title="Open Project Comments...">
+                <i class="fas fa-comments"></i>
+            </a>
+        }
+        if (User.UserHasThisPermission(Permissions.ServiceRequestCreateUpdateSetPunch))
+        {
+            <a class="nav-link"
+               title="Open Punchlist..."
+               asp-controller="Request" asp-action="PunchList" asp-route-OrganizationID="@Model.OrganizationID" asp-route-requestid="@Model.RequestID" asp-route-projectid="@Model.ProjectID">
+                <i class="flaticon-boxing-gloves"></i>
+            </a>
+        }
+        if (User.UserHasThisPermission(Permissions.POTrackingReadCreateUpdateClose))
+        {
+            <a class="nav-link"
+               title="Open Purchase Orders..."
+               asp-action="PurchaseOrders"
+               asp-controller="Request"
+               asp-route-OrganizationID="@Model.OrganizationID" asp-route-requestid="@Model.RequestID" asp-route-projectid="@Model.ProjectID">
+                <i class="flaticon-list"></i>
+            </a>
+        }
+        if (User.UserHasThisPermission(Permissions.HotSheetsBOLRead))
+        {
+            <a class="nav-link"
+               title="Open Hot Sheets..."
+               asp-action="HotSheetsList"
+               asp-controller="Request"
+               asp-route-OrganizationID="@Model.OrganizationID" asp-route-requestid="@Model.RequestID" asp-route-projectid="@Model.ProjectID">
+                <i class="fas fa-fire"></i>
+            </a>
+        }
+        if (User.UserHasAnyPermission(new Permissions[] { Permissions.BillingInvoicesReadCreateSend, Permissions.BillingPooledHours }) && Model.ShowBillingButton)
+        {
+            <a class="nav-link"
+               title="Open Project Billing..."
+               asp-controller="Billing" asp-action="ByJob" asp-route-OrganizationID="@Model.OrganizationID" asp-route-projectid="@Model.ProjectID">
+                <i class="fas fa-dollar-sign"></i>
+            </a>
+        }
+    }
+</nav>
+
+
+<!----------------quote-requests----------------->
+
+<div class="side-nav__modal side-nav__modal--quote-requests">
+    <div class="side-nav__content">
+        <div class="side-nav__header">
+            <div class="side-nav__title"></div>
+            <button type="button" class="side-nav__close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="side-nav__body">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion__item">
+                    <div class="accordion__header" id="headingOne">
+                        <h4 class="mb-0">
+                            QUOTE REQUESTS
+                        </h4>
+                    </div>
+                    <div id="collapseOne" class="collapse show" data-parent="#accordionExample">
+                        <div class="tree">
+                            <ul id="side-menu-ul">
+                                @foreach (var quoteRequest in Model.Documents.QuoteRequests)
+                                {
+                                    <li>
+                                        <div class="position-relative">
+                                            <span class="fas fa-circle mr-1"></span> <span>@quoteRequest.Number</span>
+                                        </div>
+
+                                        <ul class="nested">
+                                            @foreach (var qrVersion in quoteRequest.Versions)
+                                            {
+                                                <li>
+                                                    <a href="/Request?OrganizationID=@Model.OrganizationID&RequestID=@qrVersion.Id">@qrVersion.Description</a>
+                                                    <br/>
+                                                    <span>@qrVersion.Request_Name</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @if (User.UserHasThisPermission(Permissions.QuoteRead))
+                {
+                    <div class="accordion__item">
+                        <div class="accordion__header collapsed" id="headingTwo">
+                            <h4 class="mb-0">
+                                QUOTE
+                            </h4>
+                        </div>
+                        <div id="collapseTwo" class="collapse show" data-parent="#accordionExample">
+                            @if (Model.Documents.Quotes.Count() == 0)
+                            {
+                                <div class="small">No Quotes has been created yet.</div>
+                            }
+                            <div class="tree">
+                                <ul id="side-menu-ul">
+                                    @foreach (var quote in Model.Documents.Quotes)
+                                    {
+                                        <li>
+                                            <div class="position-relative">
+                                                <span class="fas fa-circle mr-1"></span>
+                                                <span>
+                                                    <a href="/Quote?OrganizationID=@Model.OrganizationID&QuoteID=@quote.QuoteID">@quote.Description</a>
+                                                </span>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div class="accordion__item">
+                    <div class="accordion__header collapsed" id="headingOne">
+                        <h4 class="mb-0">
+                            SERVICE REQUESTS
+                        </h4>
+                    </div>
+                    <div id="collapseThree" class="collapse show" data-parent="#accordionExample">
+                        @if (Model.Documents.ServiceRequests.Count() == 0)
+                        {
+                            <div class="small">No Service Requests has been created yet.</div>
+                        }
+                        <div class="tree">
+                            <ul id="side-menu-ul">
+                                @foreach (var serviceRequest in Model.Documents.ServiceRequests)
+                                {
+                                    <li>
+                                        <div class="position-relative">
+                                            <span class="fas fa-circle mr-1"></span>
+                                            <span>
+                                                <a href="/Request?OrganizationID=@Model.OrganizationID&RequestID=@serviceRequest.RequestID">@serviceRequest.Description</a>
+                                                <br/>
+                                                <span>@serviceRequest.Request_Name</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

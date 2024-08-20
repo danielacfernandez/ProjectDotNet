@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.12" author="" dateCreation="2020-04-29" dateLastChange="2023-05-22"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Project Files</title>
+        <defaultOrder>filename</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[SELECT TOP 100 PERCENT
+	 [request_document_id]
+	,[filename]
+	,[created_by]
+	,[Date_Created]
+	,[CreatedByName]
+	,[RequestNo]
+	,[VersionNo]
+	,[RequestID]
+	,[project_id]
+	,[project_no]
+	,[TypeName]
+	,[TypeCode]
+	,[number]
+FROM [dbo].[ProjectFiles_TEG_FN](@PROJECT_ID, @USER_ID)
+ORDER BY 
+	CASE WHEN typecode ='quote_request' THEN 0 ELSE 1 END, 
+	[filename]]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[code]=@code" autoUpdateQuery="False" updateTable=""><![CDATA[]]></sqlUpdate>
+        <sqlInsert where="[code]=@code"><![CDATA[]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons>
+<button id="OpenFile" actionType="openGrid" gridToOpen="" icon="fa-download" title="Click to open the Project File" label="Open File" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button></buttons>
+        <columns>
+<column id="filename" label="File Name" width="350" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="number" label="Request" width="110" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RequestNo" label="Request No" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="VersionNo" label="Version #" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Date_Created" label="Date Created" width="110" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="CreatedByName" label="Created By" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RequestID" label="Request ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="project_no" label="Project #" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="TypeName" label="Type" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

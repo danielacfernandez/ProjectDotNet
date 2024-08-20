@@ -1,0 +1,83 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXListQuotesViewModel
+@using ServiceTRAX.Identity
+
+@{
+    ViewData["Title"] = "View Quotes";
+}
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 130px;
+            right: 20px;
+            bottom: 70px;
+        }
+
+        .gridContent-with-title {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 170px;
+            right: 20px;
+            bottom: 70px;
+        }
+    </style>
+}
+
+@section Scripts {
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+    <link rel="stylesheet" href="~/css/datepicker.css">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js?2"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+
+            var model =  @Html.Raw(Json.Serialize(Model));
+
+            let gridParameters = () => ({ 'ORGANIZATION_ID': model.organizationID, 'USER_ID': @User.GetUserID(), 'QRSTATUS': model.qrStatus, 'USERTYPE': model.userType });
+            let gridEvents = {
+                buttonClick: function (btn, row) {
+                    if (btn.id === 'OpenQuoteScreen') {
+                        redirectToPage('/Quote', { 'QuoteID': row.QUOTEID , 'OrganizationID': @Model.OrganizationID});
+                    }
+                }
+            };
+            let oGrid = new clsMyGrid('Quotes', document.getElementById('QuotesTEG'), null, gridEvents, true, gridParameters());
+
+        });
+
+    </script>
+
+}
+
+@*<div id="content-wrap">
+    <div class="gridContent qGrid" id="QuotesTEG"></div>
+</div>*@
+
+
+
+<div id="content">
+    <div class="container-fluid">
+        @if (!string.IsNullOrEmpty(Model.PageTitle))
+        {
+            <div class="row">
+                <div class="col pl-0 ml-0">
+                    <h2>@Model.PageTitle</h2>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="d-flex">
+                <div id="content-wrap">
+                    <div class="@(string.IsNullOrEmpty(Model.PageTitle) ?  "gridContent" : "gridContent-with-title")" id="QuotesTEG"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

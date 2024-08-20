@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.265" author="" dateCreation="2020-03-27" dateLastChange="2021-08-25"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Invoice Tracking Notes</title>
+        <defaultOrder>INVOICE_TRACKING_ID</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+INVOICE_TRACKING_ID,
+--INVOICE_ID,
+INVOICE_TRACKING_TYPE_ID,
+TO_CONTACT_ID,
+FROM_USER_ID,
+NOTES,
+NEW_STATUS_ID,
+OLD_STATUS_ID,
+EMAIL_SENT_FLAG,
+CREATED_BY,
+DATE_CREATED,
+DATE_MODIFIED,
+TRACKING_TYPE_NAME,
+FROM_USER_NAME
+from dbo.Invoice_Tracking_Select(@INVOICEID)
+]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[INVOICE_TRACKING_ID]=@INVOICE_TRACKING_ID" autoUpdateQuery="False" updateTable=""><![CDATA[declare @useridval bigint
+select @useridval=UserId from dbo.AspNetUsers where username = @__LoginId__;
+
+exec [dbo].[Invoice_Tracking_Update]
+@InvoiceTrackingId=@INVOICE_TRACKING_ID,
+@TrackingNotes = @NOTES,
+@InvoiceTrackingTypeId = @INVOICE_TRACKING_TYPE_ID,
+@UserId = @useridval ]]></sqlUpdate>
+        <sqlInsert where="[INVOICE_TRACKING_ID]=@@IDENTITY"><![CDATA[declare @useridval bigint
+select @useridval=UserId from dbo.AspNetUsers where username = @__LoginId__;
+
+exec [dbo].[Invoice_Tracking_Insert]    
+@TrackingNotes = @NOTES,
+@InvoiceId = @INVOICEID,
+@InvoiceTrackingTypeId = @INVOICE_TRACKING_TYPE_ID,
+@UserId = @useridval ]]></sqlInsert>
+        <sqlDelete><![CDATA[declare @useridval bigint
+select @useridval=UserId from dbo.AspNetUsers where username = @__LoginId__;
+
+exec [dbo].[Invoice_Tracking_Delete]    
+@InvoiceTrackingId=@INVOICE_TRACKING_ID,
+@UserId = @useridval ]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="DATE_CREATED" label="Date" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="INVOICE_TRACKING_TYPE_ID" label="Type" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="TRACKING_TYPE_NAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select LOOKUP_ID as INVOICE_TRACKING_TYPE_ID,
+LOOKUP_NAME as TRACKING_TYPE_NAME
+from dbo.Lookups_Active_V 
+where type_code = 'tracking_type']]></dataSelect></column>
+<column id="FROM_USER_NAME" label="Notified By" width="250" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="NOTES" label="Notes" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="TRACKING_TYPE_NAME" label="Typex" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="INVOICE_TRACKING_ID" label="INVOICE_TRACKING_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="INVOICE_ID" label="INVOICE_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="TO_CONTACT_ID" label="TO_CONTACT_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="FROM_USER_ID" label="FROM_USER_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="NEW_STATUS_ID" label="NEW_STATUS_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="OLD_STATUS_ID" label="OLD_STATUS_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="EMAIL_SENT_FLAG" label="EMAIL_SENT_FLAG" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CREATED_BY" label="CREATED_BY" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="DATE_MODIFIED" label="DATE_MODIFIED" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

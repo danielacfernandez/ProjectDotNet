@@ -1,0 +1,36 @@
+﻿@model ServiceTRAX.ViewComponents.WidgetCallouts.WidgetCalloutsViewModel
+
+<style type="text/css">
+    .card-borders {
+        margin: 5px;
+        height: 96%;
+    }
+
+    .wco-centered-counter {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 8em;
+    }
+</style>
+
+
+
+<div class="card card-borders">
+    <div class="card-body">
+        <div class="wco-centered-counter col-10">
+            <p class="text-center">
+                @Model.Count
+            </p>
+            <a asp-controller="TimeEntry"
+               asp-action="Callouts"
+               asp-route-OrganizationID="@Model.OrganizationID">
+                <h4 class="text-center">
+                    <strong>Callouts</strong>
+                </h4>
+            </a>
+        </div>
+    </div>
+</div>

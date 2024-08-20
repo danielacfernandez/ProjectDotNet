@@ -1,0 +1,393 @@
+﻿@model ServiceTRAX.Models.ViewModels.QuoteRequestModel
+@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+
+
+<nav class="quoterequest-nav navbar-dark bg-dark-blue" id="requestSubMenuNav">
+    <div class="row">
+        <div class="col-4 d-none d-md-block">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link submenujumpbutton" title="Jump To Request Header Section" data-original-title="TOOLTIP" data-jumpto="requestHeaderPanelControl"><i class="fas fa-info-circle"></i><span>Link</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link submenujumpbutton" title="Jump To Job Scope Section" data-original-title="Go To Job Scope" data-jumpto="jobScopePanelControl"><i class="fas fa-business-time"></i><span>Link</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link submenujumpbutton" title="Jump To End User Section" data-original-title="END USER" data-jumpto="endUserInformationPanelControl"><i class="fas fa-user-tie"></i><span>Link</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link submenujumpbutton" title="Jump To Delivery Conditions Section" data-jumpto="deliveryConditionsPanelControl"><i class="fas fa-truck-moving"></i><span>Link</span></a>
+                </li>
+                <li class="nav-item" data-bind="visible: isSR">
+                    <a class="nav-link submenujumpbutton" title="Jump To Custom Fields Section" data-jumpto="customFieldsPanelControl"><i class="fas fa-edit"></i><span>Link</span></a>
+                </li>
+                @if (User.UserHasThisPermission(Permissions.RequestSeeBillingSection))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link submenujumpbutton" title="Jump To Billing Information Section" data-jumpto="billingInformationPanelControl"><i class="fas fa-dollar-sign"></i><span>Link</span></a>
+                    </li>
+                }
+                <li class="nav-item">
+                    <a class="nav-link submenujumpbutton" title="Jump To Attachments Section" data-jumpto="attachmentsPanelControl"><i class="fas fa-paperclip"></i><span>Link</span></a>
+                </li>
+                <li class="nav-item" requires-permission="@Permissions.QuoteReadQuoteDocuments">
+                    <a class="nav-link submenujumpbutton" title="Jump To Quote Estimator Section" data-jumpto="quoteEstimatorPanelControl"><i class="fas fa-book"></i><span>Link</span></a>
+                </li>
+                @if (Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestCommentsReadAdd)
+|| !Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestCommentsReadAdd))
+                {
+                    <li class="nav-item" data-bind="visible: !isNew">
+                        <a class="nav-link submenujumpbutton" title="Jump To Comments Section" data-jumpto="commentsPanelControl"><i class="fas fa-comments"></i><span>Link</span></a>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="col-8 ml-auto" id="navbarTogglerDemo02">
+            <ul class="navbar-nav navbar-right">
+                @if (Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestCreateUpdateSetPunch)
+|| !Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestCreateUpdateApproveCancel))
+                {
+                    <li class="nav-item quoterequest-nav__approve-req" data-bind="hidden:(isReadOnly && readOnlyLSP)" style="display: none">
+                        <span data-bind="text:isReadOnly"></span>
+                        <a class="btn btn-primary" data-bind="css: { 'btn-disabled': modelChangeTracker.isDirty() === false || isSavingRequest }, click: function() { !isSavingRequest() && modelChangeTracker.isDirty() && saveRequest(); }">
+                            <div data-bind="ifnot: isSavingRequest">
+                                <i class="fas fa-save"></i>
+                                <span class="mx-3" data-bind="text: isAdditionalRequest === true ? ' SAVE ADDITIONAL REQUEST' : ' SAVE CHANGES'"></span>
+                            </div>
+
+                            <div class="d-flex" data-bind="if: isSavingRequest">
+                                <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                                <span class="mx-3" data-bind="text: isAdditionalRequest === true ? ' SAVING ADDITIONAL REQUEST' : ' SAVING CHANGES'"></span>
+                            </div>
+                        </a>
+                    </li>
+                }
+
+
+                @if (!Model.IsNew && ((User.UserHasThisPermission(Permissions.HotSheetsBOLCreateUpdate) && !Model.IsReadOnly) || Model.HotSheets.Count() > 0))
+                {
+                    <li class="nav-item quoterequest-nav__approve-req" requires-permission="@Permissions.HotSheetsBOLRead" data-bind="visible: isSR" style="display: none">
+                        <div class="dropdown">
+                            <a class="btn btn-green dropdown-toggle" id="quote-dropdown" data-toggle="dropdown" data-bind="click: function() { $root.updateHotSheets(); }">
+                                <i class="fas fa-plus"></i> <span>HOT SHEET</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                @if (!Model.IsReadOnly)
+                                {
+                                    <a class="dropdown-item" requires-permission="@Permissions.HotSheetsBOLCreateUpdate" data-bind="text: 'New', attr: { href: `/Request/HotSheet?HotSheet=${encodeURIComponent($root.hotSheet)}&HotSheetID=0&OrganizationID=${$root.organizationID}`, target: '_blank' }"></a>
+                                }
+                                <!-- ko if: $root.hotSheet != null -->
+                                <!-- ko foreach: $root.hotSheets() -->
+                                <!-- ko if: $root.hotSheets().length > 1 -->
+                                <h6 class="dropdown-header" data-bind="text:'Schedule ' + ($index()+1)"></h6>
+                                <!-- /ko -->
+                                <!-- ko foreach: $data.hotsheets -->
+                                <a class="dropdown-item" data-bind="text: hotSheetFriendlyName, attr: { href: `/Request/HotSheet?HotSheet=${$root.hotSheet}&HotSheetID=${hotSheet_ID}&OrganizationID=${$root.organizationID}`, target: '_blank' }"></a>
+                                <!-- /ko -->
+                                <!-- /ko -->
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                    </li>
+                }
+                @if (User.UserHasThisPermission(Permissions.RequestSend))
+                {
+                    <li class="nav-item quoterequest-nav__approve-req" data-bind="visible: canSend" style="display: none">
+                        <!-- ko ifnot:sendingQuoteRequest-->
+                        <a class="btn btn-primary" data-bind="css: { 'btn-disabled': modelChangeTracker.isDirty() === true || isNew || isAdditionalRequest }, click:setRequestSentStatus, attr: {title: sendButtonTitle() }">
+                            <i class="fas fa-paper-plane"></i> <span class="mx-3"> SEND</span>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:sendingQuoteRequest-->
+                        <a class="btn btn-primary btn-disabled d-flex">
+                            <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                            <span class="mx-3"> SENDING...</span>
+                        </a>
+                        <!-- /ko -->
+                    </li>
+                }
+                @if (!Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestOpenQR))
+                {
+                    <li class="nav-item" data-bind="visible: canOpenQR" style="display: none">
+                        <!-- ko ifnot:openingRequest -->
+                        <a class="btn btn-warning" data-bind="click:setOpenQuoteRequest">
+                            <i class="fas fa-backward"></i> <span> OPEN QR</span>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:openingRequest-->
+                        <a class="btn btn-warning btn-disabled d-flex">
+                            <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                            <span class="mx-3">OPENING...</span>
+                        </a>
+                        <!-- /ko -->
+                    </li>
+                }
+                @if ((Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestCreateUpdateSetPunch)) || !Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestCanCreateNewAdditionals))
+                {
+                    <li class="nav-item quoterequest-nav__new-ver"
+                        data-bind="hidden: isNew || isRunnningCreateAction"
+                        style="display: none">
+                        <div class="dropdown">
+                            <a class="btn btn-primary dropdown-toggle" id="quote-dropdown"
+                               data-bind="css: { 'btn-disabled': modelChangeTracker.isDirty() === true }"
+                               data-toggle="dropdown">
+                                <i class="fas fa-plus"></i> <span>CREATE</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <!-- ko ifnot:isSR -->
+                                <!-- ko if:canCreateNewQRVersion -->
+                                <a class="dropdown-item" href="#" data-bind="click:createNewQuoteRequestVersion">New Version</a>
+                                <!-- /ko -->
+                                <a class="dropdown-item" href="#" data-bind="click:() => createNewServiceRequest('copy')">Request Copy</a>
+                                <a class="dropdown-item" href="#" data-bind="click:createAdditionalRequest">Additional Request</a>
+                                <!-- /ko -->
+                                <!-- ko if:isSR -->
+                                @*<a class="dropdown-item" href="#" data-bind="click: function() { createNewServiceRequest('additional'); }">Additional Request</a>*@
+                                <a class="dropdown-item" href="#" data-bind="click:createAdditionalRequest">Additional Request</a>
+                                <a class="dropdown-item" href="#" data-bind="click:() => createNewServiceRequest('copy')">Copy Request</a>
+                                <a class="dropdown-item" href="#" data-bind="click: function() { createNewServiceRequest('punchcopy'); }">Punch List</a>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="nav-item quoterequest-nav__approve-req" data-bind="visible: isRunnningCreateAction" style="display: none">
+                        <a class="btn btn-primary">
+                            <div class="d-flex">
+                                <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                                <span class="mx-3"> Creating...</span>
+                            </div>
+                        </a>
+                    </li>
+                }
+
+                @if (Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestCommentsReadAdd)
+|| !Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestCommentsReadAdd) || User.UserHasThisPermission(Permissions.ServiceRequestCreateUpdateSetPunch))
+                {
+
+                    <li class="nav-item quoterequest-nav__approve-req" data-bind="visible: canApprove" style="display: none">
+                        <!-- ko ifnot:approvingRequest-->
+                        <a class="btn btn-success" data-bind="click:createServiceRequest">
+                            <i class="fas fa-check"></i><span> APPROVE REQUEST</span>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:approvingRequest-->
+                        <a class="btn btn-success btn-disabled d-flex">
+                            <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                            <span class="mx-3">APPROVING...</span>
+                        </a>
+                        <!-- /ko -->
+                    </li>
+                }
+
+                <li class="nav-item quoterequest-nav__approve-req" data-bind="visible: needsCustomer, click: () => prospectCustomerFillInDialog(request_Data.customer_id())" style="display: none">
+                    <a class="btn btn-success">
+                        <i class="fas fa-check"></i><span> PROSPECT CUSTOMER</span>
+                    </a>
+                </li>
+
+                @if (Model.IsSR && User.UserHasThisPermission(Permissions.ServiceRequestCommentsReadAdd)
+|| !Model.IsSR && User.UserHasThisPermission(Permissions.QuoteRequestCommentsReadAdd) || User.UserHasThisPermission(Permissions.ServiceRequestCreateUpdateSetPunch))
+                {
+                    <li class="nav-item" data-bind="visible: canCancel" style="display: none">
+                        <!-- ko ifnot:cancellingRequest -->
+                        <a class="btn btn-danger" data-bind="click:setRequestCancelledStatus">
+                            <i class="fas fa-times"></i> <span> CANCEL REQUEST</span>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:cancellingRequest-->
+                        <a class="btn btn-danger btn-disabled d-flex">
+                            <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                            <span class="mx-3">CANCELLING...</span>
+                        </a>
+                        <!-- /ko -->
+                    </li>
+                }
+                @if (User.UserHasThisPermission(Permissions.QuoteCreateSendUpdate) || (Model.IsLSPUser))
+                {
+                    <li class="nav-item quoterequest-nav__approve-req" data-bind="visible: canQuote" style="display: none">
+                        <!-- ko ifnot:creatingQuote-->
+                        <a class="btn btn-primary dropdown-toggle" id="quote-dropdown" data-toggle="dropdown">
+                            <i class="fas fa-file-invoice-dollar mr-1"></i><span> QUOTE</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#" data-bind="click:setRequestQuotedStatus" 
+                               title="Creates a brand new Quote for this request...">New Quote</a>
+                            <a class="dropdown-item" href="#" data-bind="click:importFromExistingQuote" 
+                               title="Click this option to select the Quote to import and use for this Request...">Import From Existing Quote</a>
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if:creatingQuote-->
+                        <a class="btn btn-primary btn-disabled d-flex">
+                            <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                            <span class="mx-3">CREATING QUOTE...</span>
+                        </a>
+                        <!-- /ko -->
+                    </li>
+                }
+
+                @if (Model.IsSR && Model.CanReschedule)
+                {
+                    if (User.UserHasThisPermission(Permissions.ServiceRequestInternalReschedule))
+                    {
+                        <li class="nav-item quoterequest-nav__new-ver" data-bind="hidden: isNew" style="display: none">
+                            <div class="dropdown">
+                                <!-- ko ifnot:reschedulingInProcess-->
+                                <a class="btn btn-orange dropdown-toggle" id="reschedule-dropdown" data-toggle="dropdown">
+                                    <i class="fas fa-history mr-2"></i> <span>RESCHEDULE</span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" data-bind="click:internalReschedule">Return to Soft Schedule</a>
+                                    <a class="dropdown-item" href="#" data-bind="click:clientReschedule">Return to SR Created</a>
+                                </div>
+                                <!--/ko-->
+                                <!-- ko if:reschedulingInProcess-->
+                                <a class="btn btn-success btn-disabled d-flex">
+                                    <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                                    <span class="mx-3">RESCHEDULING...</span>
+                                </a>
+                                <!--/ko-->
+                            </div>
+                        </li>
+                    }
+                    else if (User.UserHasThisPermission(Permissions.ServiceRequestClientReschedule))
+                    {
+                        <li class="nav-item quoterequest-nav__new-ver" data-bind="hidden: isNew" style="display: none">
+                            <!-- ko ifnot:reschedulingInProcess-->
+                            <a class="btn btn-orange" data-bind="click:clientReschedule">
+                                <i class="fas fa-history mr-2"></i> <span>RESCHEDULE</span>
+                            </a>
+                            <!--/ko-->
+                            <!-- ko if:reschedulingInProcess-->
+                            <a class="btn btn-success btn-disabled d-flex">
+                                <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                                <span class="mx-3">RESCHEDULING...</span>
+                            </a>
+                            <!--/ko-->
+                        </li>
+                    }
+                }
+
+                <li class="nav-item" data-bind="visible: canSoftSchedule" style="display: none">
+                    <!-- ko ifnot:performingSoftScheduling-->
+                    <a class="btn btn-primary" data-bind="click:softScheduleClickHandler, css: {'btn-disabled':softScheduleDisabled}">
+                        <i class="fas fa-calendar-alt"></i><span> SOFT SCHEDULE</span>
+                    </a>
+                    <!--/ko-->
+                    <!-- ko if:performingSoftScheduling-->
+                    <a class="btn btn-primary btn-disabled d-flex">
+                        <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                        <span class="mx-3">SCHEDULING...</span>
+                    </a>
+                    <!--/ko-->
+                </li>
+
+                @if (User.UserHasThisPermission(Permissions.ServiceRequestApproveRejectServiceDate))
+                {
+                    <!-- ko if:requiresServiceDateApproval -->
+                    <li class="nav-item" style="display: none" data-bind="visible: true">
+                        <a class="btn btn-green" data-bind="click:approveServiceDate, css: {'btn-disabled':softScheduleDisabled}">
+                            <i class="fas fa-calendar-check"></i><span class="ml-2">APPROVE SERVICE DATE</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="display: none" data-bind="visible: true">
+                        <a class="btn btn-red" data-bind="click:rejectServiceDate, css: {'btn-disabled':softScheduleDisabled}">
+                            <i class="fas fa-calendar-times"></i><span class="ml-2">REJECT SERVICE DATE</span>
+                        </a>
+                    </li>
+                    <!-- /ko -->
+                }
+
+                @if (User.UserHasThisPermission(Permissions.ServiceRequestApproveRejectRescheduleDate))
+                {
+                    <!-- ko if:requiresReScheduleApproval -->
+                    <li class="nav-item" style="display: none" data-bind="visible: true">
+                        <a class="btn btn-green" data-bind="click:approveRescheduleDate, css: {'btn-disabled':softScheduleDisabled}">
+                            <i class="fas fa-calendar-check"></i><span class="ml-2">APPROVE RESCHEDULE DATE</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="display: none" data-bind="visible: true">
+                        <a class="btn btn-red" data-bind="click:rejectRescheduleDate, css: {'btn-disabled':softScheduleDisabled}">
+                            <i class="fas fa-calendar-times"></i><span class="ml-2">REJECT RESCHEDULE DATE</span>
+                        </a>
+                    </li>
+                    <!-- /ko -->
+                }
+
+                <!-- ko if:isReadyToSchedule -->
+                <li class="nav-item" style="display: none" data-bind="visible: true" requires-permission="@Permissions.ServiceRequestSetReadyToSchedule">
+                    <!-- ko ifnot:settingReadyToSchedule -->
+                    <a class="btn btn-green" data-bind="click:fillScheduler, css: {'btn-disabled':(modelChangeTracker.isDirty || (model.request_Data.locationLookupId() == 0 || model.request_Data.locationLookupId() == null))}">
+                        <i class="fas fa-calendar-day"></i><span class="ml-2">READY TO SCHEDULE</span>
+                    </a>
+                    <!--/ko-->
+                    <!-- ko if:settingReadyToSchedule -->
+                    <a class="btn btn-success btn-disabled d-flex">
+                        <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                        <span class="mx-3">SCHEDULING...</span>
+                    </a>
+                    <!--/ko-->
+                </li>
+                <!-- /ko -->
+
+                @if (User.UserHasThisPermission(Permissions.ServiceRequestSetHardSchedule))
+                {
+                    <li class="nav-item" data-bind="visible: canHardSchedule" style="display: none">
+                        <!-- ko ifnot:hardSchedulingInProcess-->
+                        <a class="btn btn-primary" data-bind="click:request_Data.isSendToSchedule() && fillHardScheduler, css: { 'btn-disabled': !request_Data.isSendToSchedule() }">
+                            <i class="fas fa-calendar-plus"></i><span> HARD SCHEDULE</span>
+                        </a>
+                        <!--/ko-->
+                        <!-- ko if:hardSchedulingInProcess-->
+                        <a class="btn btn-success btn-disabled d-flex">
+                            <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                            <span class="mx-3">SCHEDULING...</span>
+                        </a>
+                        <!--/ko-->
+                    </li>
+                }
+
+                @if (Model.CanCancelSR)
+                {
+                    <li class="nav-item" data-bind="visible: true" style="display: none">
+                        <a class="btn btn-danger" data-bind="click:cancelServiceRequest" title="Cancel this Service Request...">
+                            <i class="fas fa-times"></i> <span> CANCEL</span>
+                        </a>
+                    </li>
+                }
+
+
+                @if (Model.Request_Data.CanReOpen && User.UserHasThisPermission(Permissions.ServiceRequestReOpen))
+                {
+                    <li class="nav-item" data-bind="visible: true" style="display: none">
+                        <a class="btn btn-green" data-bind="click:reOpenServiceRequest" title="Re Opens this Service Request...">
+                            <i class="far fa-folder-open"></i> <span> RE OPEN</span>
+                        </a>
+                    </li>
+                }
+
+                @if (Model.CanCloseSR)
+                {
+                    <li class="nav-item" data-bind="visible: true" style="display: none">
+                        <a class="btn btn-green" data-bind="click:flagServiceRequestComplete" title="Flag this Service Request as Complete...">
+                            <i class="fas fa-flag-checkered"></i> <span> SET COMPLETE</span>
+                        </a>
+                    </li>
+                }
+
+                <li class="nav-item quoterequest-nav__open">
+                    <a class="btn btn-warning" id="toggleAccordionOn" data-bind="hidden: pannelsCollapsed, click: function() { panelsCollapseAll(true); }">
+                        <i class="fas fa-angle-double-up"></i>
+                    </a>
+                    <a class="btn btn-warning" id="toggleAccordionOff" data-bind="visible: pannelsCollapsed, click: function() { panelsCollapseAll(false); }">
+                        <i class="fas fa-angle-double-down"></i>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,136 @@
+﻿@model ServiceTRAX.Models.ViewModels.HomePageViewModel
+@inject Microsoft.Extensions.Options.IOptions<SiteConfiguration> ConfigOptions
+@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+@using ServiceTRAX.Models.WidgetModels
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@section StyleSheets {
+<link rel="stylesheet" href="~/lib/gridstack/gridstack.min.css">
+<link rel="stylesheet" href="~/css/mygrid.1.0.css">
+<link rel="stylesheet" href="~/css/datepicker.css">
+}
+
+
+@section Scripts {
+    @*Include all the scripts that the Widgets might need*@
+<script src="~/lib/gridstack/gridstack.all.js"></script>
+<script src="~/lib/chartjs/Chart.min.js"></script>
+<script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js?1"></script>
+<script src="~/js/Home/Index.js"></script>
+<script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+
+<script type="text/javascript">
+    // Initializes the Widget Layout component
+    var grid = GridStack.init();
+
+    grid.on('change', function (event, items) {
+        if (items) {
+            /* items contains GridStackNode[] info */
+            var widgetUpdateParams = items.map(function (w) {
+                return {
+                    WidgetUserID: w.id,
+                    PositionX: w.x,
+                    PositionY: w.y
+                }
+            });
+
+            postWrapper('/api/v1/savewidgetposition', JSON.stringify(widgetUpdateParams));
+        }
+    });
+
+    $('#manageWidgetsButton').click(function () {
+        // Load the user widgets and insert them into the modal body
+        $('#userWidgetsModalBodyPlaceholder').load('/Home/UserAvailableWidgets');
+
+        // Now display the modal
+        $('#widgetSelectionModal').modal('show');
+    });
+</script>
+}
+
+
+@if (Model.PasswordExpirationCountdown < ConfigOptions.Value.PasswordExpirationNotification)
+{
+    <div class="alert alert-warning mx-5 my-2">
+        <strong>Password Expiration Notice!</strong> Your password will expire in @Model.PasswordExpirationCountdown days. Please go to <a asp-action="UserProfile" asp-controller="Account" asp-route-organizationid="@Model.OrganizationID">Profile page </a>to change your password.
+    </div>
+}
+<div id="home-messages-region" class="px-3 row">
+    @if (Model.GlobalMessages.Count > 0)
+    {
+        <div class="col-md-6 col-sm-12 mt-3">
+            <fieldset>
+                @foreach (var msg in Model.GlobalMessages)
+                {
+                    <p>@Html.Raw(@msg.MessageText)</p>
+                }
+            </fieldset>
+        </div>
+    }
+    @if (Model.OrganizationMessages.Count > 0 && User.UserHasThisPermission(Permissions.HomePageLocalOrganizationMessages))
+    {
+        <div class="col-md-6 col-sm-12 mt-3">
+            <fieldset>
+                @foreach (var msg in Model.OrganizationMessages)
+                {
+                    <p>@Html.Raw(@msg.MessageText)</p>
+                }
+            </fieldset>
+        </div>
+    }
+</div>
+
+<div class="grid-stack mt-5">
+
+
+    @foreach (var widget in Model.WidgetsConfiguration)
+    {
+        <div class="grid-stack-item"
+         data-gs-auto-position="false"
+         data-gs-x="@widget.PositionX"
+         data-gs-y="@widget.PositionY"
+         data-gs-width="@widget.WidgetWidth"
+         data-gs-height="@widget.WidgetHeight"
+         data-gs-id="@widget.WidgetUserID"
+         data-gs-no-resize="true">
+            <div class="grid-stack-item-content widget-shadow">
+
+                @try
+                {
+                    @await Component.InvokeAsync(widget.WidgetComponentName, widget.WidgetParametersObj(Model.OrganizationID, User.GetUserID()))
+                }
+                catch (Exception e)
+                {
+                    <div>@e.Message</div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Widget Selection Modal -->
+<div class="modal fade modal--forms" id="widgetSelectionModal" tabindex="-1" role="dialog" aria-labelledby="widgetSelectionModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content  modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Home Page Widgets</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body pt-0" id="userWidgetsModalBodyPlaceholder" style="max-height:70vh; overflow-y: auto">
+                <div class="d-flex align-items-center pt-2">
+                    <strong>Loading User Widgets Configuration...</strong>
+                    <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+                </div>
+            </div>
+            <div class="modal-footer text-right">
+                <button type="button" class="btn btn-secondary rounded" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary save-widget-changes rounded mr-2">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>

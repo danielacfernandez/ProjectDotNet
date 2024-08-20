@@ -1,0 +1,496 @@
+﻿@model ServiceTRAX.Models.ViewModels.BillingByJobViewModel
+@using ServiceTRAX.Utils
+
+@{
+    ViewData["Title"] = "Billing By Job";
+    ViewData["FontSize"] = "75%";
+}
+
+
+@section StyleSheets {
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/datepicker.css" />
+
+    <style>
+
+        .myGrid {
+            font-size: @ViewData["FontSize"];
+        }
+            .myGrid .gridTable {
+                top: 45px !important;
+            }
+            .myGrid .gridTitle {
+                padding-top: 6px;
+                padding-bottom: 2px;
+            }
+
+        .myGrid .gridTitle label {
+            font-size: 130%;
+        }
+        .gridHeaderStatic .cell {
+            height: unset;
+        }
+        .myGrid .gridHeaderStaticRow {
+            height: unset;
+        }
+        .gridBody, .gridBodyStatic {
+            top: 29px;
+        }
+        .gridHeaderStatic {
+            bottom: 40px;
+        }
+        .gridRow {
+            height: 26px;
+        }
+        .gridHeader  {
+            bottom: 40px;
+        } .gridHeader label {
+            margin-top: 0px;
+        }
+        .gridBody .gridRow .cell {
+            height: 26px;
+        }
+
+            .gridRow .cell {
+                height: 26px;
+            }
+
+        .popupWindow {
+            bottom: unset;
+            height: calc(95vh - 50px);
+        }
+
+        .gridFooter {
+            height: 40px;
+            padding-top: 7px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .detailSubGridModalClass {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.4);
+            left: 0px;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            z-index: 1;
+        }
+
+        .detailSubGridModalBodyClass {
+            position: absolute;
+            border-radius: 5px;
+            border: solid 2px #2d5daf;
+            background-color: rgba(45, 93, 175, 0.50);
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            left: 30px;
+            top: 185px;
+            right: 30px;
+            /*bottom: 60px;*/
+            height: calc(95vh - 185px);
+            z-index: 1;
+        }
+
+        .detailSubGridClass {
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            right: 2px;
+            bottom: 2px;
+        }
+
+        .detailSubGridCloseClass {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #aaa;
+            background-color: rgba(45, 93, 175, 0.15);
+            width: 25%;
+            margin: auto;
+            margin-top: 10px;
+            color: #aaa;
+        }
+
+            .detailSubGridCloseClass:hover {
+                cursor: pointer;
+                background-color: rgba(45, 93, 175, 0.35);
+                color: white;
+            }
+
+
+
+        .gridBillableByJob {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 185px;
+            right: 20px;
+            height: 350px;
+        }
+
+        .gridNonBillableByJob {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 540px;
+            right: 20px;
+            height: 350px;
+        }
+
+        .gridInvoicesOpen {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 895px;
+            right: 20px;
+            height: 350px;
+        }
+
+   /*     .gridInvoicesSent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 1250px;
+            right: 20px;
+            height: 350px;
+        }*/
+
+        .gridPending {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 185px;
+            right: 20px;
+            height: 350px;
+        }
+
+        .gridPOInvoices {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 185px;
+            right: 20px;
+            height: 350px;
+        }
+
+
+        .gridCompleted {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 540px;
+            right: 20px;
+            height: 350px;
+        }
+
+        .gridInvoiced {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 895px;
+            right: 20px;
+            height: 350px;
+        }
+
+        .gridPostedLines {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 185px;
+            right: 20px;
+            /*height: 650px;*/
+            bottom: 350px;
+        }
+
+        /*.gridPostedLinesByReq, .gridPostedLinesByDetail {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 185px;
+            right: 20px;*/
+            /*height: 650px;*/
+            /*bottom: 350px;
+        }*/
+
+
+
+
+        .billing-header-small-font {
+            font-size: 0.80rem;
+        }
+
+        .newinvoice-dialog-style label {
+            margin-bottom: .3rem;
+        }
+    </style>
+}
+
+
+@section Scripts {
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+    <script type='text/javascript' src='~/js/notification-dialog.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/datepicker.js'></script>
+    <script type='text/javascript' src='~/js/Billing/billing-by-job.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout.validation/knockout.validation.min.js'></script>
+    <script language="javascript" type="text/javascript" src="~/lib/server.js" asp-append-version="true"></script>
+    <script type="text/javascript">
+
+        const openJobInvoice = function (jobid, invoiceid, source) {
+            redirectToPage('/Billing/ByJobInvoice', { 'OrganizationID': @Model.OrganizationID, 'JobID': jobid, 'InvoiceID': invoiceid, 'SelectedTab': source });
+        }
+
+        const openRequest = function(requestid) {
+            redirectToPage('/Request', { 'RequestID': requestid, 'OrganizationID': @Model.OrganizationID}, true);
+        }
+
+        $(function () {
+            // Get the MVC model as JS
+            var billingByJob =  @Html.Raw(JSONUtils.JsonUTC(Model));
+            // Initialize the Scheduler JS code
+            initBillingByJob(billingByJob);
+
+
+        });
+
+    </script>
+}
+
+<div id="content" class="pl-0">
+    <div class="container-fluid ml-1 pl-0 ">
+        <div class="d-flex mb-4 billing-header-small-font">
+            <div class="d-flex">
+                <div class="nav-tabs">
+                    <h2 class="text-nowrap overflow-hidden my-2 mr-2" style="font-size: 100%">
+                        <small>Job#</small>
+                        @if (@Model.JobDetails.RequestId != "0")
+                        {
+                            <a href="#" onclick="openRequest(@Model.JobDetails.RequestId)"><strong>@Model.JobDetails.job_no</strong></a>
+                        }
+                        @if (@Model.JobDetails.RequestId == "0")
+                        {
+                            <strong>@Model.JobDetails.job_no</strong>
+                        }
+                        <small>- Customer:</small>
+                        <strong>@Model.JobDetails.customer_name</strong>
+                        <small>- End User:</small>
+                        <strong>@Model.JobDetails.end_user_name</strong>
+                    </h2>
+                </div>
+                <ul class="nav nav-tabs w-100 billing-header-small-font">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bind="click:selectUnbilledOps, css: {active: unbilledOpsSelected}">Unbilled Ops</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bind="click:selectUnbilledAcct, css: {active: unbilledAcctSelected}">Unbilled Acct</a>
+                    </li>
+                    @*<li class="nav-item">
+                            <a class="nav-link" href="#" data-bind="click:selectPooledHours, css: {active: pooledHoursSelected}">Pooled Hours</a>
+                        </li>*@
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bind="click:selectPostedLines, css: {active: postedLinesSelected}">Posted</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bind="click:selectPOInvoices, css: {active: poInvoicesSelected}">POs (@Model.JobDetails.NumberOfOpenPOs)</a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="d-flex justify-content-end nav-tabs flex-grow-1">
+                <!-- ko if:unbilledOpsSelected -->
+                <div class="p-0 d-flex align-items-center">
+                    <select class="p-0 mr-1"
+                            data-style="btn-white shadow-sm billing-header-small-font "
+                            data-bind="selectPicker:true, options: invoices, optionsText: 'invoice_no', optionsValue: 'invoice_id', value: selectedInvoice,  valueAllowUnset: true"
+                            data-none-selected-text="Choose an Invoice...">
+                    </select>
+                    <div class="text-nowrap overflow-hidden">
+                        <button class="btn btn-green btn-sm" title="Create new Invoice..." data-bind="click:() => newInvoiceDialog.displayDialog()">
+                            <em class="fas fa-receipt mr-2"></em><em class="fas fa-plus"></em>
+                        </button>
+                    </div>
+                    @*<div class="align-self-center text-center pr-0 pl-1">
+                            <div class="form-check form-check-inline m-1">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="Y" data-bind="checked:isBilliable">
+                                <label class="form-check-label" for="inlineRadio1">Billable</label>
+                            </div>
+                            <div class="form-check form-check-inline m-1">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="N" data-bind="checked:isBilliable">
+                                <label class="form-check-label" for="inlineRadio2">Non-Billable</label>
+                            </div>
+                        </div>*@
+                    <div class="p-0 h-100">
+                        <div class="card d-flex flex-row align-items-center h-100 px-2">
+                            <div class="d-flex flex-row w-100 billing-header-small-font ">
+                                <div class="flex-fill"><strong>Quoted: </strong><span data-bind="text:currencyFormatter.format(quotedTotal())"></span></div>
+                                <div class="flex-fill"><strong>Inv: </strong><span data-bind="text:currencyFormatter.format(invoicedTotal)"></span></div>
+                                <div class="flex-fill"><strong class="ml-2">Selected: </strong><span data-bind="text:currencyFormatter.format(selectedTotalAmount())"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pl-1 pr-0">
+                        <select data-style="btn-white shadow-sm billing-header-small-font"
+                                data-bind="selectPicker:true, options: billingGridViews, optionsText: 'name', optionsValue: 'id', value: billingViewType,  valueAllowUnset: true"
+                                data-none-selected-text="...">
+                        </select>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- ko if:postedLinesSelected -->
+                <div class="pl-1 pr-0">
+                    <select data-style="btn-white shadow-sm billing-header-small-font"
+                            data-bind="selectPicker:true, options: postedGridViews, optionsText: 'name', optionsValue: 'id', value: postedViewType,  valueAllowUnset: true"
+                            data-none-selected-text="...">
+                    </select>
+                </div>
+                <!-- /ko -->
+            </div>
+        </div>
+
+        <div style="height: 1050px">
+            <div data-bind="visible:unbilledOpsSelected">
+                <div class="gridBillableByJob qrsGrid myGrid" id="byJobBillableTEG"></div>
+                <div class="gridNonBillableByJob qrsGrid myGrid" id="byJobNonBillableTEG"></div>
+                <div class="gridInvoicesOpen qrsGrid myGrid" id="InvoicesOpenTEG"></div>
+                @*<div class="gridInvoicesSent qrsGrid myGrid" id="InvoicesSentTEG"></div>*@
+            </div>
+
+            <div data-bind="visible:unbilledAcctSelected">
+                <div class="gridPending qrsGrid myGrid" id="pendingTEG"></div>
+                <div class="gridCompleted qrsGrid myGrid" id="completedTEG"></div>
+                <div class="gridInvoiced qrsGrid myGrid" id="invoicedTEG"></div>
+            </div>
+
+            <div data-bind="visible:pooledHoursSelected">
+                <div>Pooled Hours</div>
+            </div>
+
+            <div data-bind="visible:postedLinesSelected">
+                <div class="gridPostedLines qrsGrid myGrid" id="postedLinesByReqTEG" data-bind="visible:postedLinesByReqVisible"></div>
+                <div class="gridPostedLines qrsGrid myGrid" id="postedLinesByDetailTEG" data-bind="visible:postedLinesByDetailVisible"></div>
+                <div class="gridPostedLines qrsGrid myGrid" id="postedLinesByItemTEG" data-bind="visible:postedLinesByItemVisible"></div>
+                <div class="gridPostedLines qrsGrid myGrid" id="postedLinesByReqItemTEG" data-bind="visible:postedLinesByReqItemVisible"></div>
+            </div>
+
+            <div data-bind="visible:poInvoicesSelected">
+                <div class="gridPOInvoices qrsGrid myGrid" id="poInvoicesTEG"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="detailSubGridModal" class="detailSubGridModalClass" style="display:none">
+    <div id="detailSubGridCloseButton" class="detailSubGridCloseClass" data-bind="click:closeSubGrid">
+        <i class="far fa-times-circle fa-3x"></i>
+        <div class="mt-2">Close Details</div>
+    </div>
+    <div class="detailSubGridModalBodyClass">
+        <div id="detailSubGrid" class="detailSubGridClass myGrid"></div>
+    </div>
+</div>
+
+<!-- ko with:uploadInvoiceDialog-->
+<div class="modal fade modal--forms" id="uploadInvoiceDialog" data-bind="showModal:isDialogDisplaying"
+     tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="NewUserModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header pb-0">
+                <h5 class="modal-title mr-auto ucase"><em class="fas fa-user-plus mr-2"></em>UPLOAD INVOICE</h5>
+                <button type="button" class="btn icon-only" data-bind="click:closeDialog">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body pt-2">
+
+                <form method="post" enctype="multipart/form-data" asp-controller="Request" asp-action="uploadInvoice" data-bind="submit: validateForm">
+                    <div class="modal-body">
+
+                        <input type="hidden" id="poID" name="poID" data-bind="value: poID" />
+                        <input type="hidden" id="organizationID" name="organizationID" data-bind="value: organizationID" />
+                        <input type="hidden" id="requestID" name="requestID" data-bind="value: requestID" />
+                        <input type="hidden" id="projectID" name="projectID" data-bind="value: projectID" />
+                        <input type="hidden" id="jobID" name="jobID" data-bind="value: jobID" />
+                        <input type="hidden" id="redirectToBilling" name="redirectToBilling" data-bind="value: redirectToBilling" />
+                        <div class="form-row mb-3">
+                            <div class="col-4">
+                                <label for="invoiceNumber">
+                                    Invoice #
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="invoiceNumber" name="invoiceNumber" data-bind="value:invoiceNumber" autocomplete="off" />
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: invoiceNumber"></div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-8 col-md-8">
+                                <label for="invoiceDate">
+                                    Date
+                                </label>
+                                <div class="input-group" id="triggerCalendarInvoiceDate" data-bind="validationElement: invoiceDate" style="z-index:10000">
+                                    <input type="text" class="form-control" style="z-index:10000"
+                                           autocomplete="off"
+                                           id="invoiceDate" name="invoiceDate"
+                                           data-bind="datepicker: invoiceDate, datepickerOptions: est_invoice_date_options(false)"
+                                           required />
+                                    <div class="input-group-append simulate-button">
+                                        <span class="input-group-text input-group-append-custom">
+                                            <i class="fas fa-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: invoiceDate"></div>
+                            </div>
+                        </div>
+                        <div class="form-row mb-3">
+                            <div class="col-4">
+                                <label for="amount">
+                                    Amount
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="amount" name="amount" data-bind="value:amount" autocomplete="off" />
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: amount"></div>
+                                </div>
+                            </div>
+                            <div class="col-8">
+
+                                <label for="invoiceFile">
+                                    File
+                                    <input type="file" class="form-control" style="margin-top: 8px" id="invoiceFile" name="invoiceFile" aria-label="Invoice file upload">
+                                    <span class="file-custom"></span>
+                                    <div class="help-block invalid-feedback" data-bind="validationMessage: invoiceFileName"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <div class="row">
+                            <!-- ko if:isUploadingInvoice -->
+                            <div class="col-4">
+                                <button type="submit" class="btn btn-primary btn-block" databind="click: return validateForm();">
+                                    SAVE
+                                </button>
+                            </div>
+                            <!-- /ko -->
+                            <div class="col-4">
+                                <button type="button" class="btn btn-warning btn-block" data-bind="click:refreshData">CANCEL</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko-->
+
+@await Html.PartialAsync("_NewInvoice")
+@await Html.PartialAsync("_MoveLinesDialog")
+@await Html.PartialAsync("_NotificationDialog")

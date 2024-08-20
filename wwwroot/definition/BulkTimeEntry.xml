@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.186" author="" dateCreation="2020-04-30" dateLastChange="2023-10-10"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Bulk Time Entry</title>
+        <defaultOrder>SERVICE_LINE_ID</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+TS.JOBNUMBER,
+TS.SRNUMBER,
+TS.JOB_NAME,
+TS.SERVICE_LINE_DATE,
+TS.HOURSQTY,
+TS.RATE,
+TS.TOTAL,
+TS.ReqNbr,
+TS.RESOURCE_ID,
+TS.RESOURCE_NAME,
+TS.ITEM_ID,
+TS.ITEM_NAME,
+TS.EXT_PAY_CODE,
+L1.lookup_name as PAY_CODE,
+TS.SERVICE_LINE_ID,
+TS.ISEDITABLE,
+TS.SERVICELINETIMEENTRYID,
+TS.REQUEST_ID,
+TS.ROWJOBID,
+@ORGANIZATIONID as ORGANIZATION_ID,
+@ORGANIZATIONID as ORGANIZATIONID, 
+@JOBID as JOB_ID,
+@STARTDATE as START_DATE,
+@ENDDATE as END_DATE,
+case when TS.ISAPPROVED=0 then 'Day Approve'
+	when TS.ISAPPROVED=-1 then 'Rejected'
+	else 'Approved'
+	end as ROW_APPROVE,	
+CREATED_BY_USERNAME,
+IsLunch,
+MODIFIED_BY_USERNAME,
+TS.SignedOutByUserName,
+TS.StartTime,
+TS.EndTime,
+FORMAT(try_parse(TS.StartTime as datetime),'hh:mm tt', 'en-US') as StartHour,
+FORMAT(try_parse(TS.EndTime as datetime),'hh:mm tt', 'en-US') as EndHour,
+TS.SLTEWhereCreated
+from 
+[dbo].[TimeEntry_Select_FN_New]
+ (@JOBID, @STARTDATE, @ENDDATE, @__USERID__, @ORGANIZATIONID) TS
+ /*
+left join
+	dbo.RESOURCES R
+on 
+	TS.RESOURCE_ID = R.RESOURCE_ID
+left join 
+	dbo.ITEMS I  
+on
+	TS.ITEM_ID = I.ITEM_ID*/
+left join
+	dbo.Lookups_Active_V L1
+on
+	L1.ATTRIBUTE2 = TS.EXT_PAY_CODE
+and L1.Type_code ='pay_code']]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="((@SERVICE_LINE_ID is not null and [SERVICE_LINE_ID]=@SERVICE_LINE_ID) OR (@SERVICE_LINE_ID is null and [SERVICELINETIMEENTRYID]=@SERVICELINETIMEENTRYID))" autoUpdateQuery="False" updateTable=""><![CDATA[declare @useridval bigint
+select @useridval=UserId from dbo.AspNetUsers where username = @__LoginId__;
+
+exec [dbo].[TimeEntry_BulkServiceLine_Update]  
+@ServiceLineID=@SERVICE_LINE_ID,  
+@ServiceLineTimeEntryID=@SERVICELINETIMEENTRYID,  
+@Date=@SERVICE_LINE_DATE,  
+@JobId=@ROWJOBID,  
+@ResourceID=@RESOURCE_ID,
+@RequestID=@REQUEST_ID,
+@WorkCodeId=@ITEM_ID,
+@QtyHours=@HOURSQTY,
+@PayCodeId=@EXT_PAY_CODE,
+@StartTime=@STARTDATE,  
+@EndTime=@ENDDATE,  
+@UserId=@useridval;]]></sqlUpdate>
+        <sqlInsert where=""><![CDATA[]]></sqlInsert>
+        <sqlDelete><![CDATA[declare @useridval bigint
+select @useridval=UserId from dbo.AspNetUsers where username = @__LoginId__;
+
+exec [dbo].[TimeEntry_BulkServiceLine_Delete]
+@ServiceLineID=@SERVICE_LINE_ID,  
+@ServiceLineTimeEntryID=@SERVICELINETIMEENTRYID,  
+@Date=@SERVICE_LINE_DATE,  
+@JobId=@ROWJOBID,  
+@ResourceID=@RESOURCE_ID,
+@RequestID=@REQUEST_ID,
+@WorkCodeId=@ITEM_ID,
+@QtyHours=@HOURSQTY,
+@PayCodeId=@EXT_PAY_CODE,
+@StartTime=@START_DATE,  
+@EndTime=@END_DATE,  
+@UserId=@useridval;]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="ROW_APPROVE" label="APPROVED" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="html" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="JOBNUMBER" label="JOBNUMBER" width="80" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="SRNUMBER" label="SR#" width="30" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="JOB_NAME" label="JOB NAME" width="300" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RESOURCE_ID" label="RESOURCE NAME" width="300" editable="True" filterable="True" filterItemsSize="350" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="RESOURCE_NAME" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[select RESOURCE_ID, NAME as RESOURCE_NAME from dbo.Resources
+where ORGANIZATION_ID=@ORGANIZATIONID]]></dataSelect></column>
+<column id="ITEM_ID" label="ITEM NAME" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="ITEM_NAME" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[-- ##IGNOREFORFILTERING##
+declare @useridval bigint; select @useridval=UserId from dbo.AspNetUsers where username = @__LoginId__; exec dbo.[TimeEntry_WorkCodeForTEG_Select] @JOBID=@ROWJOBID, @UserId=@useridval, @ResourceId=@RESOURCE_ID]]></dataSelect></column>
+<column id="EXT_PAY_CODE" label="PAY CODE" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="PAY_CODE" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0">
+<dataSelect><![CDATA[select Attribute2 as EXT_PAY_CODE, lookup_name as PAY_CODE from dbo.Lookups_Active_V where type_code='pay_code']]></dataSelect></column>
+<column id="SERVICE_LINE_DATE" label="DATE" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM-dd-yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="StartHour" label="STARTIME" width="75" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="EndHour" label="ENDTIME" width="75" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="HOURSQTY" label="QTY" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="SERVICE_LINE_ID" label="SERVICE_LINE_ID" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="ReqNbr" label="ReqNbr" width="80" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ServiceLineTimeEntryID" label="ServiceLineTimeEntryID" width="250" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textarea" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="IsEditable" label="IsEditable" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="right" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="SERVICE_LINE_DATE_VARCHAR" label="DATE" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="REQUEST_ID" label="REQUEST_ID" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="EXT_PAY_CODE1" label="EXT_PAY_CODE" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="SignedOutByUserName" label="Signed Out By" width="120" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="CREATED_BY_USERNAME" label="CREATED BY" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="MODIFIED_BY_USERNAME" label="MODIFIED BY" width="80" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="ROWJOBID" label="ROWJOBID" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="SLTEWhereCreated" label="Where Created" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

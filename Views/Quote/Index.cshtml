@@ -1,0 +1,1265 @@
+﻿@model ServiceTRAX.Models.ViewModels.QuoteModel
+@using ServiceTRAX.Utils
+@using ServiceTRAX.Models.DBModels
+@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+@{
+    ViewData["Title"] = "Quote";
+}
+
+@section SubMenu {
+    @await Html.PartialAsync("~/Views/Quote/_QuoteSubMenu.cshtml")
+    @await Component.InvokeAsync("SideMenu", new { OrganizationID = Model.OrganizationID, ProjectID = Model.Header.Project_ID, RequestID = Model.RequestID, UserID = Model.UserID })
+}
+
+@section Scripts {
+    <style>
+        .extra-col {
+         position: relative;
+         width: 100%;
+         padding-right: 15px;
+         padding-left: 15px;
+        }
+
+        .col-0-5 .extra-col {
+            flex: 0 0 4.16666667%;
+            max-width: 4.16666667%;
+        }
+
+    </style>
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+    <script type='text/javascript' src='~/lib/datepicker.js'></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+
+    <script type='text/javascript' src='~/lib/trumbowyg/trumbowyg.min.js'></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout.validation/knockout.validation.min.js'></script>
+
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/quotes.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/notification-dialog.js' asp-append-version="true"></script>
+
+    <script type='text/javascript' src='~/lib/signalr/signalr.min.js'></script>
+    <script type='text/javascript' src='~/js/jquery.floatingscroll.min.js'></script>
+
+
+    <script>
+
+        var gridName = 'OperationalPlan@(Model.QuoteOrganizationId)';
+        var oGrid = null;
+       $(document).ready(function () {
+
+            $('#Req-Int-Twy').on('tbwchange', function () {
+                $('#save_quote').prop('disabled', false);
+            });
+
+            $('#Req-Twy').on('tbwchange', function () {
+               $('#save_quote').prop('disabled', false);
+            });
+
+            $('#preview-link').addClass('btn-disabled');
+
+            $('#save_quote').prop('disabled', true);
+
+
+            $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+                $('#' + e.target.id + '-pop').toggle(); // newly activated tab
+                $('#' + e.relatedTarget.id + '-pop').toggle(); // previous active tab
+            });
+
+
+           
+        });
+
+        function scrollToDiv(divID) {
+            var aTag = $(`div#${divID}`);
+            $('html,body').animate({ scrollTop: calcTop(aTag) }, 'slow');
+        }
+
+        $('.submenujumpbutton').click(function (e) {
+            scrollToDiv(e.currentTarget.dataset.jumpto);
+        });
+
+        var regex = /[\s/-/.]+/g;
+
+        $(function () {
+            initQuotes(@Html.Raw(Json.Serialize(Model)));
+        
+        
+            var hash = $(location).attr('hash');
+            if (hash == '#summary') {
+                $('#summary-tab').click();
+            }
+        });
+
+
+
+    </script>
+
+
+}
+@section StyleSheets {
+
+        <link rel="stylesheet" href="~/css/datepicker.css" asp-append-version="true" >
+    <link rel="stylesheet" href="~/lib/trumbowyg/trumbowyg.min.css">
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css" asp-append-version="true" >
+
+    <style>
+    .quote-nav {
+        padding-bottom: .5rem !important;
+        padding-top: .5rem !important
+    }
+
+        .quote-nav, .quote-nav .navbar-nav {
+            -ms-flex-pack: justify;
+        }
+
+            .quote-nav .navbar-nav {
+                -ms-flex-direction: row;
+                flex-direction: row
+            }
+
+            .quote-nav .nav-link {
+                padding: 0 .5rem
+            }
+
+            .quote-nav .nav-item {
+                border-bottom: 1px solid #173d7d
+            }
+
+            .quote-nav .dropdown-toggle:after, .quote-nav span {
+                display: none
+            }
+
+            .quote-nav .nav-item {
+                border: 0
+            }
+
+            .quote-nav i {
+                vertical-align: middle
+            }
+
+    .quote-nav__open {
+        display: none
+    }
+
+    .quote-nav .btn, .quote-nav .collapse-panel-btn {
+        margin: 0 .5rem;
+        color: #f8f9fa
+    }
+
+        .quote-nav .btn:hover, .quote-nav .collapse-panel-btn:hover {
+            color: #e9ecef
+        }
+
+    .quote-nav .nav-link {
+        font-size: 140%
+    }
+
+    @@media (min-width:992px) {
+        .quote-nav {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important
+        }
+
+            .quote-nav .dropdown-toggle:after, .quote-nav__open {
+                display: initial
+            }
+
+            .quote-nav .nav-link {
+                padding: 0 1rem
+            }
+
+            .quote-nav .btn span, .quote-nav .collapse-panel-btn span {
+                display: initial
+            }
+    }
+
+    .table-title {
+        font-family: Poppins, Raleway, Helvetica Neue, Arial;
+        font-weight: 400;
+        line-height: 1.5;
+        font-size: 80%;
+        text-align: center;
+    }
+
+    .table-dropdown {
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .sticky {
+        z-index: 100;
+        position: fixed;
+        top: 0;
+        width: 100%;
+    }
+</style>
+
+}
+@if (Model.IsReadOnlyView || !Model.Header.IsOpPlanEditable)
+{
+    <style>
+        .deleteIcon {
+            display: none;
+        }
+    </style>
+}
+
+
+<div id="detailsSection"></div>
+<div id="content">
+    <div class="row">
+        <div class="col-4 offset-8 rounded-lg bg-primary pt-3 pb-2 position-absolute" style="margin-top: -24px;" id="estimate">
+            <div class="row justify-content-between estimate-total">
+                <div class="col-11">
+                    <span class="d-inline-block uppercase">Final Cost Estimate&nbsp;&nbsp;</span> <span id="estimate_amt" class="d-inline-block"><big data-bind="text: '$ ' + $root.numberWithCommas((Math.round($root.finalCostEstimate()*100)/100).toFixed(2))"></big></span>
+                </div>
+                <div class="col-1">
+                    <button class="btn float-right" type="button" data-toggle="collapse" data-target="#estimate-collapse" style="background-color: #2d5daf;"><em class="fas fa-angle-down"></em></button>
+                </div>
+            </div>
+
+            <div class="collapse-panel-control">
+                <div class="row">
+                    <div class="col">
+                        <div class="collapse-panel-estimate mt-3 collapse" id="estimate-collapse">
+                            <div class="callout orange p-3 mb-3">
+                                <h4>Quote Summary</h4>
+                                <div class="row">
+                                    <div class="col">
+                                        <ul>
+                                            <li>
+                                                <div class="d-flex justify-content-between">
+                                                    <div><strong data-bind="text: Math.round((parseFloat($root.totalLineRegHours()) + parseFloat($root.totalLineOTHours()))*100)/100"></strong></div>
+                                                    <div>Estimated Hours</div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="d-flex justify-content-between">
+                                                    <div><strong data-bind="text: Math.round(parseFloat($root.totalLineRegHours())*100)/100"></strong></div>
+                                                    <div>Regular Hours</div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col">
+                                        <ul>
+                                            <li>
+                                                <div class="d-flex justify-content-between">
+                                                    <div><strong data-bind="text: $root.shiftCrews.numberOfShifts"></strong></div>
+                                                    <div>Total Shifts</div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="d-flex justify-content-between">
+                                                    <div><strong data-bind="text: Math.round(parseFloat($root.totalLineOTHours())*100)/100"></strong></div>
+                                                    <div>OT Hours</div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div><!--/row-->
+                            </div><!--/callout-->
+
+
+                            <div class="row">
+                                <div class="col mb-2">
+                                    <h4>Quote Data Sheet</h4>
+                                    <ul>
+                                        <li>
+                                            <div class="d-flex justify-content-between">
+                                                <div><strong data-bind="text: Math.round($root.totalQuoteHours()*100)/100"></strong></div>
+                                                <div>Total Hours</div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4>Per Day</h4>
+                                    <ul>
+                                        <li>
+                                            <div class="d-flex justify-content-between">
+                                                <div><strong data-bind="text: $root.shiftCrews.crewSize"></strong></div>
+                                                <div>Crew</div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="d-flex justify-content-between">
+                                                <div><strong data-bind="text: $root.shiftCrews.hrsPerShift"></strong></div>
+                                                <div>Hours per shift</div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="d-flex justify-content-between">
+                                                <div><strong data-bind="text: $root.shiftCrews.daysOnSite"></strong></div>
+                                                <div>Days Onsite</div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div><!--/row-->
+
+                        </div><!--/collapse-panel-estimate-->
+                    </div><!--/col-->
+                </div><!--/row-->
+            </div><!--/collapse-panel-control-->
+
+
+        </div><!--/#estimate-->
+    </div><!--/row-->
+
+    <div class="container">
+        <div class="row">
+            <div class="col mb-4">
+                <h2>QUOTES</h2>
+                <div class="form-row">
+                    <div class="col-4">
+                        <div class="d-flex">
+                            <div>
+                                <strong><span id="job-client" class="d-block" data-bind="text: $root.header.endUserName"></span></strong>
+                                <span id="job-date" class="d-block" data-bind="text: $root.header.estimatedServiceDate.substring(0, $root.header.estimatedServiceDate.indexOf(' '))"></span>
+                            </div>
+                            <span id="job-number" class="pl-3" data-bind="text: 'Job #' + $root.header.project_No"></span>
+                            <span id="quote-request-number" class="pl-3" data-bind="text: 'Req #' + $root.header.request_No"></span>
+                            <span id="quote-version-number" class="pl-3" data-bind="text: 'Ver #' + $root.header.version_No"></span>
+                            
+                            <span class="pl-3" data-bind="visible:(header.showQRLink || header.showSRLink),  text: 'Jump to:' "></span>
+                                                        
+                            <button type="button"
+                                    class="btn btn-primary  btn-sm ml-4"
+                                    data-bind="click:  function() { var url=buildQuoteRequestLink(); window.location.href=url; }, visible: header.showQRLink">
+                                &nbsp;&nbsp;QR&nbsp;&nbsp;
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-primary  btn-sm ml-4"
+                                    data-bind="click: function() {var url=buildServiceRequestLink(); window.location.href=url; }, visible: header.showSRLink">
+                                &nbsp;&nbsp;SR&nbsp;&nbsp;
+                            </button>
+                        </div>
+                    </div>
+                    @if (User.UserHasThisPermission(Permissions.QuoteViewContacts) && !Model.UseLSPRole)
+                    {
+                        <div class="col-4" data-bind="descendantsComplete: $root.applyBootstrapStyles" style="align-self:center;">
+                            <div class="text-right">
+                                <label class="d-block mb-0">
+                                    Customer Contact
+                                </label>
+                                <select data-style="btn-white shadow-sm"
+                                data-bind="options: $root.header.contacts, optionsText: 'contact_Name', optionsCaption: '-', optionsValue: 'contact_ID', value: $root.header.attnContact, attr: { id: 'contactSelect' }, selectPicker:true, enable: $root.header.isActiveVersion">
+                                </select>
+                            </div>
+                            <div class="text-right">
+                                <div class="help-block invalid-feedback" data-bind="visible:selectCustomerBeforeTemplateError" style="display:none">
+                                    Please select Customer Contact before creating a template
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col mb-3" role="tablist">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item mr-2">
+                <a class="nav-link active btn btn-primary" id="cost-estimator-tab" data-toggle="pill"
+                   href="#cost-estimator" role="tab" aria-controls="cost-estimator" aria-selected="true"
+                   data-bind="click:validatePendingChanges, clickBubble: true"
+                   title="View Quick Quote panel...">
+                    <em class="fas fa-align-left"></em>
+                </a>
+            </li>
+            @if (User.UserHasThisPermission(Permissions.QuoteViewOperationalPlan) && !Model.UseLSPRole) {
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary" id="summary-tab" data-toggle="pill" 
+                    href="#summary" role="tab" aria-controls="summary" aria-selected="false"
+                       data-bind="click: function() { $root.callTEG(); }, clickBubble: true"
+                    title="View Operational Plan panel...">
+                        <em class="fas fa-table"></em>
+                    </a>
+                </li>
+            }
+            @if (User.UserHasThisPermission(Permissions.QuoteViewPopulateQuickQuote) && !Model.UseLSPRole)
+            {
+                <li class="nav-item" style="align-self: center;">
+                    <button class="btn btn-primary" id="cost-estimator-tab-pop" data-bind="enable: $root.lines().length === 0 && $root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent, click: function(){ $root.popFromOpPlan(); }" style="margin-left:10px;" disabled>Populate from Op. Plan</button>
+
+                    <button class="btn btn-primary" id="summary-tab-pop" data-bind="enable: ($root.lines().length != 0) && ($root.shiftCrews.daysOnSite() > 0) && ($root.shiftCrews.hrsPerShift() > 0) && $root.header.isActiveVersion && !$root.isReadOnlyView, click:() => $root.popFromQQ()" style="margin-left:10px; display:none;" disabled>
+                        <!-- ko ifnot: $root.populatingPlan -->
+                        Populate from Quick Quote
+                        <!-- /ko -->
+                        <!-- ko if: $root.populatingPlan -->
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="vertical-align: middle;"> </span> Populating...
+                        <!-- /ko -->
+                    </button>
+                </li>
+            }
+            @if (User.UserHasThisPermission(Permissions.QuoteViewAdminFeeAndFuelSurcharge) && !Model.UseLSPRole)
+            {
+                <li class="nav-item" style="align-self: center; padding-left:30px">
+                    <input class="magic-checkbox" type="checkbox" id="addFuelSurchargeRate" data-bind="checked: $root.hasFuelSurcharge(), click: function(){ $root.addFuelSurchargeRate(); }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" style="margin-top: -5px;"/>
+                    <label class="mb-0" for="addFuelSurchargeRate">Add Fuel Surcharge</label>
+                </li>
+                <li class="nav-item" style="align-self: center; padding-left:30px">
+                    <input class="magic-checkbox" type="checkbox" id="addAdminFee" data-bind="checked: $root.hasAdminFee(), click: function(){ $root.addAdminFeeFn(); }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" style="margin-top: -5px;"/>
+                    <label class="mb-0" for="addAdminFee">Add Admin Fee</label>
+                </li>
+            }
+            @if (User.UserHasThisPermission(Permissions.QuoteAddProjectMgmt)  && !Model.UseLSPRole)
+            {
+                <li class="nav-item" style="align-self: center; padding-left:30px">
+                    <input class="magic-checkbox" type="checkbox" id="addAddProjectMgmt" data-bind="checked: $root.hasProjectMgmt(), click: function(){ $root.addProjectMgmt(); }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" style="margin-top: -5px;" />
+                    <label class="mb-0" for="addAddProjectMgmt">Add Project Mgmt</label>
+                </li>
+            }
+
+            
+        </ul>
+    </div>
+    <div class="tab-content">
+        <div id="cost-estimator" class="tab-pane fade show active" role="tabpanel" aria-labelledby="cost-estimator-tab">
+            <h3>Quick Quote</h3>
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr class="d-flex">
+                            <th scope="col" class="table-title col-2">Resource Type</th>
+                            <th scope="col" class="table-title col-1">OT</th>
+                            <th scope="col" class="table-title col-1">Qty</th>
+                            <th scope="col" class="table-title col-1">Rate</th>
+                            <th scope="col" class="table-title col-1">Ext.</th>
+                            <th scope="col" class="table-title col-1"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ko foreach: $root.lines -->
+                        <tr class="d-flex">
+                            <td class="col-2">
+                                <!-- ko if: role_ID != null -->
+                                <select class="form-control table-dropdown"
+                                        data-style="btn-white shadow-sm"
+                                        data-bind="options: $root.roles, optionsText: 'name', optionsValue: 'role_ID', value: $data.role_ID, attr: { id: 'lineSelect-' + quoteLineID }, selectPicker:true, 
+                                            enable: ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent)">
+                                </select>
+                                <!-- /ko -->
+                                <!-- ko if: role_ID === null -->
+                                <input type="text" class="form-control" data-bind="attr: { id: 'lineSelect-' + quoteLineID }, value: roleWriteIn, 
+                                            enable: ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent)" onclick="select()" />
+                                <!-- /ko -->
+                            </td>
+                            <td class="col-1">
+                                <div class="magic-checkbox-wrapper" style="margin-left:30%;">
+                                    <input class="magic-checkbox" type="checkbox" data-bind="checked: isOT(), attr: { id: 'OT-' + quoteLineID }, click: function(){ isOT(!isOT()); return true; }, 
+                                        enable: ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole))" />
+                                    <label data-bind="attr: { for: 'OT-' + quoteLineID }"><span data-bind="visible: isOT">Yes</span><span data-bind="hidden: isOT">No</span></label>
+                                </div>
+                            </td>
+                            <td class="col-1">
+                                <input type="number" class="form-control text-right" data-bind="value: hours, attr: { id: 'Hours-' + quoteLineID }, 
+                                    enable: ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent)" min="0" onclick="select()" />
+                            </td>
+                            <td class="col-1">
+                                <!-- ko if: role_ID === null -->
+                                <input type="number" class="form-control text-right" data-bind="value: rate, attr: { id: 'Rate-' + quoteLineID }, 
+                                    enable: ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent)" min="0" onclick="select()" />
+                                <!-- /ko -->
+                                <!-- ko if: role_ID != null -->
+                                <input type="number" class="form-control text-right" data-bind="value: rate, attr: { id: 'Rate-' + quoteLineID }, 
+                                    enable: ($root.organizationID == 24 && $root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole ) && !$root.header.isSent)" min="0" />
+                                <!-- /ko -->
+                            </td>
+                            <td class="col-2">
+                                <label class="form-control text-right" style="background-color: #e9ecef;" data-bind="text: '$ ' + $root.numberWithCommas((Math.round(hours() * rate() *100)/100).toFixed(2)), attr: { id: 'Ext-' + quoteLineID }"></label>
+                            </td>
+                            <td class="col-1">
+                                <!-- ko if: ($root.header.isActiveVersion  && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent) -->
+                                <a data-bind="click: function(){ $root.removeLine(quoteLineID)}" style="cursor: pointer;">
+                                    <span><i class="fas fa-trash"></i></span>
+                                </a>
+                                <!-- /ko -->
+                            </td>
+                        </tr>
+                        <!-- /ko -->
+                        <!-- ko if: $root.lines().length > 0 -->
+                        <tr class="d-flex">
+                            <td class="col-3">
+                                <div class="text-right"><strong>Total Labor Hours</strong></div>
+                            </td>
+                            <td class="col-1">
+                                <div class="text-right" style="margin-right: 10px;"><strong><span class="text-right" data-bind="text: (Math.round(($root.totalLineHours())*100)/100).toFixed(2)"></span></strong></div>
+                            </td>
+                            <td class="col-1">
+                            </td>
+                            <td class="col-2">
+                                <div class="text-right" style="margin-right: 10px;"><strong><span class="text-right" data-bind="text: '$ ' + $root.numberWithCommas((Math.round($root.finalCostEstimate()*100)/100).toFixed(2))"></span></strong></div>
+                            </td>
+                            <td class="col-1">
+                            </td>
+                        </tr>
+                        <!-- /ko -->
+                        <!-- ko if: $root.lines().length == 0 -->
+                        <tr class="d-flex">
+                            <td class="col-7">
+                                <div class="text-center"><strong>No lines present on the Quote</strong></div>
+                            </td>
+                        </tr>
+                        <!-- /ko -->
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <table class="table table-borderless">
+                    
+                    <tbody>
+                        <!-- ko foreach: $root.linesFee -->
+                        <tr class="d-flex">
+                            <td class="col-2">
+
+                                <!-- ko if: role_ID === null -->
+                                <input type="text" class="form-control" data-bind="attr: { id: 'lineSelect-' + quoteLineID }, value: roleWriteIn, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" onclick="select()" readonly />
+                                <!-- /ko -->
+                            </td>
+                            <td class="col-1">
+                                <div class="magic-checkbox-wrapper" style="margin-left:30%;" hidden>
+                                    <input class="magic-checkbox" type="checkbox" data-bind="checked: isOT(), attr: { id: 'OT-' + quoteLineID }, click: function(){ isOT(!isOT()); return true; }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView)" />
+                                    <label data-bind="attr: { for: 'OT-' + quoteLineID }"><span data-bind="visible: isOT">Yes</span><span data-bind="hidden: isOT">No</span></label>
+                                </div>
+                            </td>
+                            <td class="col-1">
+                                <input type="number" class="form-control text-right" data-bind="value: hours, attr: { id: 'Hours-' + quoteLineID }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" min="0" readonly />
+                            </td>
+                            <td class="col-1">
+                                <!-- ko if: role_ID === null -->
+                                <div style="position: absolute" >
+                                <input type="number" class="form-control text-right" style="width: 85%; display: inline-block;" data-bind="value: rate, attr: { id: 'Rate-' + quoteLineID }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" min="0" onclick="select()" />
+                                <label style="font-size: 95%"><span> %</span></label>
+                                </div>
+                                <!-- /ko -->
+
+                            </td>
+
+                            <td class="col-2">
+                                <label class="form-control text-right" style="background-color: #e9ecef;" data-bind="text: '$ ' + $root.numberWithCommas((hours() * rate() / 100).toFixed(2)), attr: { id: 'Ext-' + quoteLineID }"></label>
+                            </td>
+                            <td class="col-1">
+                                <!-- ko if: ($root.header.isActiveVersion &&  (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent) -->
+                                <a data-bind="click: function(){ $root.removeLine(quoteLineID)}" style="cursor: pointer;">
+                                    <span><i class="fas fa-trash"></i></span>
+                                </a>
+                                <!-- /ko -->
+                            </td>
+                        </tr>
+                        <!-- /ko -->
+                        
+                        <!-- ko if: $root.linesFee().length > 0 -->
+                        <tr class="d-flex">
+                            <td class="col-3">
+                                <div class="text-right"><strong>Total + Fuel Surcharge</strong></div>
+                            </td>
+                            <td class="col-1">
+                               
+                            </td>
+                            <td class="col-1">
+                            </td>
+                            <td class="col-2">
+                                <div class="text-right" style="margin-right: 10px;"><strong><span class="text-right" data-bind="text: '$ ' + $root.numberWithCommas(($root.finalCostEstimate() + $root.totalSurcharge()).toFixed(2))"></span></strong></div>
+                            </td>
+                            <td class="col-1">
+                            </td>
+                        </tr>
+                        <!-- /ko -->
+                        @if (User.UserHasThisPermission(Permissions.QuoteAddProjectMgmt) && !Model.UseLSPRole)
+                        {
+                            <!-- ko foreach: $root.linesPMMarkup -->
+                            <tr class="d-flex">
+                                <td class="col-2">
+
+                                    <!-- ko if: role_ID === null -->
+                                    <input type="text" class="form-control" data-bind="attr: { id: 'lineSelect-' + quoteLineID }, value: roleWriteIn, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" onclick="select()" readonly />
+                                    <!-- /ko -->
+                                </td>
+                                <td class="col-1">
+                                    <div class="magic-checkbox-wrapper" style="margin-left:30%;" hidden>
+                                        <input class="magic-checkbox" type="checkbox" data-bind="checked: isOT(), attr: { id: 'OT-' + quoteLineID }, click: function(){ isOT(!isOT()); return true; }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView)" />
+                                        <label data-bind="attr: { for: 'OT-' + quoteLineID }"><span data-bind="visible: isOT">Yes</span><span data-bind="hidden: isOT">No</span></label>
+                                    </div>
+                                </td>
+                                <td class="col-1">
+                                    <input type="number" class="form-control text-right" data-bind="value: hours, attr: { id: 'Hours-' + quoteLineID }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" min="0" readonly />
+                                </td>
+                                <td class="col-1">
+                                    <!-- ko if: role_ID === null -->
+                                    <div style="position: absolute">
+                                        <input type="number" class="form-control text-right" style="width: 85%; display: inline-block;" data-bind="value: rate, attr: { id: 'Rate-' + quoteLineID }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)" min="0" onclick="select()" />
+                                        <label style="font-size: 95%"><span> %</span></label>
+                                    </div>
+                                    <!-- /ko -->
+
+                                </td>
+
+                                <td class="col-2">
+                                    <label class="form-control text-right" style="background-color: #e9ecef;" data-bind="text: '$ ' + $root.numberWithCommas((hours() * rate() / 100).toFixed(2)), attr: { id: 'Ext-' + quoteLineID }"></label>
+                                </td>
+                                <td class="col-1">
+                                    <!-- ko if: ($root.header.isActiveVersion && !$root.isReadOnlyView) -->
+                                    <a data-bind="click: function(){ $root.removeLine(quoteLineID)}" style="cursor: pointer;">
+                                        <span><i class="fas fa-trash"></i></span>
+                                    </a>
+                                    <!-- /ko -->
+                                </td>
+                            </tr>
+                            <tr class="d-flex">
+                                <td class="col-3">
+                                    <div class="text-right"><strong>Total</strong></div>
+                                </td>
+                                <td class="col-1">
+                                </td>
+                                <td class="col-1">
+                                </td>
+                                <td class="col-2">
+                                    <!-- ko if: $root.linesFee().length > 0 -->
+                                    <div class="text-right" style="margin-right: 10px;"><strong><span class="text-right" data-bind="text: '$ ' + $root.numberWithCommas(($root.finalCostEstimate() + $root.totalSurcharge() +  + (hours() * rate() / 100)).toFixed(2)) "></span></strong></div>
+                                    <!-- /ko -->
+                                    <!-- ko ifnot: $root.linesFee().length > 0 -->
+                                    <div class="text-right" style="margin-right: 10px;"><strong><span class="text-right" data-bind="text: '$ ' + $root.numberWithCommas(($root.finalCostEstimate() +  (hours() * rate() / 100)).toFixed(2)) "></span></strong></div>
+                                    <!-- /ko -->
+                                </td>
+                                <td class="col-1">
+                                </td>
+                            </tr>
+                            <!-- /ko -->
+                        }
+
+
+                        
+                    </tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-primary" data-bind="click: function(){ $root.addRoleLineRow(); }, enable:  ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent)"><em class="fas fa-plus"></em> Add Row</button>
+                    @if (User.UserHasThisPermission(Permissions.QuoteAddBlankRow)  && !Model.UseLSPRole)
+                    {
+                        <button class="btn btn-primary" data-bind="click: function(){ $root.addWriteLineRow(); }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)"><em class="fas fa-plus"></em> Add Blank Row</button>
+                    }
+                    @if (!Model.UseLSPRole)
+                    {
+                        <button class="btn btn-primary" data-bind="click: function(){ $root.showConditionsModalDialog(true); }, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent)"><em class="fas fa-plus"></em> Conditions</button>
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <hr class="thick" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <h3>Project Manager Comments</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-auto">
+                    <textarea class="form-control col-8" id="comments" data-bind="value: $root.header.comments, enable: ($root.header.isActiveVersion && !$root.isReadOnlyView && !$root.header.isSent && !$root.header.useLSPRole), event: { focusout: function() { $root.saveComments() }}" rows="5" cols="150"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <hr class="thick" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <h3>Hours, Shifts & Crew</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-auto">
+                    <label class="d-block mb-2">Hours Per Shift
+                    @if (User.UserHasThisPermission(Permissions.QuoteRequiredHoursCrewShift))
+                    {
+                        <span class="req">*</span>
+                    }
+                    </label>
+                    <input type="number" class="form-control" id="HrsPerShift" data-bind="value: $root.shiftCrews.hrsPerShift, enable: ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent)" min="0" onclick="select()" />
+                    @if (User.UserHasThisPermission(Permissions.QuoteRequiredHoursCrewShift))
+                    {
+                        <div class="help-block invalid-feedback" data-bind="validationMessage: 'Required Field'"></div>
+                    }
+                </div>
+                <div class="col-auto">
+                    <label class="d-block mb-2">Days Onsite
+                    @if (User.UserHasThisPermission(Permissions.QuoteRequiredHoursCrewShift))
+                    {
+                        <span class="req">*</span>
+                    }
+                    </label>
+                    <input type="number" class="form-control" id="DaysOnsite" data-bind="value: $root.shiftCrews.daysOnSite, enable: ($root.header.isActiveVersion && (!$root.isReadOnlyView || $root.userHasLSPRole) && !$root.header.isSent)" min="0" onclick="select()" />
+                    @if (User.UserHasThisPermission(Permissions.QuoteRequiredHoursCrewShift))
+                    {
+                        <div class="help-block invalid-feedback" data-bind="validationMessage: 'Required Field'"></div>
+                    }
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                @*<div class="col-auto">
+                        <label class="d-block mb-2"># Of Shift</label>
+                        <input type="number" class="form-control" id="NumberOfShifts" data-bind="value: $root.shiftCrews.numberOfShifts" readonly />
+                    </div>*@
+                <div class="col-auto">
+                    <label class="d-block mb-2">Crew Size
+                    @if (User.UserHasThisPermission(Permissions.QuoteRequiredHoursCrewShift))
+                        {
+                            <span class="req">*</span>
+                        }
+                    </label>
+                    <input type="number" class="form-control" id="CrewSize" data-bind="value: $root.shiftCrews.crewSize" />
+                    @if (User.UserHasThisPermission(Permissions.QuoteRequiredHoursCrewShift))
+                    {
+                        <div class="help-block invalid-feedback" data-bind="validationMessage: 'Required Field'"></div>
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <hr class="thick" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <h3>Scope</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <p>Per your request, we submit pricing and specifications for your proposal as follows:</p>
+                    <div class="form-row mb-3  mt-4">
+                        <div class="col-lg">
+                            <label>
+                                Work Request
+                            </label>
+                            <span class="custom-editor" id="Req-Twy" data-bind="trumbowyg: $root.header.description, trumbowygOptions: { disabled: !$root.header.isActiveVersion || $root.isReadOnlyView ||  !$root.header.isSent }"></span>
+                            <div class="help-block invalid-feedback"></div>
+                        </div>
+                        <div class="col-lg">
+                            <label>
+                                Work Request (Internal)
+                            </label>
+                            <span class="custom-editor" id="Req-Int-Twy" data-bind="trumbowyg: $root.header.other_Conditions, trumbowygOptions: { disabled: !$root.header.isActiveVersion || $root.isReadOnlyView ||  !$root.header.isSent }"></span>
+                            <div class="help-block invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <!-- ko if: ($root.header.isActiveVersion && !$root.isReadOnlyView) -->
+                    <button class="btn btn-rounded btn-primary" id="save_quote" data-bind="click: $root.saveWorkRequest, enable: false" disabled>Save Scope</button>
+                    <!-- /ko -->
+                </div>
+            </div>
+
+
+        </div>
+        <div id="summary" class="tab-pane fade" role="tabpanel" aria-labelledby="summary-tab">
+            <div id="content-wrap" class="position-relative" style="min-height: 500px;">
+                <div class="gridContent myGrid qGrid" id="operationalPlanTEG"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <hr class="thick" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="text-muted small text-right">
+                    <strong>Created By:</strong>
+                    <!-- ko if:$root.header.createdByName -->
+                    <span data-bind="text:$root.header.createdByName"></span>
+                    <!-- /ko -->
+                    <!-- ko ifnot:header.createdByName -->
+                    <span>You</span>
+                    <!-- /ko -->
+                    <!-- ko if:header.createTime -->
+                    <span data-bind="text: '(' + moment(header.createTime).format('lll') + ')'"></span>
+                    <!-- /ko -->
+                    <!-- ko if:header.modifiedByName() -->
+                    <strong>Modified By:</strong>
+                    <span data-bind="text:header.modifiedByName"></span>
+                    <!-- ko if:header.modifyTime() -->
+                    <span data-bind="text: '(' + moment(header.modifyTime()).format('lll') + ')'"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <br />
+    <br />
+    <!-- ko if: !$root.useLSPRole -->
+    <div class="container" id="dataSection">
+        <div class="row">
+            <div class="col mb-4">
+                <h2>QUOTES - Data &amp; Typicals</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col mb-3">
+                <div id="tabbed-typicals">
+                    <ul id="tab-list" class="nav nav-tabs mb-3" role="tablist">
+                        <!-- ko foreach: tabs -->
+                        <li class="nav-item">
+                            <a role="tab" data-toggle="tab" class="nav-link" data-bind="click: function(){ $root.selectTab(tabName); $root.selectFirstPage($index()); }, attr: { class: $root.selectedTab() === tabName ? 'nav-link active' : 'nav-link'}" style="cursor: pointer;"><em class="fas fa-edit edit"></em> <span data-bind="text: tabName"></span></a>
+
+                        </li>
+                        <!-- ko if: $parent.tabs().length > 1 -->
+                        <li>
+                            <a class="nav-link" style="cursor: pointer;" data-bind="click: function() { $root.removeTab(tabName); }"><i class="fas fa-times"></i></a>
+                        </li>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                        <li class="nav-item">
+                            <button id="btn-add-tab" type="button" class="btn pull-right btn-primary" style="margin-left:10px; margin-top:1px;" data-bind="click: function() { $root.showNewTabModalDialog(true); }, enable: $root.header.isActiveVersion">Add Tab</button>
+                        </li>
+                    </ul>
+                    <!-- ko foreach: tabs -->
+                    <div id="tab-content" class="tab-content" data-bind="visible: $root.selectedTab() === tabName">
+                        <div class="tab-pane show fade in active" id="tab1">
+                            <div class="well rounded-lg p-4">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="callout featured rounded-lg text-center p-3 mb-2">
+                                            <div class="label">Totals</div>
+                                            <div id="Total Pieces"><big><span data-bind="text: Math.round(totalPCS() * 100)/100"></span> Pieces</big></div>
+                                            <div id="Total_Hours"><big><span data-bind="text: Math.round(totalHours() * 100)/100"></span> Hours</big></div>
+                                        </div>
+                                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                            <!-- ko foreach: pages -->
+                                            <a class="nav-link text-center mb-2" data-toggle="pill" role="tab" style="cursor: pointer;" data-bind="click: function(){ $root.selectPage('v-' + $parent.tabName.replace(regex,'') + pageName.replace(regex,'')); }, css: { @*full: true,*@ empty: true, active: ($root.selectedPage() === ('v-' + $parent.tabName.replace(regex,'') + pageName.replace(regex,''))) }">
+                                                <div class="d-block"><em data-bind="attr: { class: (pagePCS() > 0) || (pageHours() > 0) ? 'fas fa-check' : 'fas fa-plus' }"></em> <span data-bind="text: pageName"></span></div>
+                                                <div class="d-block"><span data-bind="text: Math.round(pagePCS() * 100)/100"></span> Pieces // <span data-bind="text: Math.round(pageHours() * 100)/100"></span> Hrs</div>
+
+                                            </a>
+                                            <!-- /ko -->
+                                        </div>
+                                    </div>
+                                    <div class="col-9">
+                                        <div class="callout dark rounded-lg p-3">
+                                            <div class="tab-content">
+                                                <!-- ko foreach: pages -->
+                                                <div data-bind="visible: ($root.selectedPage() === ('v-' + $parent.tabName.replace(regex,'') + pageName.replace(regex,'')))">
+                                                    <h3 data-bind="text: pageName"></h3>
+                                                    <div class="row align-items-center mt-3 mb-3">
+                                                        <div class="col-6">
+                                                            <button class="btn btn-primary" data-bind="click: $root.toggleUnchecked()"><em class="fas fa-eye"></em> <span data-bind="text: $root.viewUnchecked() ? 'Hide Unchecked' : 'View Unchecked'"></span></button>
+                                                        </div>
+                                                        <div class="col-6 totals">
+                                                            <div class="form-row align-items-center">
+                                                                <div class="col text-center">
+                                                                    <div class="d-inline-block label">Totals</div>
+                                                                </div>
+                                                                <div class="col text-center">
+                                                                    <div class="d-inline-block"><big><span data-bind="text: Math.round(pagePCS() * 100)/100"></span> PCS</big></div>
+                                                                </div>
+                                                                <div class="col text-center">
+                                                                    <div class="d-inline-block"><big><span data-bind="text: Math.round(pageHours() * 100)/100"></span> Hrs</big></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-4">
+                                                            <label>Component Types</label>
+                                                        </div>
+                                                        <div class="col-2"></div>
+                                                        <div class="col-6">
+                                                            <div class="form-row">
+                                                                <div class="col text-center">
+                                                                    <label>Time</label>
+                                                                </div>
+                                                                <div class="col text-center">
+                                                                    <label>Quantity</label>
+                                                                </div>
+                                                                <div class="col text-center">
+                                                                    <label>Total Hours</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <!-- ko foreach: sections -->
+                                                            <div class="collapse-header p-3 mb-1" data-toggle="collapse" aria-expanded="true" data-bind='attr: {"data-target": "#" + $parentContext.$parent.tabName.replace(regex,"") + $parent.pageName.replace(regex,"") + sectionName.replace(regex,""), "aria-controls": $parentContext.$parent.tabName.replace(regex,"") + $parent.pageName.replace(regex,"") + sectionName.replace(regex,"")}'>
+                                                                <span data-bind="text: sectionName"></span>
+                                                                @*<span class="fa-stack float-right" style="cursor: pointer;">
+                                                                        <em class="fas fa-circle fa-stack-2x"></em>
+                                                                        <em class="fas fa-angle-down fa-stack-1x fa-inverse"></em>
+                                                                    </span>*@
+                                                            </div>
+                                                            <div class="collapse show" data-bind="attr: {id: $parentContext.$parent.tabName.replace(regex,'') + $parent.pageName.replace(regex,'') + sectionName.replace(regex,'')}">
+                                                                <div class="collapse-body">
+                                                                    <!-- ko foreach: items -->
+                                                                    <div class="row align-items-center mb-3" data-bind="visible: (isActive() || $root.viewUnchecked())">
+                                                                        <div class="col-auto">
+                                                                            <div class="magic-checkbox-wrapper">
+                                                                                <input class="magic-checkbox" type="checkbox" data-bind="click: function(){ isActive(!isActive()); return true; }, checked: isActive(), attr: {id: 'check-' + $parentContext.$parentContext.$parent.tabName.replace(regex,'') + $parentContext.$parent.pageName.replace(regex,'') + $parent.sectionName.replace(regex,'') + itemName.replace(regex,'')}, enable: $root.header.isActiveVersion" />
+                                                                                <label data-bind="attr: {for: 'check-' + $parentContext.$parentContext.$parent.tabName.replace(regex,'') + $parentContext.$parent.pageName.replace(regex,'') + $parent.sectionName.replace(regex,'') + itemName.replace(regex,'')}"></label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col">
+                                                                            <!-- ko if: $parent.sectionName === 'Typicals' -->
+                                                                            <a data-bind="click: function() { $root.viewAddExistingTypical(quoteDataID, true, itemName); }" style="cursor: pointer;"><span data-bind="text: itemName"></span></a>
+                                                                            <!-- /ko -->
+                                                                            <!-- ko if: $parent.sectionName != 'Typicals' -->
+                                                                            <span data-bind="text: itemName"></span>
+                                                                            <!-- /ko -->
+                                                                        </div>
+                                                                        <!-- ko if: $parent.sectionName === 'Typicals' -->
+                                                                        <div class="col-auto">
+                                                                            <a data-bind="click: function(){ $root.removeTypical(quoteDataID)}, enable: $root.header.isActiveVersion" style="cursor: pointer;">
+                                                                                <span><i class="fas fa-trash"></i></span>
+                                                                            </a>
+                                                                        </div>
+                                                                        <!-- /ko -->
+                                                                        <div class="col-6">
+                                                                            <div class="form-row ">
+                                                                                <div class="col">
+                                                                                    <input type="number" class="form-control" data-bind="value: itemTime, enable: $parent.sectionName == 'Typicals' ? false : isActive(), enable: $root.header.isActiveVersion" style="text-align: center;" onclick="select()" min="0" />
+                                                                                </div>
+                                                                                <div class="col">
+                                                                                    <input type="number" class="form-control" data-bind="value: itemQuantity, enable: isActive() && $root.header.isActiveVersion" style="text-align: center;" onclick="select()" min="0" />
+                                                                                </div>
+                                                                                <div class="col">
+                                                                                    <input type="number" class="form-control" data-bind="value: Math.round(itemTime() * itemQuantity() * 100)/100" style="text-align: center;" readonly />
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- /ko -->
+                                                                    <div class="row mb-3">
+                                                                        <div class="col">
+                                                                            <!-- ko if: sectionName === 'Typicals' -->
+                                                                            <button class="btn btn-primary" data-bind="click: function() { $root.showNewTypicalModalDialog(true, $parent.pageName, $parentContext.$parent.tabName); }, enable: $root.header.isActiveVersion"><em class="fas fa-plus"></em></button>
+                                                                            <!-- /ko -->
+                                                                            <!-- ko if: sectionName !== 'Typicals' -->
+                                                                            <button class="btn btn-primary" data-bind="click: function() { $root.showNewItemModalDialog(true, sectionName, $parent.pageName, $parentContext.$parent.tabName); }, enable: $root.header.isActiveVersion"><em class="fas fa-plus"></em></button>
+                                                                            <!-- /ko -->
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- /ko -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- /ko -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+</div>
+
+<!----------- New tab modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showNewTabModal" id="newTabModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newTabLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="newTabLabel">New Tab</h5>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <label for="recipient-name" class="col-form-label">Tab Name</label>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+
+                                <input type="text" class="form-control" id="tab-name" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { createNewTab($('#tab-name').val()); }">ADD</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { showNewTabModalDialog(false); }">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!----------- New item modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showNewItemModal" id="newItemModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newItemLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="newItemLabel">New Item</h5>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <label for="recipient-name" class="col-form-label">Item Name</label>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+
+                                <input type="text" class="form-control" id="item-name" data-bind="value: $root.newItem.itemName" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { createNewItem($root.newItem.itemName); }">ADD</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { showNewItemModalDialog(false); }">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!----------- New typical modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showNewTypicalModal" id="newTypicalModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newTypicalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="newTypicalLabel">New Typical</h5>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <label for="recipient-name" class="col-form-label">Typical Name</label>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+
+                                <input type="text" class="form-control" id="recipient-name" data-bind="value: $root.newTypical.name" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { showNewTypicalFormDialog(true, false); }">CREATE</button>
+                        </div>
+                    </div>
+                    <label for="recipient-name" class="col-form-label">Add existing</label>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <select class="selectpicker"
+                                        id="typicalTemplatesSelect"
+                                        data-style="btn-white shadow-sm"
+                                        data-bind="options: $root.typicalTemplates, optionsText: 'typicalName', optionsValue: 'quoteDataTypicalID', value: $root.typicalTemplates.quoteDataTypicalID"
+                                        data-none-selected-text="...">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { viewAddExistingTypical($('#typicalTemplatesSelect option:selected').val(), false, $('#typicalTemplatesSelect option:selected').text()); }">ADD</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { showNewTypicalModalDialog(false); }">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!----------- Create typical modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showNewTypicalForm" id="createTypicalModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="createTypicalLabel" aria-hidden="true" style="overflow-x: hidden; overflow-y: auto;">
+    <div class="modal-dialog modal-lg" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="createTypicalLabel" data-bind="visible: !$root.newTypical.readonly()">Create Typical</h5>
+                <h5 class="modal-title mr-auto" id="createTypicalLabel" data-bind="visible: $root.newTypical.readonly()"><span data-bind="text: $root.newTypical.name"></span></h5>
+            </div>
+            <div class="modal-body">
+                <h3 data-bind="text: $root.newTypical.name, visible: !$root.newTypical.readonly()"></h3>
+                <div class="row align-items-center mt-3 mb-3">
+                    <div class="col-6">
+                    </div>
+                    <div class="col-6 totals">
+                        <div class="form-row align-items-center">
+                            <div class="col text-center">
+                                <div class="d-inline-block label">Totals</div>
+                            </div>
+
+                            <div class="col text-center">
+                                <div class="d-inline-block"><big><span data-bind="text: $root.newTypical.pagePCS()"></span> PCS</big></div>
+                            </div>
+                            <div class="col text-center">
+                                <div class="d-inline-block"><big><span data-bind="text: $root.newTypical.pageHours()"></span> Hrs</big></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <label>Component Types</label>
+                    </div>
+                    <div class="col-2"></div>
+                    <div class="col-6">
+                        <div class="form-row">
+                            <div class="col text-center">
+                                <label>Time</label>
+                            </div>
+                            <div class="col text-center">
+                                <label>Quantity</label>
+                            </div>
+                            <div class="col text-center">
+                                <label>Total Hours</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <!-- ko foreach: $root.newTypical.sections -->
+                        <div class="collapse-header p-3 mb-1" data-toggle="collapse" aria-expanded="true" data-bind='attr: {"data-target": "#Typical" + sectionName().replace(regex,""), "aria-controls": "Typical" + sectionName().replace(regex,"")}'>
+                            <span data-bind="text: sectionName"></span>
+                            <span class="fa-stack float-right" style="cursor: pointer;">
+                                <em class="fas fa-circle fa-stack-2x"></em>
+                                <em class="fas fa-angle-down fa-stack-1x fa-inverse"></em>
+                            </span>
+                        </div>
+                        <div class="collapse show" data-bind="attr: {id: 'Typical' + sectionName().replace(regex,'')}">
+                            <div class="collapse-body">
+                                <!-- ko if: items().length > 0 -->
+                                <!-- ko foreach: items() -->
+                                <div class="row align-items-center mb-3">
+                                    <div class="col">
+                                        <span data-bind="text: itemName"></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-row ">
+                                            <div class="col">
+                                                <input type="number" class="form-control" data-bind="value: itemTime, enable: !$root.newTypical.readonly()" style="text-align: center;" onclick="select()" min="0" />
+                                            </div>
+                                            <div class="col">
+                                                <input type="number" class="form-control" data-bind="value: itemQuantity, enable: !$root.newTypical.readonly()" style="text-align: center;" onclick="select()" min="0" />
+                                            </div>
+                                            <div class="col">
+                                                <input type="number" class="form-control" data-bind="value: itemTime() * itemQuantity()" style="text-align: center;" readonly />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-lg-6" data-bind="visible: (!$root.newTypical.readonly() && !$root.showingTypical())">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { createNewTypical(); }">SAVE</button>
+                    </div>
+                    <div class="col-lg-6" data-bind="visible: ($root.newTypical.readonly() && !$root.showingTypical())">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { addExistingTypical($root.newTypical.quoteDataTypicalID); }">ADD</button>
+                    </div>
+                    <div class="col-lg-6" data-bind="visible: !$root.showingTypical()">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { $root.showNewTypicalForm(false); }">CANCEL</button>
+                    </div>
+                    <div class="col-lg-12" data-bind="visible: $root.showingTypical()">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { $root.showingTypical(false); $root.showNewTypicalForm(false); }">BACK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!----------- Conditions modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showConditionsModal" id="conditionsModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="conditionsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="conditionsLabel">Conditions</h5>
+            </div>
+            <div class="modal-body">
+                <!-- ko foreach: $root.conditions -->
+                <div class="magic-checkbox-wrapper">
+                    <input class="magic-checkbox" type="checkbox" data-bind="click: function(){ checked(!checked()); return true; }, checked: checked(), attr: {id: 'cond-' + quoteConditionID}, enable: $root.header.isActiveVersion" />
+                    <label data-bind="attr: {for: 'cond-' + quoteConditionID}, text: name"></label>
+                </div>
+                <!-- /ko -->
+            </div>
+            <div class="modal-footer">
+                <div class="col-lg-12 justify-content-end">
+                    <button type="button" class="btn btn-warning btn-block" data-bind="click: function() { showConditionsModalDialog(false); }">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ko with:templateCreation -->
+<div class="modal fade modal--forms" data-bind="showModal:isDialogDisplaying" id="conditionsModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="conditionsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="conditionsLabel">Template Creation</h5>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center">
+                    <!-- ko ifnot:templateGenerated -->
+                    <div class="spinner-border" role="status" aria-hidden="true"></div>
+                    <strong class="ml-4">Creating template...</strong>
+                    <!-- /ko -->
+                    <!-- ko if:templateGenerated -->
+                    <div class="d-flex flex-column">
+                        <strong class="mb-2">Template has been created...</strong>
+                        <button type="button" class="btn btn-green" data-bind="click:openPreviewTemplatePage"><i class="fas fa-eye mr-2"></i>PREVIEW TEMPLATE</button>
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="col-12 text-center">
+                    <button type="button" class="btn btn-warning px-3" data-bind="click:closeDialog">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+
+@await Html.PartialAsync("_AddMultipleRecords")
+@await Html.PartialAsync("_NotificationDialog")
+

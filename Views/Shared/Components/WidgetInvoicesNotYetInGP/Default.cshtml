@@ -1,0 +1,34 @@
+﻿@model ServiceTRAX.ViewComponents.WidgetInvoicesNotYetInGP.WidgetInvoicesNotYetInGPViewModel
+
+<style type="text/css">
+    .card-borders {
+        margin: 5px;
+        height: 96%;
+    }
+
+    .wintigp-centered-counter {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 8em;
+    }
+</style>
+
+
+
+<div class="card card-borders">
+    <div class="card-body">
+        <div class="wintigp-centered-counter col-10">
+            <p class="text-center">
+                @Model.InvoicesCount
+            </p>
+            <a href="@Model.GPSiteURL" target="_blank">
+                <h4 class="text-center">
+                    <strong>Invoices Not Yet Imported to GP</strong>
+                </h4>
+            </a>
+        </div>
+    </div>
+</div>

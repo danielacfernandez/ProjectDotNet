@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.40" author="NDR" dateCreation="2023-05-25" dateLastChange="2023-10-19"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Local Service Provider Rates</title>
+        <defaultOrder>LSPRateID</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>False</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[SELECT
+	 LSPR.[LSPRateID]
+	,LSPR.[RoleID]
+	,R.NAME + ' - ' + O.[NAME] AS RoleName
+	,LSPR.[Rate]
+        ,LSPR.[OTRate]
+	,LSPR.[CreateTime]
+	,C.UserName AS [CreatedBy]
+	,LSPR.[IsActive]
+	,LSPR.[ModifyTime]
+	,M.UserName AS [ModifiedBy]
+FROM [dbo].[LSPRate] LSPR
+LEFT JOIN [dbo].[AspNetUsers] C
+	ON LSPR.[CreatedBy] = C.UserId
+LEFT JOIN [dbo].[AspNetUsers] M
+	ON LSPR.[ModifiedBy] = M.UserId
+inner JOIN [dbo].[ROLES] R
+	ON LSPR.[RoleID] = R.ROLE_ID
+           -- and R.UsedByQuoting = 1
+inner join dbo.Organizations O with(nolock)
+on R.ORGANIZATION_ID = O.ORGANIZATION_ID and O.IsActive = 1
+WHERE LSPR.[LSPId] = @LSPID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[LSPRateID] = @LSPRateID" autoUpdateQuery="False" updateTable=""><![CDATA[UPDATE [dbo].[LSPRate] 
+SET     [RoleID] = @RoleID, 
+	[Rate] = case when ltrim(rtrim(@Rate)) = '' then null else @Rate end, 
+        [OTRate] = case when ltrim(rtrim(@OTRate)) = '' then null else @OTRate end,
+	[ModifyTime] = GETDATE(), 
+	[ModifiedBy] = @__UserId__, 
+	[IsActive] = @IsActive
+where LSPRateId = @LSPRateID]]></sqlUpdate>
+        <sqlInsert where="LSPRateId=scope_identity()"><![CDATA[INSERT INTO [dbo].[LSPRate] ([LSPId], [RoleID], [Rate], [OTRate], [CreateTime], [CreatedBy], [IsActive]) VALUES
+(
+	@LSPID,
+	@ROLEID,
+	@RATE,
+        @OTRATE,
+	GETDATE(),
+	@__UserId__,
+	1
+)]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons></buttons>
+        <columns>
+<column id="LSPRateID" label="LSPRateID" width="50" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textarea" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RoleID" label="RoleName" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="RoleName" dataSelectCacheOnClient="True" preloadDataSelect="True" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[SELECT TOP 100 PERCENT R.ROLE_ID as RoleId, R.NAME + ' - ' + O.[NAME] as RoleName
+FROM [dbo].[ROLES] R with(nolock)
+inner join dbo.Organizations O with(nolock)
+on R.ORGANIZATION_ID = O.ORGANIZATION_ID and O.IsActive = 1
+ORDER BY R.Organization_Id, R.NAME ASC]]></dataSelect></column>
+<column id="RoleName" label="RoleName" width="200" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Rate" label="Rate" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="#,##0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="OTRate" label="OT Rate" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="#,##0.00" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="CreateTime" label="CreateTime" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="CreatedBy" label="CreatedBy" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ModifyTime" label="ModifyTime" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="ModifiedBy" label="ModifiedBy" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="IsActive" label="IsActive" width="75" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="center" headerAlign="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

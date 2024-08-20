@@ -1,0 +1,226 @@
+﻿@model ServiceTRAX.Models.ViewModels.TimeEntryMemberViewModel
+@using ServiceTRAX.Identity
+
+@{
+    ViewData["Title"] = "Time Entry Member";
+}
+
+@section StyleSheets {
+
+<link rel="stylesheet" href="~/css/datepicker.css" />
+
+<style>
+    .gridContent {
+        position: absolute;
+        border: solid 1px #c0c0c0;
+        left: 20px;
+        top: 195px;
+        right: 20px;
+        bottom: 70px;
+    }
+
+    .cmdNewRecord {
+        display: inline-block;
+    }
+</style>
+}
+
+
+
+@section Scripts {
+
+<link rel="stylesheet" href="~/css/mygrid.1.0.css" asp-append-version="true">
+<script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+<script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+<script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+<script type='text/javascript' src='~/lib/datepicker.js'></script>
+<script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+<script type='text/javascript' src='~/override/main-custom.js' asp-append-version="true"></script>
+<script type='text/javascript' src='~/js/notification-dialog.js' asp-append-version="true"></script>
+
+<script type="text/javascript">
+
+          /*  const openJobInvoice = function (jobid, invoiceid, source) {
+                redirectToPage('/Billing/ByJobInvoice', { 'OrganizationID': @Model.OrganizationID, 'JobID': jobid, 'InvoiceID': invoiceid, 'SelectedTab': source });
+            }
+            */
+
+
+            $(function () {
+                var gridSLTE = "TimeEntryMember";
+                var gridSL = "TimeEntryCustomer";
+                var oGridSLTE = null;
+                var oGridSL = null;
+                var model =  @Html.Raw(Json.Serialize(Model));
+
+
+                model.getGridParameters = function () {
+                    return {
+                        'ORGANIZATIONID': @Model.OrganizationID,
+                        'FROMDATE': moment(model.dateFrom()).toISOString(),
+                        'TODATE': moment(model.dateTo()).toISOString(),
+                        'RUNNING_AS_USERID': @User.GetUserID(),
+                        'JOBID': null
+                    };
+                }
+
+                function gridResetSLTE() {
+                    oGridSLTE.reset(gridSLTE, model.gridEvents, model.getGridParameters());
+                }
+
+                function gridResetSL() {
+                    oGridSL.reset(gridSL, model.gridEvents, model.getGridParameters());
+                }
+
+                model.dateFrom = ko.observable(model.dateFrom);
+                model.dateFrom.subscribe(function () {
+                    model.requiresRefresh = true;
+                    gridResetSLTE();
+                    gridResetSL();
+                });
+
+                model.dateTo = ko.observable(model.dateTo);
+                model.dateTo.subscribe(function () {
+                    model.requiresRefresh = true;
+                    gridResetSLTE();
+                    gridResetSL();
+                });
+
+                oGridSLTE = new clsMyGrid(gridSLTE, document.getElementById('openTimeEntryMemberSLTETEG'), null, model.gridEvents, true, model.getGridParameters());
+                oGridSL = new clsMyGrid(gridSL, document.getElementById('openTimeEntryMemberSLTEG'), null, model.gridEvents, true, model.getGridParameters());
+
+                //
+                // Custom Bindings
+                //
+                ko.bindingHandlers.selectPicker = ServiceTRAXBindingHandlers.selectPicker;
+                ko.bindingHandlers.showModal = ServiceTRAXBindingHandlers.showModal;
+                ko.bindingHandlers.datepicker = ServiceTRAXBindingHandlers.datepicker;
+                //
+                //
+
+                 model.getSelectedTab = function (value) {
+                    switch (value.toUpperCase()) {
+                    case 'SLTE':
+                        return ko.observable('SLTE'); break;
+                    case 'SL':
+                        return ko.observable('SL'); break;
+                    default:
+                        return ko.observable('SLTE'); break;
+                    }
+                }
+    model.selectedTab='SLTE';
+        model.selectedTab = model.getSelectedTab(model.selectedTab);
+        model.firstTimeSwitch = true;
+        model.requiresRefresh = false;
+
+        model.selectSLTE = () => {
+            model.selectedTab('SLTE');
+
+            if (model.firstTimeSwitch || model.requiresRefresh) {
+                model.firstTimeSwitch = false;
+                model.requiresRefresh = false;
+                gridResetSLTE();
+            }
+        }
+        model.selectSL = () => {
+            model.selectedTab('SL');
+
+            if (model.firstTimeSwitch || model.requiresRefresh) {
+                model.firstTimeSwitch = false;
+                model.requiresRefresh = false;
+                gridResetSL();
+            }
+        }
+
+
+        model.SLTESelected = ko.pureComputed(function () {
+            return model.selectedTab() === 'SLTE';
+        });
+
+        model.SLSelected = ko.pureComputed(function () {
+            return model.selectedTab() === 'SL';
+        });
+
+
+
+
+                ko.applyBindings(model);
+
+            });
+
+</script>
+
+}
+
+
+
+<div id="content" class="pl-0">
+    <div class="container-fluid pl-0">
+        <div class="d-flex flex-row">
+            <h2>TIME ENTRY</h2>
+            <div class="ml-auto">
+                <div class="form-inline" style="align-items:center">
+                    <label class="mr-2">
+                        Date From
+                    </label>
+                    <div class="input-group" id="triggerFromDate" style="max-width: 190px">
+                        <input type="text"
+                               autocomplete="off"
+                               class="form-control m-0"
+                               data-bind="datepicker: dateFrom, datepickerOptions: {  trigger: '#triggerFromDate' }"
+                               required />
+                        <div class="input-group-append simulate-button">
+                            <span class="input-group-text input-group-append-custom">
+                                <i class="fas fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <label class="ml-3 mr-2">
+                        Date To
+                    </label>
+                    <div class="input-group" id="triggerToDate" style="max-width: 190px">
+                        <input type="text" 
+                               autocomplete="off"
+                               class="form-control m-0"
+                               data-bind="datepicker: dateTo, datepickerOptions: {  trigger: '#triggerToDate' }"
+                               required />
+                        <div class="input-group-append simulate-button">
+                            <span class="input-group-text input-group-append-custom">
+                                <i class="fas fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="overflow:hidden">
+        <div id="content-wrap" >
+            <div class="container-fluid ml-1 pl-0">
+                <div class="d-flex mb-4 billing-header-small-font">
+                    <div class="d-flex">
+                        <ul class="nav nav-tabs w-100 billing-header-small-font">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-bind="click:selectSLTE, css: {active: SLTESelected}">MEMBER (Payroll)</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-bind="click:selectSL, css: {active: SLSelected}">CUSTOMER (Billing)</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="row">
+                        <div class="w-">
+                            <div data-bind="visible:SLTESelected">
+                                <div class="gridContent " id="openTimeEntryMemberSLTETEG"></div>
+                            </div>
+                            <div data-bind="visible:SLSelected">
+                                <div class="gridContent " id="openTimeEntryMemberSLTEG"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

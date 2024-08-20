@@ -1,0 +1,251 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXExpensesViewModel
+@using ServiceTRAX.Utils
+@using ServiceTRAX.Identity
+
+@{
+    ViewData["Title"] = "Expenses";
+}
+
+@section StyleSheets {
+    <link rel="stylesheet" href="~/css/datepicker.css" />
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 275px;
+            right: 20px;
+            bottom: 30px;
+        }
+
+        .btn-insert-expenses {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 50%;
+            top: 245px;
+            right: 20px;
+            z-index: 1;
+        }
+    </style>
+}
+
+
+@section Scripts {
+
+
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout.validation/knockout.validation.min.js'></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+    <script type='text/javascript' src='~/lib/datepicker.js'></script>
+    <script type='text/javascript' src='~/js/TimeEntry/expenses.js' asp-append-version="true"></script>
+
+
+    <script type="text/javascript">
+
+        $(function () {
+            // Get the MVC model as JS and Initialize the JS code
+            initExpenses(@Html.Raw(JSONUtils.JsonUTC(Model)));
+
+
+        });
+
+
+
+    </script>
+}
+
+
+<style type="text/css">
+
+    .bs-select-all, .bs-deselect-all {
+        color: #212529;
+        background-color: #dae0e5;
+        border-color: #d3d9df;
+    }
+
+    .highlightNewEntry {
+        background-color: #00ff593d;
+    }
+
+    .expenses-small-font {
+        font-size: 0.80rem;
+    }
+
+
+        .expenses-small-font label {
+            font-size: 0.85rem;
+            margin-bottom: .3rem;
+        }
+</style>
+
+<div id="content">
+    <div class="container-fluid p-0 m-0" id="bulktimeentry">
+        <div class="collapse-panel show" style="padding: 0.5rem !important;">
+            <div class="col-lg-12">
+                <div class="form-row expenses-small-font  mb-3">
+                    <div class="col-12">
+                        <div class="form-row">
+                            <div class="col-6">
+                                <div class="form-row">
+                                    <div class="col-2">
+                                        <label for="date">
+                                            Date
+                                        </label>
+                                        <div class="input-group" id="triggerworkDate">
+                                            <input type="text" class="form-control expenses-small-font"
+                                                   autocomplete="off"
+                                                   id="workDate"
+                                                   data-bind="datepicker: date, datepickerOptions: { trigger: '#triggerworkDate' }"
+                                                   required />
+                                            <div class="input-group-append simulate-button">
+                                                <span class="input-group-text input-group-append-custom">
+                                                    <i class="fas fa-calendar"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <label>
+                                            Jobs
+                                        </label>
+                                        <select data-live-search="true"
+                                                data-style="btn-white shadow-sm expenses-small-font"
+                                                data-bind="selectPicker: true, options: jobs, optionsText: 'jobName', optionsValue: 'jobID', value: selectedJob,  valueAllowUnset: true"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-5">
+                                        <label>Open Reqs</label>
+                                        <select data-style="btn-white shadow-sm expenses-small-font"
+                                                data-bind="enable: selectedJob !== null && serviceRequests().length > 0 && !loadingServices(),, selectPicker: true, options: serviceRequests, optionsText: 'serviceNoDesc', optionsValue: 'serviceId', value: selectedService">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-row">
+                                    <div class="col-2">
+                                        <label>Work Code</label>
+                                        <select data-style="btn-white shadow-sm expenses-small-font"
+                                                data-bind="disable: loadingWorkcodes, selectPicker: true, options: workCodes, optionsText: 'itemName', optionsValue: 'itemId', value: selectedWorkCode, valueAllowUnset: true"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label>Resource</label>
+                                        <select data-style="btn-white shadow-sm expenses-small-font"
+                                                data-live-search="true"
+                                                data-bind="selectPicker: true, options: resources, optionsText: 'resource_name', optionsValue: 'resource_id', value: selectedResource, valueAllowUnset: true"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="form-row">
+                                            <div class="col-4">
+                                                <label>
+                                                    Quantity
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="number" min="0" step="0.25" class="form-control expenses-small-font" data-bind="value: hoursQty" />
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <label>
+                                                    Item Cost
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="number" min="0" step="0.25" class="form-control expenses-small-font" data-bind="value: itemCost" />
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <label>
+                                                    Bill Rate
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="number" min="0" step="0.25" class="form-control expenses-small-font" data-bind="value: billRate" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-6">
+                                        <label>Pay Code</label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker: true, options: payCodes, optionsText: 'name', optionsValue: 'id', value: selectedPayCode, valueAllowUnset: true"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*<div class="form-row mb-3">*@
+                @*<div class="col-4">
+                        <label>Resource</label>
+                        <select data-style="btn-white shadow-sm expenses-small-font"
+                                data-live-search="true"
+                                data-bind="selectPicker: true, options: resources, optionsText: 'resource_name', optionsValue: 'resource_id', value: selectedResource, valueAllowUnset: true"
+                                data-none-selected-text="...">
+                        </select>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-row">
+                            <div class="col-4">
+                                <label>
+                                    Quantity
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" min="0" step="0.25" class="form-control expenses-small-font" data-bind="value: hoursQty" />
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <label>
+                                    Item Cost
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" min="0" step="0.25" class="form-control expenses-small-font" data-bind="value: itemCost" readonly />
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <label>
+                                    Bill Rate
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" min="0" step="0.25" class="form-control expenses-small-font" data-bind="value: billRate" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>*@
+                @*<div class="col-4">
+                        <div class="form-row h-100">
+                            <div class="col-6 ml-auto" style="align-self: flex-end; text-align: end;">
+                                <button data-bind="visible:enableInsertButton, click: insertExpenses" class="btn btn-green"><em class="fas fa-plus mr-2"></em> INSERT EXPENSES</button>
+                            </div>
+                        </div>
+                    </div>*@
+                @*</div>
+                    <div class="form-row mb-3">
+                    </div>*@
+            </div>
+            <div class="col-12 text-right">
+                <button data-bind="enable:enableInsertButton, click: insertExpenses, css: { 'btn-disabled':enableInsertButton() !== true }" class="btn btn-green">
+                    <em class="fas fa-plus mr-2"></em> INSERT EXPENSES
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="d-flex">
+                <div id="content-wrap">
+                    @*<button data-bind="enable:enableInsertButton, click: insertExpenses, css: { 'btn-disabled':enableInsertButton() !== true }" class="btn btn-insert-expenses multiselectButton"><em class="fas fa-plus mr-2"></em> INSERT EXPENSES</button>*@
+                    <div class="gridContent myGrid" id="ExpensesTEG"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

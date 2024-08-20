@@ -1,0 +1,114 @@
+﻿@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+<nav class="quoterequest-nav navbar-dark bg-dark-blue" id="quoteSubMenuNav">
+    <div class="row">
+        <div class="col-2" style="height: 30px;">
+            <ul class="navbar-nav">
+                <li class="nav-item" style="cursor:pointer;">
+                    <a class="nav-link submenujumpbutton" data-toggle="tooltip" data-placement="bottom" title="QUOTE DETAILS" data-jumpto="detailsSection"><i class="fas fa-quote-left"></i><span>Link</span></a>
+                </li>
+                <li class="nav-item" style="cursor:pointer;">
+                    <a class="nav-link submenujumpbutton" data-toggle="tooltip" data-placement="bottom" title="QUOTE DATA" data-jumpto="dataSection"><i class="fas fa-tasks"></i><span>Link</span></a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-1">
+            <label style="color: red;" data-bind="visible: $root.header.emailTestNotifyActive">TEST MODE</label>
+        </div>
+        <div class="col-9">
+            <ul class="navbar-nav navbar-right">
+                <!-- ko if:canSetReadyToSchedule && serviceRequestID && !useLSPRole -->
+                <li class="nav-item" style="display: none" data-bind="visible: true">
+                    <!-- ko ifnot:settingReadyToSchedule-->
+                    <a class="btn btn-green" data-bind="click:setReadyToSchedule">
+                        <i class="fas fa-calendar-day"></i><span class="ml-2">READY TO SCHEDULE</span>
+                    </a>
+                    <!--/ko-->
+                    <!-- ko if:settingReadyToSchedule -->
+                    <a class="btn btn-success btn-disabled d-flex">
+                        <div class="align-self-center spinner-border spinner-border-sm" role="status"></div>
+                        <span class="mx-3">SCHEDULING...</span>
+                    </a>
+                    <!--/ko-->
+                </li>
+                <!-- /ko -->
+                @if (User.UserHasThisPermission(Permissions.QuoteTemplate) && !Model.UseLSPRole)
+                {
+                    <li class="nav-item">
+                        <div class="dropdown">
+                            <a class="btn btn-primary dropdown-toggle" id="submenu-template-dropdown" data-toggle="dropdown" data-bind="class: !$root.header.isActiveVersion ? 'btn-disabled' : ''">
+                                <span id="template-title">QUOTE TEMPLATE</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item template-dropdown" id="temp-a" style="cursor: pointer;" data-bind="click: function() { $root.selectTemplate($('#temp-a').html()) }">Lines, with Hours & Rate</a>
+                                <!-- ko if:organizationID != 23 && organizationID != 24 -->
+                                <a class="dropdown-item template-dropdown" id="temp-b" style="cursor: pointer;" data-bind="click: function() { $root.selectTemplate($('#temp-b').html()) }">Lines, no Hours & Rate</a>
+                                <a class="dropdown-item template-dropdown" id="temp-c" style="cursor: pointer;" data-bind="click: function() { $root.selectTemplate($('#temp-c').html()) }">Total, no Lines</a>
+                                <!--/ko-->
+                                <!-- ko if:organizationID != 22 && organizationID != 25 -->
+                                <a class="dropdown-item template-dropdown" id="temp-d" style="cursor: pointer;" data-bind="click: function() { $root.selectTemplate($('#temp-d').html()) }">ACI - Lines, no Hours & Rate</a>
+                                <a class="dropdown-item template-dropdown" id="temp-e" style="cursor: pointer;" data-bind="click: function() { $root.selectTemplate($('#temp-e').html()) }">ACI - Total, no Lines</a>
+                                <!--/ko-->
+                            </div>
+                        </div>
+                    </li>
+                }
+                @*<li class="nav-item">
+            <a class="btn btn-success" id="preview-link" data-bind="attr: { href: $root.eyeLink() && `ProjectFiles/@Model.Header.Project_No/@Model.Header.Request_No/@Model.Header.Version_No/Quote${@Model.Header.Project_No}-${@Model.Header.Request_No}-${@Model.Header.Version_No}.html`, target: '_blank' }">
+                <i class="fas fa-eye"></i>
+            </a>
+        </li>*@
+                @if (User.UserHasThisPermission(Permissions.QuoteCreateSendUpdate) && !Model.UseLSPRole)
+                {
+                    <li class="nav-item">
+                        <div class="bg-dark-form__body" style="margin-right: 12px;">
+                            <label style="color: white;" for="ToSelect">To:</label>
+                            <select class="selectpicker"
+                                    id="ToSelect"
+                                    data-style="btn btn-primary dropdown-toggle"
+                                    data-bind="options: $root.emailContacts, optionsText: 'contactName', optionsValue: 'email', selectedOptions: $root.to"
+                                    title="..."
+                                    multiple>
+                            </select>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="bg-dark-form__body" style="margin-right: 10px;">
+                            <label style="color: white;" for="ToSelect">CC:</label>
+                            <select class="selectpicker"
+                                    id="CcSelect"
+                                    data-style="btn btn-primary dropdown-toggle"
+                                    data-bind="options: $root.emailContacts, optionsText: 'contactName', optionsValue: 'email', selectedOptions: $root.cc"
+                                    title="..."
+                                    multiple>
+                            </select>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <!-- ko ifnot: $root.sendingEmail -->
+                        <a class="btn btn-success" data-bind="click: function() { sendEmail() }, class: !$root.header.isActiveVersion ? 'btn-disabled' : ''">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if: $root.sendingEmail -->
+                        <div class="spinner-border text-success" style="vertical-align: -webkit-baseline-middle;" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <!-- /ko -->
+                    </li>
+                }
+                @*@if (User.UserHasThisPermission(Permissions.QuoteSendUpdateToPM) && !User.UserHasThisPermission(Permissions.QuoteCreateSendUpdate)) {*@
+                @if (Model.UseLSPRole)   
+                {
+                    <li class="nav-item">
+                        <!-- ko ifnot: $root.sendingEmail -->
+                        <a class="btn btn-success" data-bind="click: function() { sendEmail() }, class: !$root.header.isActiveVersion ? 'btn-disabled' : ''">
+                            <i class="fas fa-envelope"></i> SEND EMAIL TO PM
+                        </a>
+                        <!-- /ko -->
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

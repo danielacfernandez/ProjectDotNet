@@ -1,0 +1,258 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXBulkTimeEntryViewModel
+@using ServiceTRAX.Utils
+
+@{
+    ViewData["Title"] = "Bulk Time Entry";
+}
+
+@section StyleSheets {
+    <link rel="stylesheet" href="~/css/datepicker.css" />
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+}
+
+@section Scripts {
+
+    <script type='text/javascript' language='javascript' src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout.validation/knockout.validation.min.js'></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+    <script type='text/javascript' src='~/lib/datepicker.js'></script>
+    <script type='text/javascript' src='~/js/TimeEntry/timeentry-picker-modal.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/TimeEntry/bulk-timeentry.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/notification-dialog.js' asp-append-version="true"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            // Get the MVC model as JS and Initialize the JS code
+            initBulkTimeEntry(@Html.Raw(JSONUtils.JsonUTC(Model)));
+        });
+    </script>
+}
+
+
+<style type="text/css">
+
+    .bs-select-all, .bs-deselect-all {
+        color: #212529;
+        background-color: #dae0e5;
+        border-color: #d3d9df;
+    }
+
+    .highlightNewEntry {
+        background-color: #00ff593d;
+    }
+
+    .table td {
+        padding: 0.35rem 0.75rem;
+    }
+
+    .gridContent {
+        position: absolute;
+        border: solid 1px #c0c0c0;
+        left: 20px;
+        top: 335px;
+        right: 20px;
+        bottom: 35px;
+    }
+
+    .btn:disabled {
+        cursor: default;
+    }
+
+    .btn-green:disabled:hover {
+        background-color: #2DAF4B;
+    }
+
+    .bulk-small-font {
+        font-size: 0.80rem;
+    }
+
+    .bulk-panel-headers {
+        font-size: 0.75rem !important;
+        margin-bottom: .1rem !important;
+    }
+
+    .bulk-small-font label {
+        font-size: 0.85rem;
+        margin-bottom: .3rem;
+    }
+</style>
+
+<div id="content" class="pt-1">
+    <div class="container-fluid" id="bulktimeentry">
+        <div class="">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-3 bulk-small-font px-0">
+                        <label for="date" class="bulk-panel-headers">
+                            View Control
+                        </label>
+                        <div class="collapse-panel show mr-1">
+                            <div class="form-row mb-3">
+                                <div class="col-12">
+                                    <label>
+                                        Jobs
+                                    </label>
+                                    <select data-live-search="true"
+                                            data-style="btn-white shadow-sm bulk-small-font"
+                                            data-bind="enable: !loadingRelatedJobInfo(), selectPicker: true, options: jobs, optionsText: 'jobName', optionsValue: 'jobId', value: selectedJob,  valueAllowUnset: true"
+                                            data-none-selected-text="...">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row mb-3">
+                                <div class="col-6">
+                                    <label for="date">
+                                        Date Start
+                                    </label>
+                                    <div class="input-group" id="triggerstartDate">
+                                        <input type="text" class="form-control bulk-small-font"
+                                               autocomplete="off"
+                                               id="startDate"
+                                               data-bind="datepicker: startDate, datepickerOptions: { trigger: '#triggerstartDate' }"
+                                               required />
+                                        <div class="input-group-append simulate-button">
+                                            <span class="input-group-text input-group-append-custom">
+                                                <i class="fas fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label for="date">
+                                        Date End
+                                    </label>
+                                    <div class="input-group" id="triggerendDate">
+                                        <input type="text" class="form-control bulk-small-font"
+                                               autocomplete="off"
+                                               id="endDate"
+                                               data-bind="datepicker: endDate, datepickerOptions: { trigger: '#triggerendDate' }"
+                                               required />
+                                        <div class="input-group-append simulate-button">
+                                            <span class="input-group-text input-group-append-custom">
+                                                <i class="fas fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-9 bulk-small-font px-0">
+                        <label for="date" class="bulk-panel-headers">
+                            Bulk Insert Parameters
+                        </label>
+                        <div class="collapse-panel show">
+                            <div class="row">
+                                <div class="col-3 border-right">
+                                    <div class="form-row">
+                                        <div class="col-6 pr-0">
+                                            <label for="date">
+                                                Insert Date
+                                            </label>
+                                            <div class="input-group" id="triggerworkDate">
+                                                <input type="text" class="form-control bulk-small-font"
+                                                       autocomplete="off"
+                                                       id="workDate"
+                                                       data-bind="datepicker: date, datepickerOptions: { trigger: '#triggerworkDate' }"
+                                                       required />
+                                                <div class="input-group-append simulate-button">
+                                                    <span class="input-group-text input-group-append-custom">
+                                                        <i class="fas fa-calendar"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row mt-2">
+                                        <div class="col-6">
+                                            <label>
+                                                Start Time
+                                            </label>
+                                            <button class="btn btn-sm btn-block btn-primary bulk-small-font" data-bind="click:displayStartTimeSetDialog">
+                                                <i class="fas fa-clock mr-2"></i><span data-bind="text:entryStartTimeCaption"></span>
+                                            </button>
+                                        </div>
+                                        <div class="col-6">
+                                            <label>
+                                                End Time
+                                            </label>
+                                            <button class="btn btn-sm btn-block btn-primary bulk-small-font" data-bind="click:displayEndTimeSetDialog">
+                                                <i class="fas fa-clock mr-2"></i><span data-bind="text:entryEndTimeCaption"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="col-12 text-center" data-bind="text:timeDifferenceCaption"></div>
+                                    </div>
+                                </div>
+                                <div class="col-9">
+                                    <div class="form-row mb-3">
+                                        <div class="col-6">
+                                            <label>
+                                                Service Requests
+                                                <span data-bind="visible:loadingRelatedJobInfo()" class="ml-1 text-black-50">Loading...<i class="fas fa-spinner fa-pulse ml-1"></i></span>
+                                            </label>
+                                            <select id="serviceRequestsMultiSelect"
+                                                    data-style="btn-white shadow-sm bulk-small-font"
+                                                    data-bind="enable: selectedJob !== null && serviceRequests().length > 0, selectPicker: true, options: serviceRequests, optionsText: 'cleanDescription', optionsValue: 'requestID', value: selectedServiceRequest, valueAllowUnset: true">
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <label>Work Code</label>
+                                            <select data-style="btn-white shadow-sm bulk-small-font"
+                                                    data-bind="selectPicker: true, options: workCodes, optionsText: 'name', optionsValue: 'item_id', value: selectedWorkCode, valueAllowUnset: true"
+                                                    data-none-selected-text="...">
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <label>Pay Code</label>
+                                            <select data-style="btn-white shadow-sm bulk-small-font"
+                                                    data-bind="selectPicker: true, options: payCodes, optionsText: 'name', optionsValue: 'id', value: selectedPayCode, valueAllowUnset: true"
+                                                    data-none-selected-text="...">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row mb-3">
+
+                                        <div class="col-10">
+                                            <label>Members</label>
+                                            <select multiple
+                                                    id="membersMultiselect"
+                                                    data-live-search="true"
+                                                    data-selected-text-format="count > 5"
+                                                    data-actions-box="true"
+                                                    data-style="btn-white shadow-sm bulk-small-font"
+                                                    data-bind="selectPicker: true, options: members, optionsText: 'resource_name', optionsValue: 'resource_id', selectedOptions: selectedMembers">
+                                            </select>
+                                        </div>
+                                        <div class="col-2 ml-auto" style="align-self: flex-end; text-align: end;">
+                                            <button data-bind="hidden:insertingBulkTimes, enable:enableInsertButton()===true, click: insertBulkTimes, attr: { title: enableInsertButtonTitle }"
+                                                    class="btn btn-sm btn-block btn-green bulk-small-font">
+                                                <em class="fas fa-plus mr-2"></em> INSERT BULK TIMES
+                                            </button>
+                                            <button data-bind="visible:insertingBulkTimes, enable:false"
+                                                    class="btn btn-sm btn-block btn-green bulk-small-font">
+                                                <i class="fas fa-spinner fa-spin mr-2"></i>INSERTING BULK TIMES...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="content-wrap">
+            <div class="gridContent" id="BulkTimeEntriesTEG"></div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_TimeEntryPickerModal")
+@await Html.PartialAsync("_NotificationDialog")

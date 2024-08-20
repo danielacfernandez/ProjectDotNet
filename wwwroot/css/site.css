@@ -1,0 +1,335 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand {
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.border-top {
+    border-top: 1px solid #e5e5e5;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+    font-size: 1rem;
+    line-height: inherit;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+    overflow-x: hidden;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    font-size: 0.80rem;
+    line-height: 20px;
+}
+
+
+.widget-shadow {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+@media (min-width: 1400px) {
+    .container, .container-sm, .container-md, .container-lg, .container-xl {
+        max-width: 98vw;
+    }
+}
+
+
+.btn-disabled {
+    color: grey !important;
+    cursor: default;
+    background-color: #254d91;
+    border-color: #254d91;
+    pointer-events: none;
+}
+
+    .btn-disabled :hover {
+        background-color: #254d91;
+        border-color: #254d91;
+    }
+
+
+.magic-checkbox[disabled] + label, .magic-radio[disabled] + label {
+    color: unset;
+}
+
+.trumbowyg-box .trumbowyg-editor {
+    background-color: white;
+}
+
+.invalid-feedback {
+    display: unset;
+}
+
+.servicetrax-file-input {
+    overflow: hidden;
+    position: relative;
+}
+
+    .servicetrax-file-input [type=file] {
+        cursor: inherit;
+        display: block;
+        font-size: 999px;
+        filter: alpha(opacity=0);
+        min-height: 100%;
+        min-width: 100%;
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        text-align: right;
+        top: 0;
+    }
+
+
+/* Remove default bullets */
+#side-menu-ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    padding-left: unset;
+}
+
+    #side-menu-ul ul {
+        padding-left: 25px;
+    }
+
+
+/* Style the caret/arrow */
+.side-menu-caret {
+    cursor: pointer;
+    user-select: none; /* Prevent text selection */
+}
+
+    /* Create the caret/arrow with a unicode, and style it */
+    .side-menu-caret::before {
+        content: "\25B6";
+        color: black;
+        display: inline-block;
+        margin-right: 6px;
+    }
+
+.hover-anchor-behavior {
+    cursor: pointer;
+}
+
+    .hover-anchor-behavior:hover {
+        color: #0f2852;
+    }
+
+.avatarfix {
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    height: 48px;
+    width: 48px;
+}
+
+.ko-load-none {
+    display: none;
+}
+
+table.custom-fields-table {
+    /*border: 1px solid white;*/
+    background-color: #eeedec;
+}
+
+.custom-fields-table td {
+    color: #0f2852;
+}
+
+
+.custom-fields-table .selected {
+    background-color: #1b6ec2;
+    color: #fff;
+}
+
+.custom-fields-table td {
+}
+
+.buttonize:hover {
+    cursor: pointer;
+    filter: brightness(0.9);
+}
+
+.mobile-header-banner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: xx-small;
+    opacity: .9;
+}
+
+.requestMissingFieldError {
+    box-shadow: 0px 0px 7px 3px #ffbf00 !important;
+}
+
+
+.widget-table {
+    color: #707070;
+    font-size: .85rem;
+}
+
+    .widget-table thead {
+        background-color: #F8F8F8;
+        color: #0F2852;
+        border-bottom: 2px solid #D5D5D5;
+    }
+
+    .widget-table td {
+        padding: 0.25rem;
+    }
+
+    .widget-table th {
+        padding: 0.25rem;
+    }
+
+#home-messages-region fieldset {
+    height: 100%;
+    border: 1px solid rgb(0 0 0 / 31%);
+    border-radius: 0.5rem;
+    padding: 0rem 0.8rem;
+    background: white;
+}
+
+#home-messages-region legend {
+    width: unset;
+    padding: 0px 1rem;
+    margin-bottom: 0.5rem;
+    color: #324972;
+    text-transform: uppercase;
+    font-size: 1.15rem;
+    font-weight: 600;
+    background: white;
+    border-radius: 1rem;
+    border-top: 1px solid rgb(0 0 0 / 31%);
+}
+
+#home-messages-region p {
+    border-top: rgb(0 0 0 / 31%) 2px solid;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+    #home-messages-region p:first-of-type {
+        border-top: none;
+        padding-top: unset;
+    }
+
+#draggableSearchDialog {
+    z-index: 1500;
+    cursor: grab;
+}
+
+#draggableSearchDialog:active {
+    cursor: grabbing;
+}
+
+#draggableSearchDialog .card {
+    background-color: #0f2852;
+}
+
+#draggableSearchDialog .card-header {
+    height: 2.2rem;
+}
+
+#draggableSearchDialog h4 {
+    font-size: 1rem;
+}
+
+#draggableSearchDialog .form-group {
+    margin-bottom: 0.5rem;
+}
+
+#draggableSearchDialog .form-control {
+    display: block;
+    width: 100%;
+    height: calc(1.5em + .45rem + 2px);
+    padding: .0rem .25rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+
+
+#draggableSearchDialog .dropdown-toggle {
+    font-size: 0.9rem;
+    height: calc(1.5em + 0.45rem + 2px);
+    padding-top: 4px;
+}
+
+#detailSubGridModal {
+    z-index: 1100;
+}
+
+.dropdown-menu {
+    z-index: 1100;
+}
+
+#ratesSubGridModal {
+    z-index: 1100;
+}
+
+#confirmWindow_1 {
+    z-index: 2000;
+}

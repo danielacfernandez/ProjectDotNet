@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.164" author="" dateCreation="2020-03-27" dateLastChange="2022-04-07"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>MAC Report Category Config</title>
+        <defaultOrder>Sequence</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[SELECT
+	MRCC.ID AS CategoryID,
+	MRCC.TableID AS CategoryTableID,
+	MRC.EndUserID as EndUserID,
+	MRCC.Name,
+	MRCC.Sequence,
+	MRCC.Quantity,
+	MRCC.Dollars,
+	MRCC.Average,
+	MRCC.RateCalculation,
+	CASE MRCC.RateCalculation 
+		WHEN 'GP' THEN 'GP' 
+		WHEN 'ActivityType' THEN 'Activity Type'
+		WHEN 'WorkCode' THEN 'Work Code'
+		ELSE NULL 
+	END AS RateCalculationName,
+	MRCC.IsActive
+
+FROM MAC_Category_Config MRCC (nolock)
+INNER JOIN MAC_Table_Config MTC (nolock)
+	ON MTC.ID = MRCC.TableID
+INNER JOIN MAC_Report_Config MRC (nolock)
+	ON MTC.ReportID = MRC.ID
+WHERE MRCC.TableID = @TableID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[CategoryID]=@CategoryID" autoUpdateQuery="False" updateTable=""><![CDATA[UPDATE MAC_Category_Config SET
+	TableID = @CategoryTableID,
+	Name = @Name,
+	Sequence = @Sequence,
+	Quantity = @Quantity,
+	Dollars = @Dollars,
+	Average = @Average,
+	RateCalculation = @RateCalculation,
+	ModifiedOn = GETUTCDATE(),
+	ModifiedBy = @__UserId__,
+	IsActive = @IsActive
+WHERE ID=@CategoryID]]></sqlUpdate>
+        <sqlInsert where="[CategoryID]=@@IDENTITY"><![CDATA[INSERT INTO MAC_Category_Config (TableID, Name, Sequence, Quantity, Dollars, Average, RateCalculation, CreatedOn, CreatedBy, IsActive) VALUES (
+	@TableID,
+	@Name,
+	@Sequence,
+	@Quantity,
+	@Dollars,
+	@Average,
+	@RateCalculation,
+	GETUTCDATE(),
+	@__UserId__,
+	@IsActive
+)]]></sqlInsert>
+        <sqlDelete><![CDATA[DELETE FROM MAC_Category_Config
+WHERE ID=@CategoryID]]></sqlDelete>
+        <buttons>
+<button id="cmdOpenMACReportCategoryObjectConfig" actionType="openGrid" gridToOpen="MAC_CategoryObject_Config" icon="fa-solid fa-sitemap" title="Open MAC Report Category Object Config" label="Open MAC Report Category Object Config" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button></buttons>
+        <columns>
+<column id="CategoryID" label="ID" width="50" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="CategoryTableID" label="TableID" width="50" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="EndUserID" label="EndUserID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="Sequence" label="Sequence" width="75" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="Name" label="Category Name" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Quantity" label="Quantity" width="75" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="center" headerAlign="center" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="Dollars" label="Dollars" width="75" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="center" headerAlign="center" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="Average" label="Average" width="75" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="center" headerAlign="center" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RateCalculation" label="Rate Calculation" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="RateCalculationName" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="50">
+<dataSelect><![CDATA[SELECT 'GP' AS RateCalculationName, 'GP' AS RateCalculation
+UNION ALL
+SELECT 'Activity Type', 'ActivityType'
+UNION ALL
+SELECT 'Work Code', 'WorkCode']]></dataSelect></column>
+<column id="RateCalculationName" label="RateCalculationName" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="IsActive" label="Is Active" width="50" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="center" headerAlign="center" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

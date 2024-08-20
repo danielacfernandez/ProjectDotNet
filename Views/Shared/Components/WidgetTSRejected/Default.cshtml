@@ -1,0 +1,36 @@
+﻿@model ServiceTRAX.ViewComponents.WidgetTSRejected.WidgetTSRejectedViewModel
+
+<style type="text/css">
+    .card-borders {
+        margin: 5px;
+        height: 96%;
+    }
+
+    .wtsr-centered-counter {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 8em;
+    }
+</style>
+
+
+
+<div class="card card-borders">
+    <div class="card-body">
+        <div class="wtsr-centered-counter">
+            <p class="text-center">
+                @Model.RejectCount
+            </p>
+            <a asp-controller="Timeentry"
+               asp-action="RejectedTimesheets"
+               asp-route-OrganizationID="@Model.OrganizationID">
+                <h4 class="text-center">
+                    <strong>Time Entry Rejected</strong>
+                </h4>
+            </a>
+        </div>
+    </div>
+</div>

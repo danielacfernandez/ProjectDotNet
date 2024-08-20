@@ -1,0 +1,386 @@
+﻿@model ServiceTRAX.Models.ViewModels.BillingByJobInvoiceViewModel
+@using ServiceTRAX.Utils
+
+@{
+    ViewData["Title"] = "Billing By Job Invoice";
+    ViewData["FontSize"] = "75%";
+}
+
+@section StyleSheets {
+
+<link rel="stylesheet" href="~/css/mygrid.1.0.css">
+<link rel="stylesheet" href="~/css/main.css">
+
+<style>
+
+    .myGrid {
+        font-size: @ViewData["FontSize"];
+    }
+
+        .myGrid .gridTable {
+            top: 45px !important;
+        }
+
+        .myGrid .gridTitle {
+            padding-top: 6px;
+            padding-bottom: 2px;
+        }
+
+            .myGrid .gridTitle label {
+                font-size: 130%;
+            }
+
+    .gridHeaderStatic .cell {
+        height: unset;
+    }
+
+    .myGrid .gridHeaderStaticRow {
+        height: unset;
+    }
+
+    .gridBody, .gridBodyStatic {
+        top: 29px;
+    }
+
+    .gridHeaderStatic {
+        bottom: 40px;
+    }
+
+    .gridRow {
+        height: 26px;
+    }
+
+    .gridHeader {
+        bottom: 40px;
+    }
+
+        .gridHeader label {
+            margin-top: 0px;
+        }
+
+    .gridBody .gridRow .cell {
+        height: 26px;
+    }
+
+    .gridRow .cell {
+        height: 26px;
+    }
+
+    .popupWindow {
+        bottom: unset;
+        height: calc(95vh - 50px);
+    }
+
+    .gridFooter {
+        height: 40px;
+        padding-top: 7px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .detailSubGridModalClass {
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.4);
+        left: 0px;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+        z-index: 1;
+    }
+
+    .detailSubGridModalBodyClass {
+        position: absolute;
+        border-radius: 5px;
+        border: solid 2px #2d5daf;
+        background-color: rgba(45, 93, 175, 0.50);
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        left: 30px;
+        top: 185px;
+        right: 30px;
+        /*bottom: 60px;*/
+        height: calc(95vh - 185px);
+        z-index: 1;
+    }
+
+    .detailSubGridClass {
+        position: absolute;
+        left: 2px;
+        top: 2px;
+        right: 2px;
+        bottom: 2px;
+    }
+
+    .detailSubGridCloseClass {
+        text-align: center;
+        padding: 15px;
+        border-radius: 5px;
+        border: 2px solid #aaa;
+        background-color: rgba(45, 93, 175, 0.15);
+        width: 25%;
+        margin: auto;
+        margin-top: 10px;
+        color: #aaa;
+    }
+
+        .detailSubGridCloseClass:hover {
+            cursor: pointer;
+            background-color: rgba(45, 93, 175, 0.35);
+            color: white;
+        }
+
+
+
+    .gridAssigned {
+        position: absolute;
+        border: solid 1px #c0c0c0;
+        left: 20px;
+        top: 300px;
+        right: 20px;
+        height: 350px;
+    }
+
+    .gridUnassigned {
+        position: absolute;
+        border: solid 1px #c0c0c0;
+        left: 20px;
+        top: 650px;
+        right: 20px;
+        height: 350px;
+    }
+
+    /*        .gridInvoicesSent {
+                position: absolute;
+                border: solid 1px #c0c0c0;
+                left: 20px;
+                top: 895px;
+                right: 20px;
+                height: 350px;
+            }
+    */
+    .billing-header-small-font {
+        font-size: 0.80rem;
+    }
+
+</style>
+
+    @if (Model.ReadOnly)
+    {
+<style type="text/css">
+    .rowSelector {
+        display: none;
+    }
+
+    .selectAllRows {
+        visibility: hidden;
+    }
+</style>
+    }
+
+}
+
+
+@section Scripts {
+<script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+<script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+<script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+<script type='text/javascript' src='~/lib/knockout.validation/knockout.validation.min.js'></script>
+<script type='text/javascript' src='~/override/main-custom.js'></script>
+<script type='text/javascript' src='~/js/Billing/by-job-invoice.js' asp-append-version="true"></script>
+<script type='text/javascript' src='~/js/notification-dialog.js' asp-append-version="true"></script>
+
+
+<script type="text/javascript">
+
+    var openRequest = function(requestid) {
+        redirectToPage('/Request', { 'RequestID': requestid, 'OrganizationID': @Model.OrganizationID}, true);
+    }
+
+    $(function () {
+            // Get the MVC model as JS
+            var billByJobInvoiceModel =  @Html.Raw(JSONUtils.JsonUTC(Model));
+            // Initialize the Scheduler JS code
+            initBillingByJobInvoice(billByJobInvoiceModel);
+    });
+
+</script>
+}
+
+<div id="content">
+    <div class="container-fluid">
+        <div class="d-flex">
+            <div class="d-flex p-0 align-items-center">
+                @*<h2 class="text-nowrap overflow-hidden my-2 mr-1" style="font-size: 100%">< JOB# @Model.InvoiceData.Job_no</h2>*@
+
+                <a class="text-nowrap overflow-hidden mr-1" style="font-size: 100%; font-weight: 600"
+                   asp-action="ByJob"
+                   asp-controller="Billing"
+                   asp-route-OrganizationID="@Model.OrganizationID"
+                   asp-route-JobID="@Model.InvoiceData.Job_id"
+                   asp-route-SelectedTab="@Model.SelectedTab">
+                    <i class="fas fa-chevron-left"></i> JOB# @Model.InvoiceData.Job_no
+                </a>
+                <h2 class="mx-2 my-0" style="font-size: 100%; font-weight: 600">|</h2>
+                <h2 class="text-nowrap overflow-hidden my-2 mr-1" style="font-size: 100%">Invoice# @Model.InvoiceData.Invoice_id</h2>
+                <button class="btn btn-primary btn-sm ml-5" title="Open Invoice Tracking Notes..." data-bind="click:openTrackingNotesGrid">
+                    <em class="fas fa-edit"></em> Tracking Notes
+                </button>
+            </div>
+            <div class="d-flex p-0 align-items-center flex-grow-1">
+                @if (Model.AddFuelSurcharge)
+                {
+                    <div class="p-0 h-100" style="padding-left: 5px!important" data-bind="visible: $root.addFuelSurcharge">
+                        <div class="card flex-row align-items-center h-100 px-2">
+                            <div class="d-flex flex-row w-100 billing-header-small-font">
+                                <div class="flex-fill"><strong>Fuel Surcharge: </strong><span data-bind="text:currencyFormatter.format(fuelSurchargeTotal())"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                <div style="padding-left: 5px!important" data-bind="visible: $root.addFuelSurcharge">
+                    <button class="btn btn-primary btn-sm" title="Add Fuel Surcharge" data-bind="click:addFuelSurchargeClick">
+                        Add
+                    </button>
+                </div>
+                }
+                @if (Model.AddAdminFee)
+                {
+                    <div style="padding-left: 5px!important" data-bind="visible: $root.addAdminFee">
+                    <button class="btn btn-primary btn-sm" title="Add Admin Fee" data-bind="click:addAdminFeeClick">
+                        Add Admin Fee
+                    </button>
+                    </div>
+                }
+                
+            </div>
+            <div class="d-flex p-0 align-items-center flex-grow-1 justify-content-end">
+                <div class="pr-2" data-bind="if:canAddCustomLine">
+                    <button class="btn btn-green btn-sm" title="Add Invoice Custom Line..." data-bind="enabled:canAddCustomLine, click:() => newCustomLineDialog.displayDialog()">
+                        <em class="fas fa-plus"></em> CUSTOM
+                    </button>
+                </div>
+                <div class="align-self-center text-center pr-0 pl-1">
+                    <div class="form-check form-check-inline m-1">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="Y" data-bind="checked:isBilliable">
+                        <label class="form-check-label" for="inlineRadio1">Billable</label>
+                    </div>
+                    <div class="form-check form-check-inline m-1">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="N" data-bind="checked:isBilliable">
+                        <label class="form-check-label" for="inlineRadio2">Non-Billable</label>
+                    </div>
+                </div>
+                <div class="p-0 h-100">
+                    <div class="card d-flex flex-row align-items-center h-100 px-2">
+                        <div class="d-flex flex-row w-100 billing-header-small-font ">
+                            <div class="flex-fill"><strong>Quoted: </strong><span data-bind="text:currencyFormatter.format(quotedTotal())"></span></div>
+                            <div class="flex-fill"><strong>Inv: </strong><span data-bind="text:currencyFormatter.format(invoicedTotal)"></span></div>
+                            <div class="flex-fill"><strong class="ml-2">Selected: </strong><span data-bind="text:currencyFormatter.format(selectedTotalAmount())"></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pl-1 pr-0 col-2">
+                    <select class="col-12 p-0"
+                            data-style="btn-white shadow-sm billing-header-small-font"
+                            data-bind="selectPicker:true, options: billingGridViews, optionsText: 'name', optionsValue: 'id', value: billingViewType,  valueAllowUnset: true"
+                            data-none-selected-text="...">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 pr-1 pl-0 mt-1">
+                <div class="card" id="QuoteRequests">
+                    <div class="card-body px-2 py-1">
+                        <div class="form-row mb-3">
+                            <div class="col-6">
+                                <div class="form-row">
+                                    <div class="col-4">
+                                        <label>Dealer</label>
+                                        <input type="text" class="form-control" disabled="disabled" value="" />
+                                    </div>
+                                    <div class="col-5">
+                                        <label>Customer</label>
+                                        <input type="text" class="form-control" disabled="disabled" value="@Model.InvoiceData.Customer_name" />
+                                    </div>
+                                    <div class="col-3 form-group mb-0">
+                                        <label>Assigned To</label>
+                                        <input type="text" class="form-control" disabled="disabled" value="@Model.InvoiceData.Assigned_to_user" />
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-2 form-group mb-0">
+                                        <label>Status</label>
+                                        <select id="serviceTypes"
+                                                class="form-control"
+                                                data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, enable: canChangeInvoiceStatus, options: invoiceStatuses,
+                                                optionsText: 'name', optionsValue: 'statusId', value: invoice_statusid_UI"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-3 form-group mb-0">
+                                        <label>PO#</label>
+                                        <input type="text" class="form-control" data-bind="value: invoiceData.po_no" />
+                                    </div>
+                                    <div class="col-2 form-group mb-0">
+                                        <label>Invoice Type</label>
+                                        <input type="text" class="form-control" disabled="disabled" value="@Model.InvoiceData.Invoice_type_name" />
+                                    </div>
+                                    <div class="col-5 ">
+                                        <div class="form-row">
+                                            <div class="col-6 form-group mb-0">
+                                                <label>Billing Type</label>
+                                                <select id="serviceTypes"
+                                                        class="form-control"
+                                                        data-style="btn-white shadow-sm"
+                                                        data-bind="selectPicker:true, enable: invoiceData.canChangeBillingType, options: billingTypes, optionsText: 'name', optionsValue: 'id',
+                                                value: invoiceData.billing_type_id, valueAllowUnset: true"
+                                                        data-none-selected-text="...">
+                                                </select>
+                                            </div>
+                                            <div class="col-6 form-group mb-0">
+                                                <label>Billing Period</label>
+                                                <select id="serviceTypes"
+                                                        class="form-control"
+                                                        data-style="btn-white shadow-sm"
+                                                        data-bind="selectPicker:true, enable: invoiceData.canChangeBillingType, options: billingPeriods, optionsText: 'monthYear', optionsValue: 'monthYear', value: invoiceData.billingPeriod, valueAllowUnset: true" 
+                                                        data-none-selected-text="...">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 d-flex flex-column">
+                                <label>Description</label>
+                                <textarea class="form-control h-100" data-bind="value: invoiceData.description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-2 p-0">
+            </div>
+        </div>
+
+        <div style="height: 700px">
+            <div class="gridAssigned qrsGrid myGrid" id="assignedLinesTEG"></div>
+            @if (!Model.ReadOnly)
+            {
+                <div class="gridUnassigned qrsGrid myGrid" id="unassignedLinesTEG"></div>
+            }
+        </div>
+    </div>
+</div>
+
+<div id="detailSubGridModal" class="detailSubGridModalClass" style="display:none">
+    <div id="detailSubGridCloseButton" class="detailSubGridCloseClass" data-bind="click:closeSubGrid">
+        <i class="far fa-times-circle fa-3x"></i>
+        <div class="mt-2">Close Details</div>
+    </div>
+    <div class="detailSubGridModalBodyClass">
+        <div id="detailSubGrid" class="detailSubGridClass myGrid"></div>
+    </div>
+</div>
+
+
+@await Html.PartialAsync("_NewCustomLine")
+@await Html.PartialAsync("_NotificationDialog")

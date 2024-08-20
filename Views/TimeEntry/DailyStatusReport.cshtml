@@ -1,0 +1,391 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXDailyStatusReportViewModel
+@{
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>Daily Progress Report</title>
+    <style>
+
+        /* satisfy-regular - latin */
+        @@font-face {
+            font-family: 'Satisfy';
+            font-style: normal;
+            font-weight: 400;
+            src: url('../fonts/satisfy-v10-latin-regular.eot'); /* IE9 Compat Modes */
+            src: local('Satisfy Regular'), local('Satisfy-Regular'), url('fonts/satisfy-v10-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+            url('fonts/satisfy-v10-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+            url('fonts/satisfy-v10-latin-regular.woff') format('woff'), /* Modern Browsers */
+            url('fonts/satisfy-v10-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+            url('fonts/satisfy-v10-latin-regular.svg#Satisfy') format('svg'); /* Legacy iOS */
+        }
+
+
+        html {
+            font-size: .9rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            line-height: 1;
+        }
+
+        .container {
+            max-width: 960px;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .img-fluid {
+            width: 100%;
+            height: auto;
+        }
+
+
+        .report-table .table {
+            margin-bottom: 0px;
+        }
+
+            .report-table .table td, .report-table .table th, .summary-table .table td, .summary-table .table th {
+                border-top: 0px;
+            }
+
+        .report-table tbody th:first-child {
+            text-align: right;
+        }
+
+        .report-table tbody td, .report-table tbody th, .report-table thead th {
+            width: 18%;
+            vertical-align: middle;
+        }
+
+            .report-table tbody th:first-child {
+                width: 28%;
+            }
+
+        .report-table td span {
+            text-align: left;
+        }
+
+        .report-table td, .summary-table td {
+            border: 0px;
+            padding: .25rem .5rem;
+        }
+
+        .summary-table tbody td, .summary-table tbody th, .summary-table thead th {
+            vertical-align: middle;
+        }
+
+        .summary-table .field-data-label {
+            text-align: right;
+        }
+
+        .summary-table .field-data {
+            text-align: left;
+        }
+
+        td.border-bottom-blue, .border-bottom-blue {
+            border-bottom: 4px solid #017199;
+        }
+
+        td.border-bottom-gray, .border-bottom-gray {
+            border-bottom: 4px solid #bfbfbf;
+        }
+
+        .blue-bg {
+            background-color: #017199;
+        }
+
+        .text-gray {
+            color: #a6a6a6;
+        }
+
+        .text-white {
+            color: #fff;
+        }
+
+        .field-data {
+            font-size: 125%;
+            line-height: 1;
+        }
+
+        .field-data-label {
+            font-weight: 600;
+            color: #bfbfbf;
+            line-height: 1;
+        }
+
+        .h120 {
+            min-height: 120px;
+        }
+
+        .w50 {
+            width: 50%;
+        }
+
+        .dsr-img {
+            height: 50%;
+            width: 100%;
+            padding: 10px 0px;
+        }
+
+
+        @@media print {
+
+            .rpt-print-pagebreak {
+                margin: 0;
+                page-break-before: always;
+                height: 350mm;
+            }
+
+            .dsr-img {
+                display: block;
+                width: auto !important;
+                height: 50% !important;
+                padding: 10px 0px !important;
+            }
+        }
+    </style>
+
+
+</head>
+<body>
+    @if (Model.IsSaved)
+    {
+        <div class="container">
+            <div class="row pb-2">
+                <div class="col">
+                    <div class="report-table">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">@*<img src="/img/logo_atmosphere.png" class="img-fluid" alt="" />*@</th>
+                                    <td colspan="4" class="text-right align-bottom border-bottom-blue uppercase text-right text-gray"><h3 class="m-0 p-0">Daily Progress Report</h3></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="field-data-label uppercase">Date</th>
+                                    <td class="field-data border-bottom-gray text-left">@Model.Date</td>
+                                    <td></td>
+                                    <td class="field-data-label uppercase text-right text-gray">Acct Mgr</td>
+                                    <td class="field-data border-bottom-gray">@Model.AcctMgr</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="field-data-label uppercase">Service Trax #</th>
+                                    <td class="field-data border-bottom-gray">@Model.ServiceTraxNo</td>
+                                    <td></td>
+                                    <td class="field-data-label uppercase text-right text-gray">Proj Mgr</td>
+                                    <td class="field-data border-bottom-gray">@Model.ProjMng</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="field-data-label uppercase">PO #</th>
+                                    <td class="field-data border-bottom-gray">@Model.PoNo</td>
+                                    <td></td>
+                                    <td class="field-data-label uppercase text-right text-gray">Install Foreman</td>
+                                    <td class="field-data border-bottom-gray">@Model.InstallForeman</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col text-center pt-2 pb-2">
+                    <table class="table">
+                        <thead>
+                            <tr class="blue-bg">
+                                <td class="text-center w50"><div class="field-data-label uppercase text-white">Project Name and Address</div></td>
+                                <td class="text-center w50"><div class="field-data-label uppercase text-white">Project Scope</div></td>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td class="text-left">
+                                <div class="field-data h120 pt-1">
+                                    <span id="project-name" class="d-block">@Model.Request_Name</span>
+                                    <span id="project-name" class="d-block">@Model.ProjectName</span>
+                                    <span id="project-street" class="d-block">@Model.ProjectStreet</span>
+                                    <span id="project-city" class="d-inline-block">@Model.ProjectCity</span> <span id="project-state" class="d-inline-block">@Model.ProjectState</span> <span id="project-zip" class="d-inline-block">@Model.ProjectZip</span>
+                                </div>
+                            </td>
+                            <td class="text-left">
+                                <div class="field-data h120 pt-1">
+                                    <span id="project-scope" class="d-block">@Html.Raw(Model.ProjectScope)</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+            <div class="row blue-bg">
+                <div class="col text-center pt-2 pb-2">
+                    <div class="field-data-label uppercase text-white">Summary of Progress for Day</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col text-center border-bottom-blue pt-2 pb-2">
+                    <div class="summary-table">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th class="field-data-label uppercase text-gray">Are there any punch or change order actions?</th>
+                                        @if (Convert.ToBoolean(Model.PunchOrChange)) {
+                                        <td class="field-data border-bottom-gray">
+                                            Yes
+                                        </td>
+                                        }else {
+                                        <td class="field-data border-bottom-gray">
+                                            No
+                                        </td>
+                                        }
+                                    <td></td>
+                                    <td class="field-data-label uppercase text-right text-gray">Have items been cleaned and trash/recycle collected?</td>
+                                        @if (Convert.ToBoolean(Model.CleanedAndCollected))
+                                        {
+                                        <td class="field-data border-bottom-gray">Yes</td>
+                                        }
+                                        else
+                                        {
+                                        <td class="field-data border-bottom-gray">No</td>
+                                        }
+                                    <td></td>
+           
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="field-data-label uppercase">Check in with client before leaving site?</th>
+                                    @if (Convert.ToBoolean(Model.CheckWithClient))
+                                    {
+                                                <td class="field-data border-bottom-gray">Yes</td>
+                                    }
+                                    else
+                                    {
+                                                <td class="field-data border-bottom-gray">No</td>
+                                    }
+                                    <td></td>
+                                    <td class="field-data-label uppercase text-right text-gray">Has all the gear/tools been collected?</td>
+                                    @if (Convert.ToBoolean(Model.GearsAndToolsCollected))
+                                    {
+                                        <td class="field-data border-bottom-gray">Yes</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="field-data border-bottom-gray">No</td>
+                                    }
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="field-data-label uppercase">Is the paperwork signed off on all product received?</th>
+                                    @if (Convert.ToBoolean(Model.IsPaperworkSignedOff))
+                                    {
+                                        <td class="field-data border-bottom-gray">Yes</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="field-data border-bottom-gray">No</td>
+                                    }
+                                    <td></td>
+                                    <td class="field-data-label uppercase text-right text-gray">Vendor badges or keys returned?</td>
+                                    @if (Convert.ToBoolean(Model.VendorBadgesOrKeysReturned))
+                                    {
+                                        <td class="field-data border-bottom-gray">Yes</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="field-data border-bottom-gray">No</td>
+                                    }
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="field-data-label uppercase">Product return forms completed?</th>
+                                    @if (Convert.ToBoolean(Model.ProductReturnFormsCompleted))
+                                    {
+                                        <td class="field-data border-bottom-gray">Yes</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="field-data border-bottom-gray">No</td>
+                                    }
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="field-data-label uppercase text-gray pt-2">Installation Completed Today and % Project Completed To Date</div>
+                    <div class="field-data border-bottom-blue h120 pt-1">@Model.InstallationCompletedToday</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="field-data-label uppercase text-gray pt-2">Installation Scheduled for Today</div>
+                    <div class="field-data border-bottom-blue h120 pt-1">@Model.InstallationScheduledForTotay</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="field-data-label uppercase text-gray pt-2">Product Issues + Job Site Concerns</div>
+                    <div class="field-data border-bottom-blue h120 pt-1">@Model.ProductIssuesJobConcerns</div>
+                </div>
+            </div>
+            <div class="row pt-3">
+                <div class="col-9"></div>
+                <div class="col-3 text-right">
+                    @*<img src="/img/logo_atmosphere.png" alt="" class="img-fluid" />*@
+                </div>
+            </div>
+
+            @foreach (List<long> imgs in ViewBag.PageImages)
+            {
+                <div class="rpt-print-pagebreak" >
+                    @foreach (long imgId in imgs)
+                    {
+                        <img src="/TimeEntry/DSRImage/@imgId" class="dsr-img" alt="Images for this Daily Status Report have been removed for storage purposes. Please access your Sent Items or Inbox to see the images that were sent with this Daily Status Report." />
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="container">
+            <div class="row">
+                <div class="col-6">
+                    @*<img src="/img/logo_atmosphere.png" class="img-fluid" alt="" />*@
+                </div>
+            </div>
+            <div class="row mt-5 align-bottom uppercase text-gray">
+                <h2 class="m-0 p-0">Daily Status Report for @Model.Date has not been created yet.</h2>
+            </div>
+            <div class="row mt-5 align-bottom border-bottom-blue uppercase text-gray"></div>
+        </div>
+    }
+</body>
+</html>
+
+
+
+

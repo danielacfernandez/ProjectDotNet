@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.73" author="" dateCreation="2020-04-30" dateLastChange="2021-10-04"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Invoice Assigned Lines Details</title>
+        <defaultOrder>BILL_JOB_NO</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>True</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[SELECT 
+	BILL_SERVICE_NO, 
+	dbo.udf_StripHTML(SERVICE_DESCRIPTION) AS SERVICE_DESCRIPTION, 
+	B.BILL_SERVICE_ID, 
+	BILL_SERVICE_LINE_NO, 
+	SERVICE_LINE_ID, 
+	PO_NO, 
+	SERVICE_LINE_DATE_VARCHAR,  
+	I.NAME as ITEM_NAME, 
+	B.ITEM_ID, 
+	RESOURCE_NAME,
+	SUM_PAYROLL_QTY, 
+	BILL_QTY, 
+	ISNULL(IL.UNIT_PRICE,B.BILL_RATE) AS BILL_RATE, 
+	SUM_BILL_EXP_QTY, 
+	BILL_JOB_NO,  
+	BILL_JOB_ID,
+	CASE 
+		WHEN IL.HOURLY_TOTAL IS NOT NULL AND IL.HOURLY_TOTAL > 0 THEN B.BILL_QTY * IL.UNIT_PRICE
+		WHEN IL.HOURLY_TOTAL IS NOT NULL AND IL.HOURLY_TOTAL = 0 THEN 0 
+		ELSE B.BILL_HOURLY_TOTAL 
+	END AS BILL_HOURLY_TOTAL, 
+	CASE 
+		WHEN IL.EXP_TOTAL IS NOT NULL AND IL.EXP_TOTAL > 0 THEN B.BILL_QTY * IL.UNIT_PRICE
+		WHEN IL.EXP_TOTAL IS NOT NULL AND IL.EXP_TOTAL > 0 THEN 0 
+		ELSE B.BILL_EXP_TOTAL 
+	END AS BILL_EXP_TOTAL, 
+	CASE 
+		WHEN IL.EXTENDED_PRICE IS NOT NULL THEN B.BILL_QTY * IL.UNIT_PRICE 
+		ELSE B.BILL_TOTAL 
+	END AS BILL_TOTAL, 
+	QUOTED_TOTAL, 
+	INVOICE_ID, 
+	TAXABLE_FLAG,  
+	INVOICE_LINE_ID, 
+	B.ORGANIZATION_Id,
+	B.LineType
+FROM dbo.Invoicing_GetBillingLinesByDetail_FN(@JOBID,NULL,@ISBILLABLE,@INVOICEID,(SELECT TOP 1 USERID FROM DBO.ASPNETUSERS WHERE USERNAME = @__LoginID__)) B
+LEFT JOIN (
+	SELECT 
+		IL.BILL_SERVICE_ID, 
+		IL.ITEM_ID, 
+		IL.UNIT_PRICE, 
+		SUM(IL.EXTENDED_PRICE) AS EXTENDED_PRICE, 
+		SUM(IL.HOURLY_TOTAL) AS HOURLY_TOTAL, 
+		SUM(IL.EXP_TOTAL) AS EXP_TOTAL
+	FROM(
+		SELECT IL.*,
+			CASE WHEN I.ITEM_TYPE_CODE = 'HOURS' THEN IL.EXTENDED_PRICE ELSE 0 END AS HOURLY_TOTAL,
+			CASE WHEN I.ITEM_TYPE_CODE = 'EXPENSE' THEN IL.EXTENDED_PRICE ELSE 0 END AS EXP_TOTAL
+		FROM DBO.INVOICE_LINES_V IL
+		LEFT JOIN DBO.ITEMS_V I
+			ON IL.ITEM_ID = I.ITEM_ID
+		WHERE IL.INVOICE_ID = @INVOICEID
+	) IL
+	GROUP BY IL.BILL_SERVICE_ID, IL.ITEM_ID, IL.UNIT_PRICE
+) IL
+	ON B.BILL_SERVICE_ID = IL.BILL_SERVICE_ID 
+		AND B.ITEM_ID = IL.ITEM_ID 
+		AND B.LineType = 'Assigned'
+                AND B.Bill_Rate = IL.Unit_Price
+LEFT JOIN dbo.ITEMS I  
+	ON B.ITEM_ID = I.ITEM_ID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="SERVICE_LINE_ID = CAST(@SERVICE_LINE_ID AS NUMERIC(18,0)) or invoice_line_id = CAST(@INVOICE_LINE_ID AS NUMERIC(18,0))" autoUpdateQuery="False" updateTable=""><![CDATA[declare @useridval bigint; select @useridval=UserId from dbo.AspNetUsers 
+where username = @__LoginId__; 
+if @SERVICE_LINE_ID is not null
+begin
+declare @BILL_QTY_ NUMERIC(18,2) = CAST(@BILL_QTY AS NUMERIC(18,2))
+declare @BILL_RATE_ NUMERIC(11,3) = CAST(@BILL_RATE AS NUMERIC(11,3))
+declare @ITEM_ID_ NUMERIC(18,2) = CAST(@ITEM_ID AS NUMERIC(18,2))
+
+declare @SERVICE_LINE_ID_ NUMERIC(18,0) = CAST(@SERVICE_LINE_ID AS NUMERIC(18,0))
+
+   exec dbo.Billing_ServiceLine_Update @ServiceLineId=@SERVICE_LINE_ID_, @BillQty=@BILL_QTY_, @BillRate=@BILL_RATE_, 
+                                       @ItemId=@ITEM_ID_, @TaxableFlag=@TAXABLE_FLAG, @UserdId=@useridval
+end
+else
+UPDATE DBO.INVOICE_LINES SET QTY = CAST(@BILL_QTY AS NUMERIC(18,2)), unit_price = CAST(@BILL_RATE AS 
+NUMERIC(11,3)), DATE_MODIFIED = CURRENT_TIMESTAMP, TAXABLE_FLAG = upper(@TAXABLE_FLAG)
+, MODIFIED_BY = @useridval 
+, ITEM_ID = CAST(@ITEM_ID AS NUMERIC(18,2))
+WHERE invoice_line_id = CAST(@INVOICE_LINE_ID AS NUMERIC(18,0))]]></sqlUpdate>
+        <sqlInsert where=""><![CDATA[]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons>
+<button id="cmdUnassign" actionType="executeSQL" gridToOpen="" icon="fa fa-usd" title="Remove from Invoice" label="Remove From Invoice" target="" sqlParameters="SERVICE_LINE_ID" confirmationMessage="" multiselect="True" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[
+					declare @VARCHARTable as VARCHARIDTABLETYPE
+					insert into @VARCHARTable (ID) select cast(SERVICE_LINE_ID as varchar) from @SERVICE_LINE_ID 	
+					EXEC [Billing_InvoiceServiceLines_UnassignInvoice]  @VARCHARTable, 'DETAIL', @INVOICEID, @__LoginId__ 
+				]]></sqlSentence></button></buttons>
+        <columns>
+<column id="BILL_JOB_NO" label="Job #" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="html" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="BILL_SERVICE_NO" label="Req#" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="html" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="BILL_SERVICE_LINE_NO" label="Line#" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="SERVICE_LINE_DATE_VARCHAR" label="Date" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="PO_NO" label="PO" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="SERVICE_DESCRIPTION" label="Description" width="250" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textarea" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RESOURCE_NAME" label="Resource" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="ITEM_NAME" label="Item Name (hidden)" width="250" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textarea" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="BILL_QTY" label="TE Hours" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="10"></column>
+<column id="BILL_RATE" label="TE Rate" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="$" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="BILL_HOURLY_TOTAL" label="Labor Amt" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="$" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="200"></column>
+<column id="BILL_EXP_TOTAL" label="Exp Amt" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="$" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="10"></column>
+<column id="ITEM_ID" label="Item Name" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="ITEM_NAME" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[if @SERVICE_LINE_ID is not null
+begin
+declare @useridval bigint; select @useridval=UserId from dbo.AspNetUsers 
+where username = @__LoginId__; 
+exec dbo.[Billing_WorkCodeForTEG_Select]
+ @JOBID=@BILL_JOB_ID, @UserId=@useridval
+end
+else
+SELECT i.item_id, i.name as item_name
+FROM items i where Organization_ID = @ORGANIZATION_ID
+order by i.name]]></dataSelect></column>
+<column id="BILL_SERVICE_ID" label="SERVICE ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="SERVICE_LINE_ID" label="SERVICE LINE ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="TAXABLE_FLAG" label="Taxable" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="INVOICE_LINE_ID" label="INVOICE_LINE_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="BILLL_JOB_ID" label="BILLL_JOB_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="ORGANIZATION_Id" label="ORGANIZATION_Id" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="LineType" label="Line Type" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

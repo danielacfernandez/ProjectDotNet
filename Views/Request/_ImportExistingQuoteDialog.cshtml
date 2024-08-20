@@ -1,0 +1,87 @@
+﻿<!-- ko with:importExistingQuoteDialog -->
+<div class="modal  modal--forms" data-bind="showModal:isDialogDisplaying" id="importQuoteModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="importQuoteLabel" aria-hidden="true">
+    <div class="modal-dialog modal modal-dialog-centered" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header align-items-center">
+                <h5 class="modal-title mr-auto">IMPORT QUOTE</h5>
+                <div class="d-flex justify-content-end">
+                    <div>
+                        <input type="text" class="form-control" data-bind="value: jobNumberSearchValue, event: {keypress: onEnter}" placeholder="Search Job Quotes..." />
+                    </div>
+                    <div class="align-self-end">
+                        <button type="button" class="btn btn-primary" data-bind="click:searchJobQuotes" title="Search Quotes by Job Number...">
+                            <em class="fas fa-search"></em>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="btn icon-only" data-bind="click:closeDialog">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body border-top border-primary">
+                <form>
+                    <div class="form-row mt-3" data-bind="visible:searching">
+                        <div class="col-12 text-center">
+                            <div class="d-inline-flex align-items-center">
+                                <i class="fas fa-spinner fa-pulse fa-2x mr-2"></i>
+                                <div class="small">Searching Job Quotes...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-3" data-bind="visible:importingQuote">
+                        <div class="col-12 text-center">
+                            <div class="d-inline-flex align-items-center">
+                                <i class="fas fa-spinner fa-pulse fa-2x mr-2"></i>
+                                <div class="small">Importing Quote into current Job...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-3" data-bind="hidden:searching() || importingQuote()  || projectQuotes().length === 0">
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div data-bind="visible:projectId() && projectQuotes().length > 0">Current Project (<span data-bind="text:projectNo"></span>) Quotes</div>
+                                    <div data-bind="visible:!projectId() && projectQuotes().length > 0">Quotes for Job <span data-bind="text:jobNumberSearchValue"></span></div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex mt-3">
+                                <div class="flex-grow-1">
+                                    <select data-style="btn-white shadow-sm"
+                                            data-none-selected-text="..."
+                                            data-bind="selectPicker:true, options: projectQuotes, optionsText: 'quote_Number', optionsValue: 'quoteId', value: selectedQuote, valueAllowUnset: true">
+                                    </select>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-green ml-2" data-bind="click:openSelectedQuote, css: { 'btn-disabled': selectedQuote() == null }">
+                                        <em class="fas fa-eye"></em> View Quote
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-3" data-bind="visible:!searching() && projectQuotes().length === 0">
+                        <div class="col-12 text-center">
+                            <div data-bind="hidden:projectId()"><strong>No Quotes found for Job <span data-bind="text:jobNumberSearchValue"></span></strong></div>
+                            <div data-bind="visible:projectId()"><strong>Current Project (<span data-bind="text:projectNo"></span>) does not have any Quotes</strong></div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer border-top border-primary mt-4">
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary  mr-2" title="Imports selected Quote into current Request..."
+                            data-bind="css: { 'btn-disabled': selectedQuote() == null }, click:importQuote">
+                        IMPORT QUOTE
+                    </button>
+                </div>
+                <div data-bind="if:errorReply"><div data-bind="text:errorReply"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

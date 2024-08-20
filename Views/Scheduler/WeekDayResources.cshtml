@@ -1,0 +1,49 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXPageViewModel
+@using ServiceTRAX.Identity
+
+@{
+    ViewData["Title"] = "Weekday Resources";
+}
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 140px;
+            right: 20px;
+            bottom: 30px;
+        }
+    </style>
+}
+
+@section Scripts {
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css" asp-append-version="true">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/override/main-custom.js' asp-append-version="true"></script>
+
+    <script type="text/javascript">
+
+        let gridParameters = () => ({
+            'ORGANIZATION_ID': @Model.OrganizationID,
+            'USER_ID': @User.GetUserID()
+        });
+        let gridEvents = {
+          afterCreatedNewRecord: function (newDataRow) {
+                // Set the Row organizationID value so the filtered dropdowns can work
+                newDataRow["ORGANIZATION_ID"] = @Model.OrganizationID;
+            }
+        };
+        let oGrid = new clsMyGrid('ConfigScheduleDays', document.getElementById('tegGrid'), null, gridEvents, true, gridParameters());
+
+    </script>
+
+}
+
+<div id="content-wrap">
+    <div class="gridContent myGrid" id="tegGrid"></div>
+</div>
+

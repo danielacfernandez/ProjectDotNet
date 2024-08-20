@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.247" author="" dateCreation="2020-03-27" dateLastChange="2023-03-09"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Resources</title>
+        <defaultOrder>RESOURCE_ID</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+	R.[RESOURCE_ID],
+	R.[ORGANIZATION_ID],
+	R.[NAME] as [RESOURCENAME],
+	R.[RES_CATEGORY_TYPE_ID],
+	L1.LOOKUP_NAME AS [RES_CATEGORY_TYPE_NAME],
+	R.[RESOURCE_TYPE_ID],
+	RT.NAME as [RESOURCE_TYPE_NAME],
+	R.[USER_ID],
+--	isnull(U.UserDetails, '(empty)') as UserDetails,
+	U.UserDetails as UserDetails,
+	R.[ATTACHED_FLAG],
+	R.[ATTACHED_FLAG] as [ATTACHED_FLAG_DESC],
+	R.[VENDOR_NAME],
+	R.[EXT_VENDOR_ID],
+	R.[ACTIVE_FLAG],
+	R.[ACTIVE_FLAG] as [ACTIVE_FLAG_DESC],
+	R.[FOREMAN_FLAG],
+	R.[NOTES],
+	R.[SORT_ORDER],
+	R.[DATE_CREATED],
+	R.[CREATED_BY],
+	R.[DATE_MODIFIED],
+	R.[MODIFIED_BY],
+	R.[QP3_TEAM],
+	R.[Role_Id],
+	ROLES.NAME as ROLENAME,
+	R.[Attribute1],
+	R.[Attribute2],
+	R.[Attribute3],
+	R.[GroupName],
+	R.[LocationLookupID],
+	L2.LOOKUP_NAME AS [LocationLookupNAME],
+	0 as ROWORG_ID,
+	R.IncludeInMonthlyCapacity,
+        R.IsDriver,
+        I.Item_Id as DefaultItemId,
+        I.Name as DefaultItemName,
+        R.DefaultItemIdForSA,
+        ID.Name as DefaultItemNameForSA
+from 
+	dbo.Resources R
+left join
+	dbo.Lookups_Active_V L1
+on
+	L1.LOOKUP_ID = R.RES_CATEGORY_TYPE_ID
+left join
+	(select U.UserID, U.FirstName + ' ' + U.LastName as UserDetails
+	from dbo.AspNetUsers U
+	inner join dbo.AspNetUserOrganizations UO
+	on U.UserID = UO.UserID
+	where UO.OrganizationID = @ORGANIZATION_ID) U
+on
+	R.USER_ID = U.USERID
+left join
+	dbo.RESOURCE_TYPES RT
+on
+	R.RESOURCE_TYPE_ID = RT.RESOURCE_TYPE_ID
+left join
+	dbo.Roles ROLES
+on
+	R.ROLE_ID=ROLES.ROLE_ID
+left join
+	 dbo.Lookups_Active_V L2
+on
+	L2.LOOKUP_ID=R.LocationLookupID
+and
+	L2.Attribute1 = convert(varchar(10), @ORGANIZATION_ID)
+left join dbo.Items I
+on I.Item_Id = (select top 1 RTI.Item_Id from dbo.Resource_Items RTI with(nolock) where RTI.Resource_Id = R.Resource_Id and RTI.DEFAULT_ITEM_FLAG = 'Y')
+and I.Organization_Id = @ORGANIZATION_ID
+left join dbo.Items ID with(nolock)
+on ID.Item_Id = R.DefaultItemIdForSA
+and ID.Organization_Id = @ORGANIZATION_ID
+where	
+	R.ORGANIZATION_ID=@ORGANIZATION_ID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[RESOURCE_ID]=@RESOURCE_ID" autoUpdateQuery="False" updateTable=""><![CDATA[update
+	dbo.Resources
+set
+	NAME=@ResourceName,
+	RES_CATEGORY_TYPE_ID=@RES_CATEGORY_TYPE_ID,
+	RESOURCE_TYPE_ID=@RESOURCE_TYPE_ID,
+	USER_ID=case when @USER_ID=-1 then null else @USER_ID end,
+--	USER_ID=@USER_ID,
+	ATTACHED_FLAG=@ATTACHED_FLAG,
+	ACTIVE_FLAG=@ACTIVE_FLAG,
+	NOTES=@NOTES,
+	DATE_MODIFIED=getutcdate(),
+	MODIFIED_BY=@CURRENT_USER_ID,
+	Role_Id=@Role_Id,
+	Attribute1=@Attribute1,
+	Attribute2=@Attribute2,
+	Attribute3=@Attribute3,
+	LocationLookupID=@LocationLookupID,
+	IncludeInMonthlyCapacity=@IncludeInMonthlyCapacity,
+        IsDriver=@ISDRIVER,
+        DefaultItemIdForSA=@DEFAULTITEMIDFORSA
+where	
+	RESOURCE_ID=@RESOURCE_ID
+
+if @DEFAULTITEMID is not null 
+begin
+  update dbo.Resource_Items set DEFAULT_ITEM_FLAG = 'Y'
+  where Resource_Id = @RESOURCE_ID and Item_Id = @DEFAULTITEMID
+
+  if @@ROWCOUNT > 0
+    update dbo.Resource_Items set DEFAULT_ITEM_FLAG = 'N'
+    where Resource_Id = @RESOURCE_ID and Item_Id <> @DEFAULTITEMID
+    and DEFAULT_ITEM_FLAG = 'Y'
+end
+
+--* inserts missing resource_items entries in case resource type has been changed
+insert into RESOURCE_ITEMS (ITEM_ID, RESOURCE_ID, DEFAULT_ITEM_FLAG, DATE_CREATED, CREATED_BY)
+select distinct
+RTI.ITEM_ID, Res.RESOURCE_ID, RTI.DEFAULT_ITEM_FLAG, CURRENT_TIMESTAMP, @CURRENT_USER_ID
+ from RESOURCES Res with(nolock)
+inner join RESOURCE_TYPE_ITEMS RTI with(nolock)
+on RTI.RESOURCE_TYPE_ID = Res.RESOURCE_TYPE_ID
+inner join ITEMS I on I.ITEM_ID = RTI.ITEM_ID
+left join dbo.RESOURCE_ITEMS RI with(nolock)
+on RI.RESOURCE_ID = Res.RESOURCE_ID
+and RI.ITEM_ID = RTI.ITEM_ID
+where RI.ITEM_ID is null
+and Res.Resource_Id = @RESOURCE_ID
+and Res.ORGANIZATION_ID = I.ORGANIZATION_ID
+and I.ItemIsDT = 0
+and isnull(I.ItemIsOT, 0) = 0]]></sqlUpdate>
+        <sqlInsert where="[RESOURCE_ID]=@ResourceId"><![CDATA[declare @ResourceId bigint
+insert into
+	dbo.Resources (NAME, ORGANIZATION_ID, RES_CATEGORY_TYPE_ID, RESOURCE_TYPE_ID,
+USER_ID, ATTACHED_FLAG, ACTIVE_FLAG, NOTES, [DATE_CREATED], [CREATED_BY],
+Role_Id, Attribute1, Attribute2, Attribute3, LocationLookupID, [FOREMAN_FLAG], IncludeInMonthlyCapacity, IsDriver, DefaultItemIdForSA)
+values
+(@ResourceName, @ORGANIZATION_ID, @RES_CATEGORY_TYPE_ID, @RESOURCE_TYPE_ID,
+CASE WHEN @USER_ID<>'-1' THEN @USER_ID ELSE NULL END, 
+ISNULL(@ATTACHED_FLAG, 'Y'), ISNULL(@ACTIVE_FLAG, 'Y'), @NOTES, CURRENT_TIMESTAMP, @CURRENT_USER_ID,
+@Role_Id, @Attribute1, @Attribute2, @Attribute3, @LocationLookupID, 'Y', ISNULL(@IncludeInMonthlyCapacity,1), isnull(@ISDRIVER,0), @DEFAULTITEMIDFORSA)
+set @ResourceId = scope_identity()
+
+insert into RESOURCE_ITEMS (ITEM_ID, RESOURCE_ID, DEFAULT_ITEM_FLAG, DATE_CREATED, CREATED_BY)
+select distinct
+RTI.ITEM_ID, Res.RESOURCE_ID, RTI.DEFAULT_ITEM_FLAG, CURRENT_TIMESTAMP, @CURRENT_USER_ID
+ from RESOURCES Res with(nolock)
+inner join RESOURCE_TYPE_ITEMS RTI with(nolock)
+on RTI.RESOURCE_TYPE_ID = Res.RESOURCE_TYPE_ID
+inner join ITEMS I on I.ITEM_ID = RTI.ITEM_ID
+left join dbo.RESOURCE_ITEMS RI with(nolock)
+on RI.RESOURCE_ID = Res.RESOURCE_ID
+and RI.ITEM_ID = RTI.ITEM_ID
+where RI.ITEM_ID is null
+and Res.Resource_Id = @ResourceId
+and Res.ORGANIZATION_ID = I.ORGANIZATION_ID
+and I.ItemIsDT = 0
+and isnull(I.ItemIsOT, 0) = 0]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons>
+<button id="cmdOpenResourceSkills" actionType="openGrid" gridToOpen="ResourceSkills" icon="fas fa-toolbox" title="Open Resource Skills" label="Resource Skills" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button></buttons>
+        <columns>
+<column id="ResourceName" label="NAME" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RESOURCE_ID" label="RESOURCE_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="ORGANIZATION_ID" label="ORGANIZATION_ID" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="RES_CATEGORY_TYPE_ID" label="Resource Category" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="RES_CATEGORY_TYPE_NAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select LOOKUP_ID as RES_CATEGORY_TYPE_ID, LOOKUP_NAME as RES_CATEGORY_TYPE_NAME  from [dbo].[GetLooukpValuesByType] ('resource_category_type')	]]></dataSelect></column>
+<column id="RES_CATEGORY_TYPE_NAME" label="RES_CATEGORY_TYPE_NAME" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RESOURCE_TYPE_ID" label="Resource Type" width="170" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="RESOURCE_TYPE_NAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select RESOURCE_TYPE_ID, NAME as RESOURCE_TYPE_NAME 
+from [dbo].[RESOURCE_TYPES]
+ORDER BY NAME 
+OFFSET 0 ROWS]]></dataSelect></column>
+<column id="USER_ID" label="User" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="UserDetails" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select User_ID, UserDetails from (
+select -1 as User_ID, '(empty)' as UserDetails, 0 as Zorder
+union
+select top 100 percent U.UserID as User_ID, U.FirstName + ' ' + U.LastName as UserDetails, 1 as Zorder
+	from dbo.AspNetUsers U
+	inner join dbo.AspNetUserOrganizations UO
+	on U.UserID = UO.UserID
+	where UO.OrganizationID = @ORGANIZATION_ID
+	) X
+	order by X.Zorder, X.UserDetails	
+offset 0 rows]]></dataSelect></column>
+<column id="UserDetails" label="UserDetails" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Role_Id" label="Role" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="ROLENAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select ROLE_ID, NAME as ROLENAME from [dbo].[ROLES] where Organization_ID=@ORGANIZATION_ID]]></dataSelect></column>
+<column id="IsDriver" label="Is Driver" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="True" format="" labelField="ISDRIVER" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="LocationLookupID" label="Location" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="LocationLookupNAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[ select 
+ lookup_id as LocationLookupID, 
+ lookup_name as LocationLookupNAME 
+ from dbo.Lookups_Active_V with(nolock)  
+ where type_code = 'location'  
+ and Attribute1 = isnull(convert(varchar(10), @ORGANIZATION_ID), Attribute1)  ]]></dataSelect></column>
+<column id="NOTES" label="Notes" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ATTACHED_FLAG" label="Attached" width="120" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="ATTACHED_FLAG_DESC" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[select 'Y' as ATTACHED_FLAG, 'Y' as ATTACHED_FLAG_DESC
+union
+select 'N' as ATTACHED_FLAG, 'N' as ATTACHED_FLAG_DESC
+]]></dataSelect></column>
+<column id="VENDOR_NAME" label="VENDOR_NAME" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="EXT_VENDOR_ID" label="EXT_VENDOR_ID" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ACTIVE_FLAG" label="Active" width="120" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="ACTIVE_FLAG_DESC" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[select 'Y' as ACTIVE_FLAG, 'Y' as ACTIVE_FLAG_DESC
+union
+select 'N' as ACTIVE_FLAG, 'N' as ACTIVE_FLAG_DESC
+]]></dataSelect></column>
+<column id="FOREMAN_FLAG" label="FOREMAN_FLAG" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="SORT_ORDER" label="SORT_ORDER" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="DATE_CREATED" label="DATE_CREATED" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="CREATED_BY" label="CREATED_BY" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="DATE_MODIFIED" label="DATE_MODIFIED" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="False" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="MODIFIED_BY" label="MODIFIED_BY" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="QP3_TEAM" label="QP3_TEAM" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ROLENAME" label="ROLENAME" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="Attribute1" label="Length/# of Seats" width="110" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Attribute2" label="Width" width="110" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Attribute3" label="Height" width="110" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="GroupName" label="GroupName" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="LocationLookupNAME" label="LocationLookupNAME" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="RESOURCE_TYPE_NAME" label="[RESOURCE_TYPE_NAME]," width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="ROWORG_ID" label="ROWORG_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="IncludeInMonthlyCapacity" label="Incl In Capacity" width="80" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="DefaultItemId" label="Default BTE Item" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="DefaultItemName" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0">
+<dataSelect><![CDATA[
+select distinct I.Item_Id as DefaultItemId, i.name as DefaultItemName
+ from dbo.RESOURCE_ITEMS RI with(nolock)
+inner join ITEMS I with(nolock)
+on RI.ITEM_ID = I.ITEM_ID
+and I.ORGANIZATION_ID = @ORGANIZATION_ID
+where RI.RESOURCE_ID = @RESOURCE_ID]]></dataSelect></column>
+<column id="DefaultItemIdForSA" label="Default SA Item" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="DefaultItemNameForSA" dataSelectCacheOnClient="False" preloadDataSelect="True" totalize="False" defaultFilter="" filterText="" size="0">
+<dataSelect><![CDATA[select distinct top 100 percent I.Item_Id as DefaultItemIdForSA, i.name as DefaultItemNameForSA
+ from dbo.ITEMS I with(nolock)
+where I.ORGANIZATION_ID = @ORGANIZATION_ID
+and i.ItemIsDT = 0 and isnull(i.ItemIsOT, 0) = 0 AND I.ITEM_TYPE_ID = 8 and I.ITEM_STATUS_TYPE_ID = 130 and I.BILLABLE_FLAG = 'Y' order by name]]></dataSelect></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

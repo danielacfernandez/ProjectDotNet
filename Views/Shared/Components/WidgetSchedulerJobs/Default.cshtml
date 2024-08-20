@@ -1,0 +1,87 @@
+﻿@model ServiceTRAX.ViewComponents.WidgetSchedulerJobs.WidgetSchedulerJobsViewModel
+
+<style type="text/css">
+    .widget-schjobs-card-borders {
+        margin: 5px;
+        height: 96%;
+    }
+
+    .widget-schjobs-title {
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+
+
+    #widget-schjobs::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    /* Track */
+    #widget-schjobs::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    /* Handle */
+    #widget-schjobs::-webkit-scrollbar-thumb {
+        background: #888;
+    }
+
+        /* Handle on hover */
+        #widget-schjobs::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+</style>
+
+<script type="text/javascript">
+
+        const openRequest = function(requestid) {
+            redirectToPage('/Request', { 'RequestID': requestid, 'OrganizationID': @Model.OrganizationID}, false);
+        }
+</script>
+
+
+<div class="card widget-schjobs-card-borders">
+    <div class="card-body p-0">
+        <div id="widget-schjobs" class="d-flex flex-column" style="overflow-y:scroll; height: 100%">
+            <a asp-controller="Scheduler"
+               asp-action="Daily"
+               asp-route-OrganizationID="@Model.OrganizationID">
+                <h4 class="text-center widget-schjobs-title my-2">
+                    Scheduled Jobs
+                </h4>
+            </a>
+            <table class="table widget-table">
+                <colgroup>
+                    <col style="width:auto">
+                    <col style="width:15%">
+                    <col style="width:15%">
+                    <col style="width:auto">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">Job Name</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Lead Name</th>
+                        <th scope="col">SR Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var job in Model.Jobs)
+                    {
+                    <tr>
+                        <td scope="row"><a href="#" onclick="openRequest(@job.RequestId);">@job.JobName</a></td>
+                        <td scope="row">@job.Date.ToString("d")</td>
+                        <td scope="row">@job.OnSiteStartTime.ToString("t")</td>
+                        <td scope="row">@(string.IsNullOrWhiteSpace(job.LeadName) ? "-" : job.LeadName)</td>
+                        <td scope="row">@job.SRStatusName</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+

@@ -1,0 +1,207 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXPageViewModel
+@using ServiceTRAX.Identity
+@using ServiceTRAX.Identity.Authorization
+@using ServiceTRAX.Utils
+
+@{
+    ViewData["Title"] = "Job Headers";
+}
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 180px;
+            right: 20px;
+            bottom: 30px;
+        }
+    </style>
+
+    @if (!User.UserHasThisPermission(Permissions.BillRatesRead))
+    {
+        <style>
+            .open-job-rates-visibility {
+                display: none;
+            }
+        </style>
+    }
+}
+
+@section Scripts {
+
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css" asp-append-version="true">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/override/main-custom.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/Admin/jobheaders.js' asp-append-version="true"></script>
+
+    <script type="text/javascript">
+
+         $(function () {
+            // Get the MVC model as JS
+            const jhmodel =  @Html.Raw(JSONUtils.JsonUTC(Model));
+            // Initialize JS code
+             initJobHeader(jhmodel, @User.GetUserID());
+         });
+
+    </script>
+
+}
+
+<div class="row">
+    <div class="col-12 mt-3 d-flex align-items-start">
+        <h2 class="mr-5">JOB HEADERS</h2>
+        <button class="btn btn-sm btn-blue" title="Create new Job..." data-bind="click:() => newJobDialog.displayDialog()">
+            ADD NEW JOB
+        </button>
+    </div>
+</div>
+
+<div id="content-wrap">
+    <div class="gridContent" id="tegGrid"></div>
+</div>
+
+
+<!-- ko with:newJobDialog -->
+<div class="modal fade modal--forms" data-bind="showModal:isDialogDisplaying" id="newJobModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="newJobLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto">NEW JOB</h5>
+                <button type="button" class="btn icon-only" data-bind="click:closeDialog">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-row">
+                        <div class="col-4">
+                            <label>
+                                Job Number
+                                <span class="req">*</span>
+                            </label>
+                            <input type="number" class="form-control" maxlength="50" data-bind="textInput: request_Data.job_number" />
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.job_number"></div>
+                        </div>
+                        <div class="col-5 align-self-end">
+                            <!-- ko if: isValidatingProjectNumber -->
+                            <div class="d-inline-flex align-items-center">
+                                <i class="fas fa-spinner fa-pulse fa-2x mr-2"></i>
+                                <div class="small">Validating Project Number...</div>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko ifnot: isValidatingProjectNumber -->
+                            <!-- ko if: isValidProjectNumber -->
+                            <div class="d-inline-flex align-items-center">
+                                <i class="fas fa-check-circle fa-2x mr-2" style="color:forestgreen" title="Job Number is OK."></i>
+                                <div class="small">Job Number is OK.</div>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko ifnot: isValidProjectNumber -->
+                            <div class="d-inline-flex align-items-center">
+                                <i class="fas fa-times-circle fa-2x mr-2" style="color:orangered" title="Job Number is not valid/already used."></i>
+                                <div class="small">Job Number is not valid/already used.</div>
+                            </div>
+                            <!-- /ko -->
+                            <!-- /ko -->
+                        </div>
+                        <div class="col-3">
+                            <label>
+                                Types of Service
+                                <span class="req">*</span>
+                            </label>
+                            <select id="serviceTypes"
+                                    data-style="btn-white shadow-sm"
+                                    data-bind="selectPicker:true, options: $root.serviceTypes, optionsText: 'serviceName', optionsValue: 'serviceTypeID', value: request_Data.project_type_id, valueAllowUnset: true "
+                                    data-none-selected-text="...">
+                            </select>
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.project_type_id"></div>
+                        </div>
+                    </div>
+                    <div class="form-row justify-content-end">
+                        <div class="col-3">
+                            <div class="magic-checkbox-wrapper" data-bind="visible: pooledHoursCheckboxVisible">
+                                <input class="magic-checkbox" type="checkbox" id="isPooledHours" data-bind="checked: request_Data.isPooledHours" />
+                                <label class="mb-0" for="isPooledHours">Pooled Hours</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col-12">
+                            <label>
+                                Job Name
+                                <span class="req">*</span>
+                            </label>
+                            <input type="text" class="form-control" maxlength="50" data-bind="textInput: request_Data.project_name" />
+                            <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.project_name"></div>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col-12">
+                            <label>
+                                Customer/Dealer Name
+                                <span class="req">*</span>
+                            </label>
+                            <div>
+                                <div class="d-flex">
+                                    <select data-live-search="true"
+                                            data-style="btn-white shadow-sm"
+                                            id="customerName"
+                                            data-bind="selectPicker:true, options: $root.allCustomers, optionsText: 'customer_Name', optionsValue: 'customer_Id', value: request_Data.customer_id, valueAllowUnset: true"
+                                            data-none-selected-text="...">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.customer_id"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col-12">
+                            <label>
+                                End User/Dealer Customer Name
+                                <span class="req">*</span>
+                            </label>
+                            <div class="d-flex">
+                                <!-- ko if:$root.endUsers().length > 10 -->
+                                <select data-style="btn-white shadow-sm"
+                                        data-live-search="true"
+                                        data-size="10"
+                                        data-bind="selectPicker:true, enable: request_Data.customer_id(), options: $root.endUsers, optionsText: 'end_user_name', optionsValue: 'end_user_id', value: request_Data.end_user_id, valueAllowUnset: true"
+                                        data-none-selected-text="...">
+                                </select>
+                                <!-- /ko -->
+                                <!-- ko ifnot:$root.endUsers().length > 10 -->
+                                <select data-style="btn-white shadow-sm"
+                                        data-bind="selectPicker:true, enable: request_Data.customer_id(), options: $root.endUsers, optionsText: 'end_user_name', optionsValue: 'end_user_id', value: request_Data.end_user_id, valueAllowUnset: true"
+                                        data-none-selected-text="...">
+                                </select>
+                                <!-- /ko -->
+                            </div>
+                            <div class="col-12">
+                                <div class="help-block invalid-feedback" data-bind="validationMessage: request_Data.end_user_id"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-4">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="css: { 'btn-disabled': disabledCreateJobButton }, click:saveJob">
+                            CREATE JOB
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

@@ -1,0 +1,40 @@
+﻿<!-- ko with:notificationDialog-->
+<div class="modal fade modal--forms" id="NotificationModal" data-bind="showModal:isDialogDisplaying"
+     tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="NotificationModal" aria-hidden="true" style="z-index: 5000!important">
+    <div class="modal-dialog modal modal-dialog-centered" role="document" style="z-index: 5000!important">
+
+        <div class="modal-content modal-content--dark-blue" data-bind="style: { 'background-color': greyColor()?'#415981':'#0f2852', 'z-index': '5000!important' }">
+
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto ucase" data-bind="text:dialogTitle">Add New Invoice</h5>
+            </div>
+            <div class="modal-body">
+                <!-- ko ifnot:largeText-->
+                <div data-bind="text:dialogMessage" style="white-space: pre-wrap" ></div>
+                <!-- /ko -->
+                <!-- ko if:largeText-->
+                <textarea class="w-100" rows="5" data-bind="text:dialogMessage" readonly></textarea>
+                <!-- /ko -->
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <!-- ko ifnot:isConfirmation -->
+                    <div class="col-8 offset-2 mt-4 ">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click:closeDialog">DISMISS</button>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if:isConfirmation -->
+                    <div class="col mt-4 text-center">
+                        <button type="button" class="btn btn-green px-4" data-bind="click:confirmAction, text:okButtonText"></button>
+                        <!-- ko if:cancelButtonText != '' -->
+                            <button type="button" class="btn btn-warning px-4" data-bind="click:closeDialog, text:cancelButtonText"></button>
+                        <!-- /ko -->
+                    </div>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<!-- /ko -->

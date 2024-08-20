@@ -1,0 +1,57 @@
+﻿ <!-- Schedule Job Sorting Modal -->
+<!-- ko with:jobSortingModal -->
+<div class="modal" id="ScheduleJobsSortingModal" data-backdrop="static" tabindex="-1" data-bind="showModal:dialogDisplaying">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <div class="d-flex align-items-center">
+                    <h4 class="p-0 m-0 mr-2">Job Sorting</h4>
+                    <button type="button" title="Saves current Job order for all Schdeuler users..." class="btn btn-green" data-bind="css: { 'btn-disabled': savingJobs() }, visible:positionsChanged, click:savePostions">
+                        <div data-bind="hidden:savingJobs">
+                            <em class="far fa-save mr-2"></em> Save Scheduler Jobs Positions
+                        </div>
+                        <div data-bind="visible:savingJobs">
+                            <div class="d-inline-flex align-items-center">
+                                <i class="fas fa-spinner fa-pulse fa-1x mr-2"></i>
+                                <div class="small">Saving Jobs Positions...</div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+                <button type="button" class="btn icon-only" title="Close dialog without applying changes..." data-bind="click:hideDialog">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center" data-bind="visible:loadingJobs">
+                    <div class="d-inline-flex align-items-center">
+                        <i class="fas fa-spinner fa-pulse fa-2x mr-2"></i>
+                        <div>Loading Jobs...</div>
+                    </div>
+                </div>
+                <div data-bind="if:dayJobs().length > 0">
+                    <table class="table table--gray scheduler-table" style="background-color:#f5f5f5">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Job No</th>
+                                <th scope="col">Job Name</th>
+                                <th scope="col">Customer Name</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach:dayJobs">
+                            <tr draggable="true" class="draggable-job"
+                                data-bind="event:{ dragstart:e => $parent.initJobDrag(e), dragover:e => $parent.jobDragOver(e), dragend:e => $parent.endJobDrag(e)  }">
+                                <td><i class="fas fa-bars"></i></td>
+                                <td data-bind="text:srNumber"></td>
+                                <td data-bind="text:job_Name"></td>
+                                <td data-bind="text:customer_name"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

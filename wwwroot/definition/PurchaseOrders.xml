@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.217" author="" dateCreation="2020-03-27" dateLastChange="2023-07-26"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title></title>
+        <defaultOrder>POHeaderId</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>True</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[SELECT
+  PO.POHeaderId,
+  PO.PODate,
+  PO.LSPName,
+  PO.PODescription,
+  PO.RequestId,
+  PO.RequestNo,
+  PO.RequestName,
+  PO.RequestDescription,
+  PO.QuotedAmount,
+  PO.TotalAmount,
+  PO.POStatusId,
+  PO.POStatusCode,
+  PO.POStatusName,
+  PO.OrganizationId,
+  PO.OrganizationId AS ROWORG_ID,
+  PO.InvoicedAmount,
+  PO.TotalAmount - PO.InvoicedAmount as AmtBalance,
+  PO.CntInvoices,
+  PO.ProjectId,
+  PO.PONumber
+from dbo.[GetPOHeaders_TEG_FN](@ORGANIZATION_ID, @PROJECT_ID, @__USERID__) PO]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="" autoUpdateQuery="False" updateTable=""><![CDATA[]]></sqlUpdate>
+        <sqlInsert where="POHeaderid=@POHeaderIdInserted"><![CDATA[DECLARE @RequestIdOrDefault BIGINT = ISNULL(@RequestId, @REQUEST_ID)
+DECLARE @POHeaderIdInserted BIGINT
+
+EXEC [dbo].[POHeader_Insert] 
+@RequestId=@RequestIdOrDefault, 
+@Description=@PODescription, 
+@PONumber=@PONumber,
+@TotalAmount=@TotalAmount,
+@UserId=@__UserId__,
+@POHeaderId=@POHeaderIdInserted out
+
+;insert into dbo.Logs(processname, description)
+values('Insert PO', @POHeaderIdInserted )]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons>
+<button id="cmdFakeButton" actionType="openGrid" gridToOpen="" icon="fa-fw" title="" label="Purchase Order" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button>
+<button id="cmdPOInvoices" actionType="openGrid" gridToOpen="POInvoices" icon="fa-asterisk" title="PO Invoices" label="PO Invoices" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button>
+<button id="cmdUpdateInvoice" actionType="openGrid" gridToOpen="" icon="fa-file-invoice" title="Upload Invoice" label="Upload Invoice" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button>
+<button id="cmdClosePO" actionType="executeSQL" gridToOpen="" icon="fas fa-flag-checkered" title="Close PO" label="Close PO" target="" sqlParameters="" confirmationMessage="Are you sure you want to close this PO?" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[declare @Succeeded bit,
+@CodeResult varchar(max),    
+@MessageResult varchar(max)   
+
+exec dbo.POHeader_Close
+@POHeaderId = @POHeaderId,
+@UserId = @__UserId__,
+@Succeeded = @Succeeded out,    
+@CodeResult = @CodeResult out,    
+@MessageResult = @MessageResult out   
+
+if @Succeeded = 0
+  raiserror (@MessageResult, 16, 1); ]]></sqlSentence></button></buttons>
+        <columns>
+<column id="POHeaderId" label="POHeaderId" width="50" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textarea" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="PODate" label="Date Created" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="PONumber" label="PO Number" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="POStatusId" label="PO Status" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="POStatusName" dataSelectCacheOnClient="True" preloadDataSelect="True" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[SELECT TOP 100 PERCENT L.LOOKUP_ID AS POStatusId, L.NAME AS POStatusName
+FROM dbo.LOOKUPS L with(nolock)
+LEFT JOIN LOOKUP_TYPES LT
+	ON L.LOOKUP_TYPE_ID = LT.LOOKUP_TYPE_ID
+WHERE LT.NAME = 'PO status'
+	AND L.ACTIVE_FLAG = 'Y'
+ORDER BY L.SEQUENCE_NO]]></dataSelect></column>
+<column id="TotalAmount" label="Total Amt." width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="#,##0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="10"></column>
+<column id="PODescription" label="PO Description" width="400" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RequestId" label="Request" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="listbox" visible="True" format="" labelField="RequestNo" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0">
+<dataSelect><![CDATA[SELECT TOP 100 PERCENT
+	R.Request_Id AS RequestId,
+	R.PROJECT_REQUEST_NO AS RequestNo
+FROM dbo.Requests_V R
+WHERE R.PROJECT_ID = @PROJECT_ID
+and R.Request_Type_Id in (325, 625)	
+ORDER BY R.PROJECT_REQUEST_NO]]></dataSelect></column>
+<column id="QuotedAmount" label="Quoted Amt." width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="#,##0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="10"></column>
+<column id="InvoicedAmount" label="Invoiced Amt." width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="#,##0.00" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="10"></column>
+<column id="AmtBalance" label="Balance Amt." width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="#,##0.00" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="0"></column>
+<column id="LSPName" label="LSP Name" width="200" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RequestDescription" label="Request Description" width="400" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CntInvoices" label="Invoice Cnt." width="75" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="True" defaultFilter="" filterText="" size="10"></column>
+<column id="RequestName" label="Request Name" width="200" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="POStatusCode" label="POStatusCode" width="80" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="POStatusName" label="POStatusName" width="80" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="RequestNo" label="RequestNo" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="right" headerAlign="right" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="ProjectId" label="ProjectId" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="OrganizationId" label="OrganizationId" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="ROWORG_ID" label="ROWORG_ID" width="100" editable="False" filterable="False" filterItemsSize="100" resizable="False" customizable="False" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

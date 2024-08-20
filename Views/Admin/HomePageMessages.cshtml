@@ -1,0 +1,41 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXPageViewModel
+@using ServiceTRAX.Identity
+
+@{
+    ViewData["Title"] = "Home Page Messages";
+}
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 140px;
+            right: 20px;
+            bottom: 35px;
+        }
+    </style>
+}
+
+@section Scripts {
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css" asp-append-version="true">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js" asp-append-version="true"></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+
+    <script type="text/javascript">
+
+        let gridParameters = () => ({ ORGANIZATION_ID: @Model.OrganizationID });
+        let gridEvents = {};
+        let oGrid = new clsMyGrid('HomePageMessages', document.getElementById('messagesTEG'), null, gridEvents, true, gridParameters());
+
+    </script>
+
+}
+
+<div id="content-wrap">
+    <div class="gridContent myGrid" id="messagesTEG"></div>
+</div>
+

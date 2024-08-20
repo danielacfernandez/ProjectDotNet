@@ -1,0 +1,39 @@
+﻿@model ServiceTRAX.ViewComponents.WidgetQuotesCreatedNotSentViewComponent.WidgetQuotesCreatedNotSentViewComponentViewModel
+
+<style type="text/css">
+    .card-borders {
+        margin: 5px;
+        height: 96%;
+    }
+
+    .quote-count-text {
+        font-size: 8em;
+    }
+
+    .centered-counter {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+    }
+</style>
+
+
+
+<div class="card card-borders">
+    <div class="card-body">
+        <div class="centered-counter">
+            <p class="text-center quote-count-text">@Model.Quotes</p>
+            <a asp-controller="Quote" 
+               asp-action="ListQuotes" 
+               asp-route-OrganizationID="@Model.OrganizationID" 
+               asp-route-QRStatus="@Model.QRStatus" 
+               asp-route-UserType="@Model.UserType"
+               asp-route-ViewDesc="@Model.WidgetTitle">
+                <h4 class="text-center"><strong>@Model.WidgetTitle</strong></h4>
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,758 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXHotSheetViewModel
+
+@{
+    ViewData["Title"] = "HotSheet";
+}
+
+@section StyleSheets {
+
+    <link rel="stylesheet" href="~/lib/trumbowyg/trumbowyg.min.css" />
+    <link rel="stylesheet" href="~/css/datepicker.css" />
+
+    <style>
+        .custom-editor {
+            min-height: 200px;
+        }
+
+        @@media print {
+            .pagebreak {
+                page-break-before: always;
+            }
+        }
+    </style>
+
+}
+
+@section Scripts {
+
+    <script type='text/javascript' src='~/lib/knockout/knockout-latest.js'></script>
+    <script type='text/javascript' src='~/lib/moment/moment.min.js'></script>
+    <script type='text/javascript' src='~/lib/trumbowyg/trumbowyg.min.js'></script>
+    <script type='text/javascript' src='~/js/ko-bindingHandlers.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/knockout.validation/knockout.validation.min.js'></script>
+    <script type='text/javascript' src='~/override/main-custom.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/lib/datepicker.js'></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE0DSURx24pIfcp1fj98P3yuOnmIKGTlI" async defer></script>
+    <script type="text/javascript" src="~/lib/maskedinput/jquery.maskedinput.js"></script>
+
+    <script type='text/javascript' src='~/js/add-contact-dialog.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/Request/hotsheets.js' asp-append-version="true"></script>
+    <script type='text/javascript' src='~/js/document-signing.js' asp-append-version="true"></script>
+
+    <script type="text/javascript">
+
+
+        var initMap = function () {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: {
+                    lat: -34.397,
+                    lng: 150.644
+                },
+                zoom: 8
+            });
+        }
+
+
+
+        $(function () {
+            var model =  @Html.Raw(Json.Serialize(Model));
+            initHotSheets(model);
+        });
+    </script>
+}
+
+<div id="content" class="hotsheet-screen-content" data-bind="beforeUnloadText: beforeUnloadPrompt">
+    <div class="container-fluid" id="hotSheet">
+        <div class="row">
+            <div class="col mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <h2 class="flex-grow-1 mb-0">
+                        HOT SHEET
+                    </h2>
+                    <button type="button" class="btn btn-sm btn-primary" data-bind="visible:hotSheetID > 0, click:signHotsheet"><i class="fas fa-signature mr-2"></i>SIGN HOTSHEET</button>
+                </div>
+                <h4>
+                    <small class="text-muted"><span data-bind="text: hotsheet_Identifier"></span></small>
+                </h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form novalidate>
+                    <div class="collapse-panel-control" id="hotSheetHeaderPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">HEADER</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-header">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-header">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-5">
+                                        <label for="shjobname">
+                                            Job Name
+                                        </label>
+                                        <input type="text" class="form-control fix-col-print-width" id="shjobname" data-bind="value: jobName" readonly />
+                                    </div>
+                                    <div class="col-lg-1"></div>
+                                    <div class="col-lg-5">
+                                        <label>
+                                            Customer Name
+                                        </label>
+                                        <input type="text" class="form-control fix-col-print-width" data-bind="value: customerName" readonly />
+                                    </div>
+                                </div>
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-5">
+                                        <label>
+                                            End User Name
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: endUserName" readonly />
+                                    </div>
+                                    <div class="col-lg-1"></div>
+                                    <div class="col-lg-5">
+                                        <label>
+                                            Sales Contact
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: salesContact" readonly />
+                                    </div>
+                                </div>
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-5">
+                                        <label>
+                                            PO #
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: poNo" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="hotSheetOriginAddressPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">ORIGIN ADDRESS</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-OriginAddress">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-OriginAddress">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Company
+                                        </label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-live-search="true"
+                                                data-bind="selectPicker:true, options: origLocations, optionsText: locationOptionFormatter, optionsValue: 'job_location_id', value: $root.origLocationID, disable:isReadOnly"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Address
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: $root.origAdd" readonly />
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>
+                                            City
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: $root.origCity" readonly />
+                                    </div>
+                                </div>
+                                <!-- ko foreach: hotSheetOriginContacts -->
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Contact
+                                        </label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, options: $root.remainingOriginContacts($data.contact_ID), optionsText: 'contact_Name', optionsValue: 'contact_ID', value: contact_ID, disable:$root.isReadOnly"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Phone
+                                        </label>
+                                        <div class="row">
+                                            <div class="col-10">
+                                                <input type="text" class="form-control" data-bind="value: $root.allOriginContacts().find(c => c.contact_ID === $data.contact_ID()).contact_Phone" readonly />
+                                            </div>
+                                            <div class="col-2 align-self-center">
+                                                <button class="btn btn-sm btn-danger" type="button" data-bind="visible: !$root.isReadOnly, click: function() { $root.removeOriginContact(contact_ID); }">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                                <!-- ko ifnot:isReadOnly -->
+                                <div class="form-row">
+                                    <div class="col-lg-3 mt-2 align-self-end">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <button type="button" class="btn btn-sm btn-orange form-control" data-bind="click: addOriginContact"><span>Add Contact</span></button>
+                                            </div>
+                                            <div class="col-6">
+                                                <button type="button" class="btn btn-sm btn-primary form-control" data-bind="click:() => newContactDialog.displayDialog('hscontact', newContactCallback)"><span>New Contact</span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="hotSheetDestinationAddressPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">DESTINATION ADDRESS</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-DestinationAddress">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-DestinationAddress">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Customer
+                                        </label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, options: jobLocations, optionsText: 'job_location_name', optionsValue: 'job_location_id', value: $root.jobLocationID, disable:isReadOnly"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Address
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: $root.destAdd" readonly />
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label>
+                                                    City
+                                                </label>
+                                                <input type="text" class="form-control" data-bind="value: $root.destCity" readonly />
+                                            </div>
+                                            <div class="col-2" style="align-self: flex-end;">
+                                                <a class="btn btn-green form-control" data-bind="attr: { href: 'https://www.google.com/maps/place/?q=' + encodeURIComponent( $root.destAdd() + $root.destCity() ), target: '_blank' }"><span class="fa fa-map-marker-alt"></span></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- ko foreach: hotSheetDestinationContacts-->
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Contact
+                                        </label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, options: $root.remainingDestinationContacts($data.contact_ID), optionsText: 'contact_Name', optionsValue: 'contact_ID', value: contact_ID, disable:$root.isReadOnly"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Phone
+                                        </label>
+                                        <div class="row">
+                                            <div class="col-10">
+                                                <input type="text" class="form-control" data-bind="value:  $root.allDestinationContacts().find(c => c.contact_ID === $data.contact_ID()).contact_Phone" readonly />
+                                            </div>
+                                            <div class="col-lg-2 align-self-center">
+                                                <button class="btn btn-sm btn-danger" type="button" data-bind="visible: !$root.isReadOnly, click: function() { $root.removeDestinationContact(contact_ID); }">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                                <!-- ko ifnot:isReadOnly-->
+                                <div class="form-row">
+                                    <div class="col-lg-3 mt-2 align-self-end">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <button type="button" class="btn btn-sm btn-orange form-control" data-bind="click: addDestinationContact"><span>Add Contact</span></button>
+                                            </div>
+                                            <div class="col-6">
+                                                <button type="button" class="btn btn-sm btn-primary form-control" data-bind="click:() => newContactDialog.displayDialog('job_location', newDestinationContactCallback, $root.jobLocationID() )"><span>New Contact</span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="hotSheetBillingAddressPanelControl" hidden>
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">BILLING ADDRESS</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-BillingAddress">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-BillingAddress" hidden>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Address
+                                        </label>
+                                        <input type="text" class="form-control" value="Test Address" readonly />
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>
+                                            City
+                                        </label>
+                                        <input type="text" class="form-control" value="Test City" readonly />
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>
+                                            Phone
+                                        </label>
+                                        <input type="text" class="form-control" value="123456" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="hotSheetDatesPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">WORK DATES</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-Dates">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-Dates">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-3">
+                                        <label>
+                                            Schedules
+                                        </label>
+                                        <select data-style="btn-white shadow-sm"
+                                                data-bind="selectPicker:true, options: hotSheetRequestSchedules, optionsText: 'requestScheduleDisplayValue', optionsValue: 'requestScheduleId', value: dateData.requestScheduleId, disable:$root.isReadOnly, valueAllowUnset: true"
+                                                data-none-selected-text="...">
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2">
+                                        <label for="date">
+                                            Date
+                                        </label>
+                                        <div class="input-group" id="triggerworkDate">
+                                            <input type="text" class="form-control"
+                                                   autocomplete="off"
+                                                   id="workDate"
+                                                   data-bind="datepicker: workDate, datepickerOptions: { trigger: '#triggerworkDate' }"
+                                                   required />
+                                            <div class="input-group-append simulate-button">
+                                                <span class="input-group-text input-group-append-custom">
+                                                    <i class="fas fa-calendar"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-1">
+                                        <label for="date">
+                                            Job Length (hs)
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: dateData.jobLength" />
+                                    </div>
+
+                                </div>
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-3">
+                                        <label for="date">
+                                            Warehouse Start
+                                        </label>
+                                        <input type="time" class="form-control" data-bind="value: $root.dateData.warehouseStartTime" />
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <label for="date">
+                                            On Site Start
+                                        </label>
+                                        <input type="time" class="form-control" data-bind="value: $root.dateData.onSiteStartTime" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="hotSheetVehicleEquipmentPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">Vehicle, Equipment &amp; Positions</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-VehicleEquipment">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-VehicleEquipment">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-4">
+                                        <div class="bg-dark-form">
+                                            <div class="form-row">
+                                                <div class="col-6">
+                                                    <label style="color:white;">
+                                                        Equipment
+                                                    </label>
+                                                </div>
+
+                                                <div class="col-2">
+                                                    <label style="color:white;">
+                                                        Out
+                                                    </label>
+                                                </div>
+                                                <div class="col-2">
+                                                    <label style="color:white;">
+                                                        In
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <!-- ko if: $root.savedEquipment().length > 0 -->
+                                            <!-- ko foreach: $root.savedEquipment -->
+                                            <div class="form-row align-items-center mb-3">
+                                                <div class="col-6">
+                                                    <!-- ko if: equipmentID() === -1 -->
+                                                    <input type="text" class="form-control" data-bind="value: equipmentName" />
+                                                    <!-- /ko -->
+                                                    <!-- ko if: equipmentID() != -1 -->
+                                                    <select data-style="btn-white shadow-sm"
+                                                            data-bind="selectPicker:true, options: $root.equipment, optionsText: 'equipmentName', optionsValue: 'equipmentID', value: equipmentID, disable:$root.isReadOnly">
+                                                    </select>
+                                                    <!-- /ko -->
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-row align-items-center">
+                                                        <div class="col-5">
+                                                            <input type="number" class="form-control" min="0" data-bind="value: equipmentOUT, disable:$root.isReadOnly" onclick="select()" />
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <input type="number" class="form-control" min="0" data-bind="value: equipmentIN, disable:$root.isReadOnly" onclick="select()" />
+                                                        </div>
+                                                        <!-- ko ifnot:$root.isReadOnly-->
+                                                        <div class="col-2">
+                                                            <button class="btn btn-sm btn-danger" type="button" data-bind="click: function () { $root.removeEquipment($data); }">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                        <!-- /ko -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /ko -->
+                                            <!-- /ko -->
+                                            <!-- ko ifnot:isReadOnly-->
+                                            <div class="form-row mt-2">
+                                                <div class="col">
+                                                    <button type="button" class="btn btn-primary" data-bind="click: function() { addEquipment(); }">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary" data-bind="click: function() { addCustEquipment(); }">
+                                                        <i class="fas fa-plus"></i><span> CUSTOM</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <!-- /ko -->
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div class="bg-dark-form">
+                                            <div class="form-row">
+                                                <div class="col-6">
+                                                    <label style="color:white;">
+                                                        Vehicle
+                                                    </label>
+                                                </div>
+                                                <div class="col-5">
+                                                    <label style="color:white;">
+                                                        Qty
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <!-- ko if: $root.savedVehicle().length > 0 -->
+                                            <!-- ko foreach: $root.savedVehicle -->
+                                            <div class="form-row align-items-center mb-3">
+                                                <div class="col-8">
+                                                    <select data-style="btn-white shadow-sm"
+                                                            data-bind="selectPicker:true, options: $root.vehicles, optionsText: 'vehicleName', optionsValue: 'vehicleID', value: vehicleID">
+                                                    </select>
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="number" class="form-control" min="0" data-bind="value: vehicleQTY" onclick="select()" />
+                                                </div>
+                                                <div class="col-1">
+                                                    <button class="btn btn-sm btn-danger" type="button" data-bind="click: function () { $root.removeVehicle($data); }">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <!-- /ko -->
+                                            <!-- /ko -->
+                                            <!-- ko ifnot:isReadOnly-->
+                                            <div class="form-row mt-2">
+                                                <div class="col">
+                                                    <button type="button" class="btn btn-primary" data-bind="click: function() { $root.addVehicle(); }, disable:isReadOnly">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <!-- /ko -->
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div class="bg-dark-form">
+                                            <div class="form-row mb-3">
+                                                <div class="col-7">
+                                                    <label style="color:white;">
+                                                        Position
+                                                    </label>
+                                                </div>
+                                                <div class="col-5">
+                                                    <label style="color:white;">
+                                                        Qty
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-row mb-3">
+                                                <div class="col-7" style="align-self: center;">
+                                                    <input type="text" class="form-control" value="LEAD" readonly />
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="number" class="form-control" data-bind="value: dateData.leadQty" readonly />
+                                                </div>
+                                            </div>
+                                            <div class="form-row mb-3">
+                                                <div class="col-7" style="align-self: center;">
+                                                    <input type="text" class="form-control" value="DRIVER" readonly />
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="number" class="form-control" data-bind="value: dateData.driverQty" readonly />
+                                                </div>
+                                            </div>
+                                            <div class="form-row mb-3">
+                                                <div class="col-7" style="align-self: center;">
+                                                    <input type="text" class="form-control" value="INSTALLER" readonly />
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="number" class="form-control" data-bind="value: dateData.installerQty" readonly />
+                                                </div>
+                                            </div>
+                                            <div class="form-row mb-3">
+                                                <div class="col-7" style="align-self: center;">
+                                                    <input type="text" class="form-control" value="MOVER" readonly />
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="number" class="form-control" data-bind="value: dateData.moverQty" readonly />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="hotSheetInstructionsPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">SPECIAL INSTRUCTIONS</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-Instructions">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-Instructions">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <span class="custom-editor" data-bind="trumbowyg: specialInstructions, trumbowygOptions: { disabled: isReadOnly }"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="hotSheetscopeWorkPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">SCOPE OF WORK</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-scopeWork">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-scopeWork">
+                        <div class="row">
+                            <div class="col-lg-12 mb-3">
+                                <span class="disabled-editor" data-bind="trumbowyg: description, trumbowygOptions: { disabled: true }"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel-control" id="auditInformationPanelControl">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="collapse-panel__heading m-0">AUDIT INFORMATION</h5>
+                            </div>
+                            <div class="col">
+                                <button class="collapse-panel-btn" type="button" data-toggle="collapse" data-target="#hotsheet-auditInformation">
+                                    <strong>COLLAPSE <em class="fas fa-chevron-up"></em> <em class="fas fa-chevron-down"></em></strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse-panel show" id="hotsheet-auditInformation">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-row mb-3">
+                                    <div class="col-lg-2">
+                                        <label>
+                                            Date Created
+                                        </label>
+                                        <input type="datetime" class="form-control" data-bind="value: dateCreated() != null ? moment(dateCreated()).format('MMMM Do YYYY, h:mm:ss a') : ''" readonly />
+                                    </div>
+                                    <div class="col-lg-1"></div>
+                                    <div class="col-lg-3">
+                                        <label>
+                                            Created By
+                                        </label>
+                                        <input type="text" class="form-control" data-bind="value: createdBy" readonly />
+                                    </div>
+                                </div>
+                                @*<div class="form-row mb-3">
+                                        <div class="col-lg-2">
+                                            <label>
+                                                Date Modified
+                                            </label>
+                                            <input type="datetime" class="form-control" data-bind="value: dateModified" readonly />
+                                        </div>
+                                        <div class="col-lg-1"></div>
+                                        <div class="col-lg-3">
+                                            <label>
+                                                Modified By
+                                            </label>
+                                            <input type="text" class="form-control" data-bind="value: modifiedBy" readonly />
+                                        </div>
+                                    </div>*@
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" requires-permission="@ServiceTRAX.Identity.Authorization.Permissions.HotSheetsBOLCreateUpdate">
+                        <div class="col-10"></div>
+                        <div class="col-2" style="align-self: flex-end;">
+                            <button type="button" class="btn btn-primary form-control" data-bind="enable: modelChangeTracker.isDirty(), click: function () { saveHotSheet(); }">Create Hot Sheet</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!----------- Map modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showMapModal" id="MapModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="MapLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+            </div>
+            <div class="modal-body">
+                <div id="map" style="height: 400px;"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="col-12 justify-content-end">
+                    <button type="button" class="btn btn-primary btn-block" data-bind="click: function() { showMapModalDialog(false); }">CANCEL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!----------- Contact modal ------------->
+
+<div class="modal fade modal--forms" data-bind="showModal:showContactModal" id="ContactModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="ContactLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="margin: 10rem auto;">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto" id="ContactLabel">New Contact</h5>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <label>
+                            Name
+                        </label>
+                        <input type="text" class="form-control" data-bind="value: newContact.name" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <label>
+                            Phone
+                        </label>
+                        <input type="text" class="form-control" data-bind="value: newContact.phone" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-6 justify-content-end">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="click:addContact">ADD</button>
+                    </div>
+                    <div class="col-6 justify-content-end">
+                        <button type="button" class="btn btn-orange btn-block" data-bind="click: () => showContactModalDialog(false)">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_NewContact")
+@await Html.PartialAsync("HotSheetPrint")
+@await Html.PartialAsync("_DocSignatureInput")

@@ -1,0 +1,194 @@
+﻿<style type="text/css">
+    .highlight-curr-day {
+        color: #0fc4ff;
+        font-weight: bold;
+        background-color: rgba(255, 255, 255, 0.19);
+    }
+
+    .error-day {
+        border: #b90aff solid 2px;
+        background-color: rgba(185, 10, 255, 0.30);
+    }
+
+    .red-day {
+        border: #f74736 solid 2px;
+        background-color: rgba(247, 71, 54, 0.25);
+    }
+
+    .green-day {
+        border: #4dcb12 solid 2px;
+        background-color: rgba(77, 203, 18, 0.25);
+    }
+
+    .yellow-day {
+        border: #fbd817 solid 2px;
+        background-color: rgba(251, 216, 23, 0.46);
+    }
+
+    .orange-day {
+        border: #fbd817 solid 2px;
+        background-color: rgba(255, 102, 0, 0.55)
+    }
+
+    .nonbusiness-day {
+        border: #d7d7d7 solid 2px;
+        background-color: rgba(215, 215, 215, 0.25);
+    }
+
+    .past-day {
+        border: #d9d9d9 solid 2px;
+        color: #aaa;
+        background-color: rgba(215, 215, 215, 0.25);
+        /*background: repeating-linear-gradient(45deg,rgba(204, 204, 204, 0.25), rgba(204, 204, 204, 0.25) 10px, rgba(255, 255, 255, 0.25) 10px, rgba(255, 255, 255, 0.25) 20px );*/
+    }
+
+    .calendar-simul-button {
+        border-radius: 2px;
+    }
+
+        .calendar-simul-button:hover {
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+    .highlight-range {
+        background: repeating-linear-gradient(45deg,rgba(204, 204, 204, 0.25), rgba(204, 204, 204, 0.25) 10px, rgba(255, 255, 255, 0.25) 10px, rgba(255, 255, 255, 0.25) 20px );
+    }
+
+    .highlight-selection {
+        background-image: linear-gradient(90deg, #0099ff 50%, transparent 50%), linear-gradient(90deg, #0099ff 50%, transparent 50%), linear-gradient(0deg, #0099ff 50%, transparent 50%), linear-gradient(0deg, #0099ff 50%, transparent 50%);
+        background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+        background-size: 15px 4px, 15px 4px, 4px 15px, 4px 15px;
+        background-position: left top, right bottom, left bottom, right top;
+        animation: border-dance .5s infinite linear;
+    }
+
+    @@keyframes border-dance {
+        0% {
+            background-position: left top, right bottom, left bottom, right top;
+        }
+
+        100% {
+            background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
+        }
+    }
+</style>
+
+
+
+<script type="text/html" id="day-template">
+    <div data-bind="css: { 'highlight-selection': $parents[1].selectionHighlight(date) }">
+        <div data-bind="css: { 'highlight-range': $parents[1].rangeHighlight(date) }">
+            <div class="p-2 text-center position-relative calendar-simul-button"
+                 data-bind="event: {mouseover: function() { $parents[1].setDateRangeStart(date); } }, class: $parents[1].dayColorClass(date, isBusyDay, color), css: { 'highlight-curr-day': date.isSame(moment(), 'day'), 'highlight-range1':  $parents[1].rangeHighlight(date) }">
+                <span class="date d-block p-0" data-bind="text:date.format('D')"></span>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="weekend-day-template">
+    <div class="p-2 text-center position-relative nonbusiness-day">
+        <span class="date d-block p-0" data-bind="text:date.format('D')"></span>
+    </div>
+</script>
+
+<script type="text/html" id="old-day-template">
+    <div class="p-2 text-center position-relative past-day">
+        <span class="date d-block p-0" data-bind="text:date.format('D')"></span>
+    </div>
+</script>
+
+
+<!-- ko with:coloredCalendar-->
+<div class="modal fade modal--forms" id="ColoredCalendarDialog" data-bind="showModal:isDialogDisplaying"
+     tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="ColoredCalendarDialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <button class="btn btn-primary ucase" data-bind="click:prevMonth"><em class="fas fa-chevron-left"></em> Prev Month</button>
+                <h2 class="modal-title ucase" data-bind="text:moment(date()).format('MMM YYYY')"></h2>
+                <button class="btn btn-primary ucase" data-bind="click:nextMonth">Next Month <em class="fas fa-chevron-right"></em></button>
+                <button type="button" class="btn icon-only" data-bind="click:hideCalendar">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- ko if:calendarWeeks().length > 0  -->
+                <table style="width:100%; table-layout:fixed">
+                    <thead>
+                        <tr class="text-center">
+                            <th>Sun1</th>
+                            <th>Mon</th>
+                            <th>Tue</th>
+                            <th>Wed</th>
+                            <th>Thu</th>
+                            <th>Fri</th>
+                            <th>Sat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ko foreach:sortedCalendarWeeks -->
+                        <tr>
+                            <!-- ko foreach:weekDays  -->
+                            <!-- ko if:($parents[1].isBusinessDate(date) || $parents[1].allowWeekends()) && !date.isBefore(moment().startOf('day')) -->
+                            <td data-bind="click:function() { $parents[1].userSelection($data, false) }, template:{name: 'day-template'}, text1:$parents[1].allowWeekends()"></td>
+                            <!-- /ko -->
+                            <!-- ko if:($parents[1].isBusinessDate(date) || $parents[1].allowWeekends()) && date.isBefore(moment().startOf('day')) -->
+                            <td data-bind="template:{name: 'old-day-template'}"></td>
+                            <!-- /ko -->
+                            <!-- ko if:(!$parents[1].isBusinessDate(date) && !$parents[1].allowWeekends()) -->
+                            <td data-bind="template:{name: 'weekend-day-template'}"></td>
+                            <!-- /ko -->
+                            <!-- /ko -->
+                        </tr>
+                        <!-- /ko -->
+                    </tbody>
+                </table>
+                <!-- /ko -->
+            </div>
+            <div class="modal-footer">
+                <!-- ko if:scheduleManpowerRequestFailed -->
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <button class="btn btn-danger ucase" data-bind="click:loadDaysData">Request Failed - Please Retry<em class="fas fa-redo ml-3"></em></button>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- ko if:calendarWeeks().length === 0 && !scheduleManpowerRequestFailed() -->
+                <div class="text-center">
+                    <span class="spinner-grow" role="status"></span><span class="ml-2" data-bind="text:'Loading data for ' + moment(date()).format('MMM YYYY')"></span>
+                </div>
+                <!-- /ko -->
+                <!-- ko if:askForConfirmation -->
+                <div class="row">
+                    <div class="col-12">
+                        <h3 class="modal-footer ucase text-white">Please read below messages about the dates you've selected</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <ul>
+                            <!-- ko if:displayWithinServiceStartLockPeriod-->
+                            <li class="ucase text-white">The date selected is within the Service Start lock period, some users will have Read only access to this Service Requests.</li>
+                            <!-- /ko -->
+                            <!-- ko if:displayUsingRedDateConfirmation -->
+                            <li class="ucase text-white">The date selected includes Red days in the job range. Please confirm using this date (or pick another date).</li>
+                            <!-- /ko -->
+                        </ul>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- ko if:askForConfirmation -->
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <button class="btn btn-danger ucase" data-bind="click:function() { userSelection(null, true) }">Go ahead and Proceed<em class="fas fa-check ml-3"></em></button>
+                    </div>
+                </div>
+                <!-- /ko -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

@@ -1,0 +1,48 @@
+﻿@model ServiceTRAX.Models.ViewModels.ServiceTRAXPunchViewModel
+
+@{
+    ViewData["Title"] = "Punch List";
+}
+
+@await Component.InvokeAsync("SideMenu", new { OrganizationID = Model.OrganizationID, ProjectID = Model.ProjectID, RequestID = Model.RequestID })
+
+@section StyleSheets {
+
+    <style>
+        .gridContent {
+            position: absolute;
+            border: solid 1px #c0c0c0;
+            left: 20px;
+            top: 170px;
+            right: 20px;
+            bottom: 70px;
+        }
+    </style>
+}
+
+@section Scripts {
+
+    <link rel="stylesheet" href="~/css/mygrid.1.0.css">
+    <script language="javascript" type="text/javascript" src="~/lib/mygrid.1.0.js?1"></script>
+    <script type='text/javascript' src='~/override/main-custom.js'></script>
+
+    <script type="text/javascript">
+        const openRequest = function(requestid) {
+                redirectToPage('/Request', { 'RequestID': requestid, 'OrganizationID': @Model.OrganizationID}, false);
+        }
+
+        $(document).ready(function () {
+            let oGrid = new clsMyGrid('PunchList', $('#punchListTEG'), null, null, true, { ORGANIZATION_ID: @Model.OrganizationID, USER_ID: @Model.UserID, REQUEST_ID: @Model.RequestID, PROJECT_ID: @Model.ProjectID });
+        });
+    </script>
+
+}
+<div class="row">
+    <div class="col-2 mt-3">
+        <h2>PUNCH LISTS</h2>
+    </div>
+</div>
+<div id="content-wrap">
+    <div class="gridContent qrsGrid" id="punchListTEG"></div>
+</div>
+

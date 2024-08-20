@@ -1,0 +1,130 @@
+﻿<style type="text/css">
+
+    .activeTimePadNumber {
+        background-color: darkorange !important;
+    }
+</style>
+
+<script type="text/html" id="time-pad-hour-template">
+    <button class="btn btn-block numberHour" data-bind="css: { activeTimePadNumber: timeentryPikerModal.hour() === hour }, text: hour.toString().padStart(2, '00'), click: function() { $parent.timeentryPikerModal.hour(hour); }"></button>
+</script>
+
+<script type="text/html" id="time-pad-minutes-template">
+    <button class="btn btn-block numberMinute" data-bind="css: { activeTimePadNumber: timeentryPikerModal.minutes() === minutes }, text: minutes.toString().padStart(2, '00'), click: function() { $parent.timeentryPikerModal.minutes(minutes); }"></button>
+</script>
+
+<script type="text/html" id="time-pad-ampm-template">
+    <button class="btn btn-block AMPM" data-bind="css: { activeTimePadNumber: timeentryPikerModal.ampm() === ampm }, text: ampm.toUpperCase(), click: function() { $parent.timeentryPikerModal.ampm(ampm); }"></button>
+</script>
+
+
+<div class="modal fade modal--forms" id="TimeEntryPickerModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="TimeInModal" aria-hidden="true" data-bind="showModal:timeentryPikerModal.isDialogDisplaying">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <!-- ko if: timeentryPikerModal.type() === 'START' -->
+                <h5 class="modal-title mr-auto">Time In</h5>
+                <!-- /ko -->
+                <!-- ko if: timeentryPikerModal.type() === 'END' -->
+                <h5 class="modal-title mr-auto">Time Out</h5>
+                <!-- /ko -->
+                <!-- ko if: timeentryPikerModal.type() === 'ALTSTART' -->
+                <h5 class="modal-title mr-auto">Start Time</h5>
+                <!-- /ko -->
+                <!-- ko if: timeentryPikerModal.type() === 'ALTEND' -->
+                <h5 class="modal-title mr-auto">End Time</h5>
+                <!-- /ko -->
+              
+                <button type="button" class="btn icon-only" data-bind="click: function() {timeentryPikerModal.isDialogDisplaying(false);}">
+                    <em class="fas fa-times"></em>
+                </button>
+            </div>
+            <div class="modal-body pt-0 pb-0">
+                <!--<div class="row">
+                    <div class="col">-->
+                        <!-- ko_X if: timeentryPikerModal.type() === 'START' -->
+                        <!--<button class="btn btn-green" data-bind="click: function() { timeentryPikerModal.timenow(); }"><em class="fas fa-clock mr-2"></em>Start Now</button>-->
+                        <!-- /ko_X -->
+                        <!-- ko_X if: timeentryPikerModal.type() === 'END' -->
+                        <!--<button class="btn btn-orange" data-bind="click: function() { timeentryPikerModal.timenow(); }"><em class="fas fa-clock mr-2"></em>End Now</button>-->
+                        <!-- /ko_X -->
+                    <!--</div>
+                </div>-->
+                <!-- ko_X if: timeentryPikerModal.type() === 'START' ||timeentryPikerModal.type() === 'END' -->
+                <!--<div class="row">
+                    <div class="col">
+                        <label for="TimeInServerTime" class="col-form-label">OR select a time</label>
+                    </div>
+                </div>-->
+                <!-- /ko_X -->
+                <div class="row">
+                    <div class="col">
+                        <div class="mxtTimePicker">
+                            <div class="mxtTimePicker-title small-gutter p-2">
+                                <div class="row align-items-center">
+                                    <div class="col-6 text-center bg-blue"><h6 class="p-2 m-0">Hour</h6></div>
+                                    <div class="col-4 text-center bg-blue"><h6 class="p-2 m-0">Minute</h6></div>
+                                    <div class="col-2 text-right bg-blue"><h6 class="p-2 m-0">&nbsp;</h6></div>
+                                </div>
+                            </div>
+                            <div class="mxtTimePicker-body small-gutter p-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 1 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 4 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 7 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 10 }} --><!-- /ko -->
+                                            </div>
+                                            <div class="col-4">
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 2 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 5 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 8 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 11 }} --><!-- /ko -->
+                                            </div>
+                                            <div class="col-4">
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 3 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 6 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 9 }} --><!-- /ko -->
+                                                <!-- ko template: { name: 'time-pad-hour-template', data: { hour: 12 }} --><!-- /ko -->
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <!-- ko template: { name: 'time-pad-minutes-template', data: { minutes: 0 }} --><!-- /ko -->
+                                        <!-- ko template: { name: 'time-pad-minutes-template', data: { minutes: 15 }} --><!-- /ko -->
+                                        <!-- ko template: { name: 'time-pad-minutes-template', data: { minutes: 30 }} --><!-- /ko -->
+                                        <!-- ko template: { name: 'time-pad-minutes-template', data: { minutes: 45 }} --><!-- /ko -->
+                                    </div>
+                                    <div class="col-2">
+                                        <!-- ko template: { name: 'time-pad-ampm-template', data: { ampm: 'AM' }} --><!-- /ko -->
+                                        <!-- ko template: { name: 'time-pad-ampm-template', data: { ampm: 'PM' }} --><!-- /ko -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*<div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="TimeInNotes" class="col-form-label">Notes</label>
+                    <textarea type="text" class="form-control" id="TimeInNotes" placeholder="Add Comment..." rows="3" aria-describedby="VisibleClient" data-bind="value:timeentryPikerModal.timeEntryNotes"></textarea>
+                </div>
+            </div>
+        </div>*@
+            </div>
+            <div class="modal-footer">
+                <div class="row pt-3">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="click: function() {timeentryPikerModal.save();}" >
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

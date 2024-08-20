@@ -1,0 +1,1261 @@
+﻿.myGrid {
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#content-wrap {
+    font-size: 85%;
+}
+
+
+.myGrid .gridContent {
+    position: relative;
+    width: 900px;
+    height: 400px;
+    margin-top: 30px;
+    margin-left: 30px;
+    background-color: #ffffff;
+    border: solid 1px #000000;
+    float: left;
+}
+
+.myGrid .gridTitle {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    height: 45px;
+    background-color: #576879;
+    border-bottom: solid 1px #c0c0c0;
+    margin: 0px;
+    padding: 5px;
+}
+
+    .myGrid .gridTitle label {
+        /*position:absolute;
+	left:10px;
+	top:10px;*/
+        padding: 5px;
+        color: #ffffff;
+        font-size: 16px;
+        float: left;
+    }
+
+.myGrid hr {
+    margin-bottom: 5px;
+}
+
+.myGrid .gridTitle .cmdNewRecord, .myGrid .gridTitle .cmdSaveRecords, .myGrid .gridTitle .cmdSaveRecordsCancel, .myGrid .gridTitle .toolbarButton {
+    margin-top: 1px;
+}
+
+.myGrid .gridTable {
+    position: absolute;
+    left: 0px;
+    top: 45px;
+    right: 0px;
+    bottom: 0px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.gridHeaderStatic {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 0px;
+    bottom: 32px;
+    background-color: #eee;
+    border: none;
+    overflow-x: hidden;
+    padding: 0px;
+    margin: 0px;
+}
+
+.gridHeader {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 48px;
+    background-color: #e0e0e0;
+    border: none;
+    overflow-x: auto;
+}
+
+    .gridHeader .cell, .gridHeaderStatic .cell {
+        height: 100%;
+        float: left;
+        height: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .gridHeader label, .gridHeaderStatic label {
+        color: #0F2852;
+        font-weight: 600;
+        text-transform: uppercase;
+        /*position:absolute;*/
+        margin-top: -5px;
+        margin-left: 5px;
+        display: inline-block;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .gridHeader .headerCol:hover, .gridHeaderStatic .headerCol:hover {
+        background-color: #e8e8e8;
+    }
+
+    .gridHeader .firstcolumn, .gridHeaderStatic .firstcolumn {
+        border-right: solid 0px #c0c0c0;
+        background-color: #e0e0e0;
+    }
+
+    .gridHeader .middlecolumn, .gridHeaderStatic .middlecolumn {
+        border-right: solid 0px #c0c0c0;
+    }
+
+    .gridHeader .lastcolumn, .gridHeaderStatic .lastcolumn {
+        border-right: solid 0px #c0c0c0;
+        border-left: solid 0px #ffffff;
+    }
+
+.gridHeaderStaticRow, .gridHeaderRow {
+    border-bottom: solid 0px #c0c0c0;
+    height: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+.gridHeaderStaticRow {
+    background-color: #e0e0e0;
+}
+
+.gridHeaderCenterAlign {
+    text-align: center;
+}
+
+.gridHeaderLeftAlign {
+    text-align: left;
+}
+
+.gridHeaderRightAlign {
+    text-align: right;
+}
+
+.gridBody {
+    position: absolute;
+    left: 0px;
+    top: 30px;
+    bottom: 52px;
+    right: 0px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.gridBodyStatic {
+    position: absolute;
+    left: 0px;
+    top: 30px;
+    bottom: 32px;
+    width: 0px;
+    overflow: hidden;
+    border-right: 1px solid #c0c0c0;
+}
+
+.gridRow {
+    height: 30px;
+    border: none;
+    /*background-color:#ffffff;*/
+}
+
+    .gridRow .cell {
+        background-color: #ffffff;
+    }
+
+.gridBody .alternate, .gridBodyStatic .alternate {
+    /*background-color:#f8f8f8;*/
+}
+
+    .gridBody .alternate .cell, .gridBodyStatic .alternate .cell {
+        background-color: #f8f8f8;
+    }
+
+
+
+.gridBody .gridRow .cell, .gridBodyStatic .gridRow .cell {
+    text-align: left;
+    height: 100%;
+    float: left;
+    color: #000000;
+    overflow: hidden;
+}
+
+.gridBody .gridRow .data, .gridBodyStatic .gridRow .data {
+    position: relative;
+    clear: both;
+    padding: 4px;
+    height: 22px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.gridBody .gridRow .disabled, .gridBodyStatic .gridRow .disabled {
+    color: #808080;
+}
+/*.gridBody .firstcolumn, .gridBodyStatic .firstcolumn{*/
+.firstcolumn {
+    border-right: solid 0px #c0c0c0;
+    background-color: #e0e0e0 !Important;
+    clear: both;
+}
+
+.rowSelected {
+    background-color: #f6f6f6 !Important;
+}
+
+.gridBody .middlecolumn, .gridBodyStatic .middlecolumn {
+    /* border-right: solid 1px #c0c0c0;
+     border-left: solid 1px transparent; */
+}
+
+.gridBody .lastcolumn, .gridBodyStatic .lastcolumn {
+    border-right: solid 1px #c0c0c0;
+    border-left: solid 1px transparent;
+}
+
+.gridFooter {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    height: 48px;
+    background-color: #f0f0f0;
+    border-top: solid 1px #e5e5e5;
+    padding: 10px;
+}
+
+    .gridFooter .gridPageBar {
+        display: inline;
+    }
+
+.gridCustomButtons {
+    display: inline-block;
+}
+
+.gridFooter .gridPageBar span,
+.gridFooter .gridCustomButtons span {
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 3px;
+    background-color: #56c3bc;
+    color: #fff;
+    /* display: inline-block; */
+    font-size: 16px;
+    text-align: center;
+    margin-left: 2px;
+}
+
+.gridCustomButtons span {
+    min-width: 150px;
+    text-align: center;
+}
+
+.gridCustomButtons .executing {
+    position: absolute;
+    float: right;
+    margin-right: 2px;
+    vertical-align: middle;
+}
+
+.goFirstPage, .goPreviousPage, .goNextPage, .goLastPage {
+    width: 25px;
+}
+
+.currentPage {
+    width: 250px;
+}
+
+.gridFooter .gridPageBar span:hover
+.gridFooter .gridCustomButtons span:hover {
+    background-color: #33485e;
+}
+
+.toolbarButton {
+    float: right;
+    cursor: pointer;
+    padding: 5px 8px;
+    margin-right: 10px;
+    font-size: 16px;
+    background-color: #56c3bc;
+    color: #fff;
+    font-weight: normal;
+    border-radius: 3px;
+    min-width: 100px;
+    text-align: center;
+}
+
+    .toolbarButton:hover {
+        background-color: #8BC34A;
+        color: #fff;
+    }
+
+.cmdRefresh.toolbarButton {float: none;}
+
+.cmdCustomize {
+    float: right;
+    margin-right: 3px;
+    text-align: center;
+    width: 120px;
+    margin-top: -28px;
+}
+
+
+
+.cmdFullscreen {
+    float: right;
+    margin-right: 3px;
+    text-align: center;
+    width: 120px;
+    margin-top: -28px;
+}
+
+.cmdClearFilters {
+    margin-left: 100px;
+    text-align: center;
+    margin-top: 1px;
+    border-radius: 3px;
+    padding: 5px 10px;
+    font-size: 16px;
+    background-color: #56c3bc;
+    color: #fff;
+    margin-right: 5px;
+    float: left;
+}
+
+.popUpContent .cmdNewRecord, .popUpContent .cmdSaveRecords, .popUpContent .cmdSaveRecordsCancel, .popUpContent .genericButton {
+    margin-left: 10px;
+    float: left;
+    text-align: center;
+    padding: 10px 15px;
+    text-transform: uppercase;
+    /*min-width: 150px;
+        min-height: 37px !important;
+        min-height: 35px !important;
+    padding-top: 10px !important;*/
+}
+
+.selectPageSize {
+    border: solid 1px #D7DAE2;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 3px 5px;
+    font-size: 14px;
+    background-color: #ffffff;
+    color: #707070;
+    display: inline-block;
+    width: 100px;
+}
+
+.cmdCustomize, .cmdNewRecord, .cmdSaveRecords, .cmdSaveRecordsCancel, .genericButton, .multiselectButton, .cmdClearFilters, .cmdFullscreen, .cmdExport, .cmdCloseRecordsSaveStatus {
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 5px 8px;
+    font-size: 16px;
+    background-color: #56c3bc;
+    color: #fff;
+    /*display: inline-block;*/
+    margin-right: 5px;
+}
+
+    .cmdCustomize:hover, .cmdNewRecord:hover, .cmdSaveRecords:hover, .cmdSaveRecordsCancel:hover, .genericButton:hover, .cmdClearFilters:hover, .cmdFullscreen:hover, .cmdExport:hover, cmdCloseRecordsSaveStatus:hover {
+        background-color: #8BC34A;
+    }
+
+.gridFooter .disabled {
+    color: transparent;
+}
+
+.edit_text {
+    float: left;
+    position: relative;
+    left: 0px;
+    width: 100%;
+    top: 0px;
+    height: 100%;
+    border: none;
+    padding-top: 0px;
+    padding-left: 4px;
+    background-color: #FFFFa0;
+    vertical-align: middle;
+}
+
+textarea.edit_text {
+    /*height:100px;*/
+    position: absolute;
+    left: auto;
+    top: auto;
+    z-index: 1000;
+    border: solid 1px #c0c0c0;
+    margin-left: -2px;
+    margin-top: -2px;
+}
+
+input::-ms-clear {
+    display: none;
+}
+
+.edit_calendar {
+    float: left;
+    position: relative;
+    left: 0px;
+    width: 100%;
+    top: 0px;
+    height: 100%;
+    border: none;
+    padding-top: 0px;
+    padding-left: 4px;
+    background-color: #FFFFa0;
+    vertical-align: middle;
+}
+
+.edit_listbox {
+    float: left;
+    position: relative;
+    left: 0px;
+    width: 100%;
+    top: 0px;
+    height: 100%;
+    border: none;
+    background-color: #FFFFa0;
+}
+
+.cellSelected {
+    background-color: #ffff80 !Important;
+}
+
+.firstcolumn {
+    display: inline-block;
+}
+
+.saving, .editingIcon, .deleteIcon, .duplicateIcon, .editIcon, .customButton {
+    margin-top: 5px;
+    margin-left: 2px;
+    cursor: pointer;
+}
+
+    .customButton.fa-1x {
+        margin-left: 5px;
+    }
+
+.checkClickableZone {
+    position: absolute;
+    margin-top: -7px;
+    margin-left: -7px;
+    left: 50%;
+    top: 50%;
+    height: 15px;
+    width: 15px;
+    background-color: transparent;
+}
+
+.cellChecked {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    background-image: url("images/checked.gif");
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.cellUnChecked {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    background-image: url("images/unchecked.gif");
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.coverGridArea {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px !important;
+    border: none;
+    background-color: white;
+    opacity: 0.4;
+    filter: alpha(opacity=40);
+}
+
+.popUpWindow {
+    position: absolute;
+    z-index: 1000;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+    .popUpWindow.confirm, .saveMultipleStatus {position: fixed;}
+
+    .popUpWindow span {
+        /*position:absolute;
+    top:5px;*/
+        display: inline-block;
+        margin-left: 10px;
+        margin-top: 5px;
+        font-weight: 600;
+    }
+
+    .popUpWindow .popUpContent .genericButton:first-child {
+        margin-left: 0px;
+    }
+
+        .editConfig.popUpWindow span {
+            display: block;
+            margin: 0px;
+            padding: 5px 10px;
+            color: #fff;
+            background-color: #0F2852;
+        }
+
+.popUpContent label {
+    font-weight: normal;
+}
+
+.winCloseButton {
+    /*position:absolute;*/
+    float: right;
+    margin-right: 10px;
+    margin-top: 5px;
+    cursor: pointer;
+    /*top:5px;
+    right:5px;
+    width:20px;
+    height:20px;
+    background-image:Url('images/close.png');
+    border: solid 1px white;*/
+}
+
+.editConfig .winCloseButton {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+    color: #fff;
+    float: none;
+}
+
+    .editConfig .winCloseButton:hover {
+        color: #8BC34A;
+    }
+
+.winCloseButton:hover {
+    color: #000;
+    cursor: pointer;
+}
+
+.popUpContent {
+    margin: 10px;
+}
+
+.resizeCol {
+    position: absolute;
+    top: 0px;
+    bottom: 62px;
+    width: 4px;
+    cursor: ew-resize;
+    background-color: transparent;
+}
+
+    .resizeCol:hover {
+        /*border-right: 4px solid #ddd; */
+        background-color: #A0A0A0;
+        /*border-style: ridge;*/
+    }
+
+.sortable {
+    list-style-type: none;
+}
+
+.editConfig .sortable {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    width: 100% !important;
+}
+
+.sortable li { /*border:solid 1px #c0c0c0; background-color:#f0f0f0;
+               font-family:Tahoma, Arial; padding-left: 1em;*/
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 0 3px;
+    padding: 3px 5px;
+    /*font-size: 10pt; */
+    height: auto;
+    background-color: #0F2852;
+    color: #fff;
+}
+
+    .sortable li:hover {
+        background-color: #E35B00;
+    }
+
+    .sortable li span {
+        position: absolute;
+        margin-left: -1.3em;
+    }
+
+.sortablebox {
+    /*position:absolute; top:50px;width:150px;bottom:50px;*/ border: solid 1px #c0c0c0;
+    padding: 5px;
+    overflow: visible;
+    /*overflow-y:auto;overflow-x:hidden;*/
+}
+
+.editConfig label {
+    display: block;
+}
+
+.editConfig .sortablebox {
+    overflow-y: auto;
+    min-height: 200px;
+    height: 200px;
+    margin-top: 5px;
+    width: 100%;
+}
+
+.editConfig {
+    /*font-family:Tahoma, Arial; */
+}
+
+.saveButton {
+    /*position:absolute;height:25px;width:140px;
+        border-radius: 3px; border:solid 1px #c0c0c0; background-color:#f0f0f0;
+        font-family:Tahoma, Arial; */
+    background-color: #1b6ec2;
+    color: #fff;
+    border: 0px;
+    cursor: pointer;
+    margin: 0 3px 3px 3px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 1;
+}
+
+    .saveButton:hover {
+        background-color: #254d91;
+        color: #fff;
+    }
+
+.setButton {
+    position: absolute;
+    height: 20px;
+    width: 80px;
+    border-radius: 3px;
+    border: solid 1px #c0c0c0;
+    background-color: #f0f0f0;
+    /*font-family:Tahoma, Arial; */
+    cursor: default;
+    margin: 0 3px 3px 3px;
+    text-align: center;
+}
+
+    .setButton:hover {
+        background-color: #ffffff;
+    }
+
+.header_icons {
+    background-repeat: no-repeat;
+    width: 18px;
+    height: 18px;
+    /*display:inline-block;
+        position:absolute;
+        right: 0px;*/
+    display: none;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    top: 1px;
+    float: right;
+}
+
+.headerGroupIcons {
+    width: 60px;
+    height: 20px;
+    position: absolute;
+    background-color: transparent;
+    top: 3px;
+    right: 0px;
+}
+/*.clearfilter_icon
+    {
+        right:1px;
+    }
+    .filter_icon
+    {
+        right:19px;
+    }
+    .sort_icon
+    {
+        right:37px;
+    }*/
+.popUpWindow.filterPopUp {
+    height: auto;
+    bottom: auto !important;
+    z-index: 9999;
+}
+
+.filterPopUp li {
+    /*font-family:Tahoma, Arial; */
+    list-style: none;
+    font-size: 12px;
+}
+
+.filter-wrapper {
+    margin: 10px 0px;
+    overflow: auto;
+    max-height: 160px;
+}
+
+input[type="checkbox"].filterOption, input[type="checkbox"].filterAll {
+    margin-right: 5px;
+}
+
+
+.applyFilter {
+}
+
+.popupWindow-background {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-color: #303030;
+    opacity: 0.7;
+}
+
+.popupWindow {
+    opacity: 1;
+    position: absolute;
+    left: 50px;
+    top: 50px;
+    right: 50px;
+    bottom: 50px;
+    width: auto;
+    border: solid 1px #c0c0c0;
+    border-radius: 5px;
+    background-color: #FFFFFF;
+    z-index: 2000;
+}
+
+.gridPopup {
+    border: solid 1px #c0c0c0;
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    right: 20px;
+    bottom: 20px;
+    font-size: 85%;
+    color: #808080;
+}
+
+.popupWindow .closeButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.areaRowSelector {
+    float: right;
+    padding: 2px;
+    margin-top: 3px;
+}
+
+.gridTitle .navbar-bottom {
+    background-color: #e0e0e0;
+    overflow-x: hidden;
+    width: 300px;
+}
+
+.gridTitle .navbar-top {
+    background-color: #576879;
+    float: right;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+
+.gridTitle .navbar-bottom li {
+    border-bottom: 0px solid #919292;
+    padding: 5px 30px;
+}
+
+    .gridTitle .navbar-bottom li span {
+        width: 100%;
+        margin: 5px 0px;
+    }
+
+.gridTitle .navbar-bottom .gridCustomButtons {
+    width: 100%;
+}
+
+#menuButtonsCollapse {
+    width: 300px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+
+    #menuButtonsCollapse .navbar-collapse {
+        padding-right: 5px;
+    }
+
+.gridTitle .navbar-toggle {
+    display: flex !important;
+}
+
+.gridTitle .navbar-bottom {
+    padding-top: 0px;
+}
+
+@media(max-width: 600px) {
+    .selectPageSize {
+        width: auto;
+    }
+}
+
+/* TABLE EDIT GRID OVERWRITES FOR ECMS */
+#footer {
+    position: absolute;
+    bottom: 0px;
+}
+
+
+.pull-left {
+    float: left !important
+}
+
+.pull-right {
+    float: right !important
+}
+
+.clearfix::after {
+    display: block;
+    clear: both;
+    content: "";
+}
+
+.myGrid .gridTitle {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    height: auto;
+    background-color: #fff;
+    border-bottom: solid 0px #c0c0c0;
+    margin: 0px;
+    padding: 10px;
+}
+
+    .myGrid .gridTitle label {
+        font-weight: 600;
+        font-size: 21px;
+        text-transform: uppercase;
+        color: #5E5E5E;
+        margin-bottom: 0px;
+        display: inline-block;
+        float: none;
+    }
+.myGrid #buttonsTitle {display: inline-block;}
+
+.gridBodyStatic .firstcolumn {
+    background-color: #fff !important;
+    border-right: 0px;
+}
+
+.gridHeader .firstcolumn {
+    background-color: #F5F5F5;
+}
+
+.gridHeaderStatic .gridHeaderStaticRow .firstcolumn {
+    background-color: #F5F5F5;
+}
+
+.gridHeader {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 70px;
+    background-color: #F5F5F5;
+    border: none;
+    overflow-x: auto;
+}
+
+.gridHeaderStatic {
+    bottom: 70px;
+}
+
+.myGrid .gridTable {
+    top: 65px !important;
+}
+
+.myGrid .gridTitle .cmdNewRecord, .myGrid .gridTitle .cmdSaveRecords, .myGrid .gridTitle .cmdSaveRecordsCancel, .myGrid .gridTitle .toolbarButton, .gridFooter .gridPageBar span, .gridFooter .gridCustomButtons span, .cmdCustomize, .cmdFullscreen, .cmdExport, .cmdCloseRecordsSaveStatus {
+    margin-top: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+    min-width: auto;
+    padding: 10px 15px;
+    line-height: 1;
+}
+
+.gridHeaderStaticRow, .gridHeaderRow, .gridHeader .cell, .gridHeaderStatic .cell {
+    height: 40px;
+}
+
+.gridBody, .gridBodyStatic {
+    top: 40px;
+}
+
+.gridBodyStatic {
+    border: 0px;
+}
+
+.gridHeader label, .gridHeaderStatic label {
+    margin-top: 10px;
+}
+
+.selectPageSize {
+    padding: 10px;
+}
+
+.cmdCustomize, .cmdNewRecord, .cmdSaveRecords, .cmdSaveRecordsCancel, .genericButton, .multiselectButton, .cmdClearFilters, .toolbarButton, .cmdFullscreen, .cmdExport, .cmdCloseRecordsSaveStatus {
+    background-color: #0F2852;
+}
+
+.gridFooter .gridPageBar span, .gridFooter .gridCustomButtons span {
+    background-color: #000;
+}
+
+    .gridFooter .gridPageBar span:hover, .gridFooter .gridCustomButtons span:hover {
+        background-color: #298cba;
+    }
+/*.gridBody .alternate .cell, .gridBodyStatic .alternate .cell {background-color: transparent;}*/
+
+.gridBody .gridRow .cell, .gridBodyStatic .gridRow .cell {
+    color: #5E5E5E;
+    border-bottom: #ccc;
+}
+
+.gridFooter {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    height: 70px;
+    background-color: #fff;
+    border-top: solid 1px #e5e5e5;
+    padding: 15px;
+    z-index: 1;
+}
+
+/* jQuery DatePicker overwrites */
+.ui-datepicker {
+    background-color: #fff;
+    border: 1px solid #66AFE9;
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(102,175,233,.6);
+    display: none;
+    margin-top: 4px;
+    padding: 10px;
+    width: 240px;
+}
+
+.ui-datepicker {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: none;
+    display: none;
+    margin-top: 4px;
+    padding: 10px;
+    width: 240px;
+}
+
+    .ui-datepicker a,
+    .ui-datepicker a:hover {
+        text-decoration: none;
+    }
+
+        .ui-datepicker a:hover,
+        .ui-datepicker td:hover a {
+            color: #34855B;
+            -webkit-transition: color 0.1s ease-in-out;
+            -moz-transition: color 0.1s ease-in-out;
+            -o-transition: color 0.1s ease-in-out;
+            transition: color 0.1s ease-in-out;
+        }
+
+    .ui-datepicker .ui-datepicker-header {
+        margin-bottom: 4px;
+        text-align: center;
+    }
+
+    .ui-datepicker .ui-datepicker-title {
+        font-weight: 700;
+    }
+
+    .ui-datepicker .ui-datepicker-prev,
+    .ui-datepicker .ui-datepicker-next {
+        cursor: pointer;
+        font-style: normal;
+        height: 20px;
+        line-height: 1;
+        margin-top: 2px;
+        width: 30px;
+        font-family: "Font Awesome 5 Free";
+        font-weight: 400;
+    }
+
+    .ui-datepicker .ui-datepicker-prev {
+        float: left;
+        text-align: left;
+    }
+
+    .ui-datepicker .ui-datepicker-next {
+        float: right;
+        text-align: right;
+    }
+
+    .ui-datepicker .ui-datepicker-prev:before {
+        content: "\f359";
+    }
+
+    .ui-datepicker .ui-datepicker-next:before {
+        content: "\f35a";
+    }
+
+    .ui-datepicker .ui-icon {
+        display: none;
+    }
+
+    .ui-datepicker .ui-datepicker-calendar {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+        .ui-datepicker .ui-datepicker-calendar th,
+        .ui-datepicker .ui-datepicker-calendar td {
+            font-weight: 400;
+            text-align: center;
+            padding: 4px 0;
+        }
+
+        .ui-datepicker .ui-datepicker-calendar td {
+            border-radius: 4px;
+            -webkit-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+            -moz-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+            -o-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+            transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+        }
+
+            .ui-datepicker .ui-datepicker-calendar td:hover {
+                background-color: #eee;
+                cursor: pointer;
+            }
+
+            .ui-datepicker .ui-datepicker-calendar td a {
+                text-decoration: none;
+            }
+
+    .ui-datepicker .ui-datepicker-current-day {
+        background-color: #34855B;
+    }
+
+        .ui-datepicker .ui-datepicker-current-day a {
+            color: #fff;
+        }
+
+    .ui-datepicker .ui-datepicker-calendar .ui-datepicker-unselectable:hover {
+        background-color: #fff;
+        cursor: default;
+    }
+
+.selectPageSize {
+    padding: 0px;
+}
+
+.cmdCustomize, .cmdNewRecord, .cmdSaveRecords, .cmdSaveRecordsCancel, .genericButton, .multiselectButton, .cmdClearFilters, .cmdFullscreen, .cmdExport, .cmdCloseRecordsSaveStatus {
+    font-size: inherit;
+    line-height: inherit;
+    float: none;
+    margin-right: 0px;
+    width: auto;
+}
+
+.gridFooter .gridPageBar span, .gridFooter .gridCustomButtons span {
+    font-size: inherit;
+}
+
+.myGrid .gridTitle .cmdNewRecord, .myGrid .gridTitle .cmdSaveRecords, .myGrid .gridTitle .cmdSaveRecordsCancel, .myGrid .gridTitle .toolbarButton, .gridFooter .gridPageBar span, .gridFooter .gridCustomButtons span, .cmdCustomize, .cmdFullscreen, .cmdExport, .cmdCloseRecordsSaveStatus {
+    padding: 5px 10px;
+}
+
+/* Fix to display horizontal scrollbar on Android */
+/* https://stackoverflow.com/questions/42682502/divs-scroll-bar-disappears-on-android */
+@media(max-width: 600px) {
+
+    ::-webkit-scrollbar {
+        height: 12px; /* At least not zero */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, .3); /* Or any other instruction making the element visible */
+    }
+}
+
+.grandTotal {
+    position: absolute;
+    bottom: 0px;
+    border-top: solid 1px #808080;
+    height: 40px;
+}
+
+    .grandTotal .lastcolumn {
+        border: none;
+    }
+
+    .grandTotal .cell {
+        background-color: #576879;
+        color: #ffffff;
+        font-weight: bolder;
+        border: none;
+        height: 40px;
+        border-right: solid 1px #f0f0f0;
+    }
+
+        .grandTotal .cell .data {
+            height: 40px;
+            font-size: 12pt;
+            padding-top: 7px;
+            padding-right: 3px;
+        }
+
+
+.footer-breakline {
+    display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    .gridBody {
+        overflow-x: scroll !Important;
+    }
+}
+
+@media(max-width: 750px) {
+
+    .gridFooter {
+        height: 90px;
+    }
+
+    .cmdRefresh {
+        margin-left: 2px !Important;
+    }
+
+    .cmdCustomize, .cmdExport, .cmdCloseRecordsSaveStatus {
+        display: none !Important;
+    }
+
+    .selectPageSize {
+        margin-bottom: 10px;
+    }
+
+    .footer-breakline {
+        display: inline;
+    }
+}
+/*
+.gridTitle {
+    position: absolute;
+    margin-top: -70px !Important;
+    width: 100%;
+}
+
+.gridTitle label {
+    float: left;
+    margin-left: 30px;
+    font-size: 30px;
+    font-weight: bolder;
+}
+
+.gridPopup .gridTable {
+    top: 85px !important;
+    right: 5px !Important;
+    left: 5px !Important;
+}
+
+.gridPopup .gridTitle {
+    top: 60px !Important;
+}
+
+.gridPopup {
+    right: 0px !Important;
+    left: 0px !Important;
+    bottom: 0px !Important;
+}*/
+
+.myProgress {
+    width: 100%;
+    background-color: #c0c0c0;
+}
+
+.myBar {
+    width: 1%;
+    height: 30px;
+    background-color: #2d5daf;
+}
+
+.progress2 {
+    padding: 6px;
+    border-radius: 30px;
+    background: rgba(0, 0, 0, 0.25);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.progress-bar2 {
+    height: 18px;
+    border-radius: 30px;
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+    transition: 0.4s linear;
+    transition-property: width, background-color;
+}
+
+.progress-moved .progress-bar2 {
+    width: 85%;
+    background-color: #2d5daf;
+    animation: progressAnimation 6s;
+}
+
+@keyframes progressAnimation {
+    0% {
+        width: 0%;
+        background-color: #f9bcca;
+    }
+
+    100% {
+        width: 85%;
+        background-color: #ef476f;
+    }
+}

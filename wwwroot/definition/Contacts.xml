@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.114" author="" dateCreation="2020-03-27" dateLastChange="2021-11-16"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title></title>
+        <defaultOrder>CONTACT_ID</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>True</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+	C.[CONTACT_ID],
+	C.[CONTACT_NAME],
+	C.[ORGANIZATION_ID],
+	C.[EXT_DEALER_ID],
+	C.[CUSTOMER_ID],
+	CU.CUSTOMER_NAME,
+	C.[CONTACT_TYPE_ID],
+	L1.LOOKUP_NAME AS [CONTACT_TYPE_NAME],
+	C.[CONT_STATUS_TYPE_ID],
+	L2.LOOKUP_NAME as [CONT_STATUS_TYPE_NAME],
+	C.[PHONE_WORK],
+	C.[PHONE_CELL],
+	C.[PHONE_HOME],
+	C.[EMAIL],
+	C.[EMAIL_PHONE],
+	C.[STREET1],
+	C.[STREET2],
+	C.[STREET3],
+	C.[CITY],
+	C.[STATE],
+	C.[ZIP],
+	C.[NOTES],
+	C.[DATE_CREATED],
+	C.[CREATED_BY],
+	C.[DATE_MODIFIED],
+	C.[MODIFIED_BY],
+	C.[contact_id_8],
+	C.[ExtEmployeeID],
+	C.[ExternalContactID],
+	@USER_ID as RUNNING_AS_USERID,
+        CASE WHEN exists (select 1 from dbo.AspNetUsers with(nolock) where Contact_Id = C.Contact_Id) THEN 'Y' ELSE 'N' END UserContact
+from 
+	dbo.Contacts C
+left join
+	dbo.Lookups_Active_V L1
+on
+	L1.LOOKUP_ID = C.CONTACT_TYPE_ID
+left join
+	dbo.Lookups_Active_V L2
+on
+	L2.LOOKUP_ID = C.CONT_STATUS_TYPE_ID
+left join
+	dbo.Customers CU
+on
+	C.CUSTOMER_ID = CU.CUSTOMER_ID
+and
+	CU.ORGANIZATION_ID = @ORGANIZATION_ID
+where
+	C.ORGANIZATION_ID = @ORGANIZATION_ID]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="[CONTACT_ID]=@CONTACT_ID" autoUpdateQuery="False" updateTable=""><![CDATA[update 
+	dbo.Contacts
+set	
+	[CONTACT_NAME]=@CONTACT_NAME,
+	[EXT_DEALER_ID]=@EXT_DEALER_ID,
+	[CONTACT_TYPE_ID]=@CONTACT_TYPE_ID,
+	[CONT_STATUS_TYPE_ID]=@CONT_STATUS_TYPE_ID,
+	[PHONE_WORK]=@PHONE_WORK,
+	[PHONE_CELL]=@PHONE_CELL,
+	[PHONE_HOME]=@PHONE_HOME,
+	[EMAIL]=@EMAIL,
+	[EMAIL_PHONE]=@EMAIL_PHONE,
+	[STREET1]=@STREET1,
+	[STREET2]=@STREET2,
+	[STREET3]=@STREET3,
+	[CITY]=@CITY,
+	[STATE]=@STATE,
+	[ZIP]=@ZIP,
+	[NOTES]=@NOTES,
+	[DATE_MODIFIED] = getutcdate(),
+	[MODIFIED_BY] = @USER_ID,
+	[ExtEmployeeID]=@ExtEmployeeID,
+	[ExternalContactID]=@ExternalContactID
+where
+	CONTACT_ID = @CONTACT_ID]]></sqlUpdate>
+        <sqlInsert where="[REQUEST_ID]=@@IDENTITY"><![CDATA[]]></sqlInsert>
+        <sqlDelete><![CDATA[update 
+  dbo.Contacts 
+set 
+  CONT_STATUS_TYPE_ID = [dbo].[getLookupId]('inactive', 'contact_status_type')
+where 
+  CONTACT_ID=@CONTACT_ID]]></sqlDelete>
+        <buttons>
+<button id="cmdOpenContactGroups" actionType="openGrid" gridToOpen="ContactGroups" icon="fas fa-users" title="Open Contact Groups Management" label="Open Contact Groups Management" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button></buttons>
+        <columns>
+<column id="CONTACT_ID" label="CONTACT_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="CONTACT_NAME" label="Name" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ORGANIZATION_ID" label="ORGANIZATION_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="CUSTOMER_ID" label="CUSTOMER_ID" width="100" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="CUSTOMER_NAME" label="Customer Name" width="250" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="250"></column>
+<column id="CONTACT_TYPE_ID" label="Type" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="CONTACT_TYPE_NAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select LOOKUP_ID as CONTACT_TYPE_ID, LOOKUP_NAME as CONTACT_TYPE_NAME  from [dbo].[GetLooukpValuesByType] ('contact_type')]]></dataSelect></column>
+<column id="CONTACT_TYPE_NAME" label="CONTACT_TYPE_NAME" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CONT_STATUS_TYPE_ID" label="Status" width="120" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="CONT_STATUS_TYPE_NAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10">
+<dataSelect><![CDATA[select LOOKUP_ID as CONT_STATUS_TYPE_ID, LOOKUP_NAME as CONT_STATUS_TYPE_NAME  
+from [dbo].[GetLooukpValuesByType] ('contact_status_type')]]></dataSelect></column>
+<column id="CONT_STATUS_TYPE_NAME" label="CONT_STATUS_TYPE_NAME" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="PHONE_WORK" label="Work Phone" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="PHONE_CELL" label="Cell Phone" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="PHONE_HOME" label="Home Phone" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="EMAIL" label="Email" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="EMAIL_PHONE" label="EMAIL_PHONE" width="800" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="STREET1" label="Street 1" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="STREET2" label="Street 2" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="STREET3" label="Street 3 " width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CITY" label="City" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="STATE" label="State" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ZIP" label="Zip" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="NOTES" label="Notes" width="250" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CREATED_BY" label="CREATED_BY" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="MODIFIED_BY" label="MODIFIED_BY" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="contact_id_8" label="contact_id_8" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="EXT_DEALER_ID" label="Ext Dealer ID" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ExtEmployeeID" label="ExtEmployeeID" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ExternalContactID" label="ExternalContactID" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="DATE_CREATED" label="Created Date" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="DATE_MODIFIED" label="Modified Date" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="calendar" visible="True" format="MM/dd/yyyy" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="20"></column>
+<column id="UserContact" label="User Contact" width="75" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>

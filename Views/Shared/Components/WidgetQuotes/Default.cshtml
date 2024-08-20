@@ -1,0 +1,45 @@
+﻿@*Widget Quotes*@
+@model ServiceTRAX.ViewComponents.WidgetQuotes.WidgetQuotesModelViewModel
+
+<canvas id="@Model.ComponentID" width="400" height="400"></canvas>
+
+
+
+<script type="text/javascript" on-content-loaded="true">
+
+    var ctx = document.getElementById('@Model.ComponentID').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+
+        data: {
+
+            labels: @Html.Raw( Model.Months),
+            datasets: [{
+                backgroundColor: '#d3f6ff40',
+                borderColor: '#2d5daf',
+                lineTension: 0,
+                label: 'Quotes/Month',
+                data: @Model.Quotes,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                padding: 5,
+                text: 'Quotes by Month'
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+
+
+</script>

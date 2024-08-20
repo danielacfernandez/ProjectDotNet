@@ -1,0 +1,52 @@
+﻿<!-- ko with:moveLinesDialog-->
+<div class="modal fade modal--forms" id="MoveLinesModal" data-bind="showModal:isDialogDisplaying"
+     tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="MoveLinesModal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered" role="document">
+        <div class="modal-content modal-content--dark-blue">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto ucase" id="newInvoiceLabel">Move Lines</h5>
+            </div>
+            <div class="modal-body">
+
+                <div class="col-lg-12">
+                    <div class="form-row mb-3">
+                        <div class="col-12">
+                            <label>
+                                Job
+                            </label>
+                            <select data-live-search="true"
+                                    data-style="btn-white shadow-sm"
+                                    data-bind="selectPicker: true, options: jobs, optionsText: 'jobName', optionsValue: 'jobId', value: selectedJob, valueAllowUnset: true"
+                                    data-none-selected-text="Select Job...">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col-12">
+                            <label>Service Request</label>
+                            <select data-style="btn-white shadow-sm"
+                                    data-bind="enable: selectedJob !== null && serviceRequests().length > 0, selectPicker: true, options: serviceRequests, optionsText: 'requestNumber', optionsValue: 'requestID', value: selectedServiceRequests, valueAllowUnset: true"
+                                    data-none-selected-text="Select Service Request...">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block" data-bind="enable:moveLinesEnabled, click: moveLines">
+                            MOVE LINES
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-warning btn-block" data-bind="click:closeDialog">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

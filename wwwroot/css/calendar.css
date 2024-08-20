@@ -1,0 +1,148 @@
+﻿.calendar .calendar-controls {
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.calendar-controls .previous-month {
+    color: #2D5DAF;
+}
+
+.calendar-controls .next-month {
+    color: #2D5DAF;
+}
+
+.status {
+    height: 10px;
+    bottom: 0px;
+    width: 100%;
+}
+
+    .status.green {
+        background-color: #008D00;
+    }
+
+    .status.orange {
+        background-color: #FF6600;
+    }
+
+    .status.red {
+        background-color: #D81E1E;
+    }
+
+.calendar .calendar-table {
+    table-layout: fixed;
+    width: 100%;
+    height: 300px;
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+    .calendar .calendar-table .header-days {
+        background-color: #EFEEED;
+        border: 1px solid #EFEEED;
+        font-weight: 600;
+        text-transform: uppercase;
+        min-height: 40px;
+    }
+
+        .calendar .calendar-table .header-days .header-day {
+            vertical-align: middle;
+            text-align: center;
+            color: #A3A6B4;
+            height: 40px;
+        }
+
+    .calendar .calendar-table tr td {
+        vertical-align: top;
+    }
+
+    .calendar .calendar-table tr .day {
+        width: 100%;
+        height: inherit;
+        color: #3a3b36;
+        vertical-align: middle;
+        border: 1px solid #ccc;
+    }
+
+
+
+        .calendar .calendar-table tr .day .day-contents {
+            box-sizing: border-box;
+            text-align: center;
+            cursor: pointer;
+            height: 100%;
+            line-height: 1;
+        }
+
+    .calendar .calendar-table tr .empty,
+    .calendar .calendar-table tr .adjacent-month {
+        width: 100%;
+        height: inherit;
+        color: #aaa;
+    }
+
+.calendar .adjacent-month .day-contents {
+    color: #aaa;
+}
+
+.week-totals-title {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #0F2852;
+}
+
+#week-totals {
+    color: #707070;
+}
+
+#calendarModal .modal-header {
+    display: initial;
+}
+
+#calendarModal .close {
+    padding: .5rem;
+    margin: 0;
+    color: #fff;
+    opacity: 1;
+    font-size: 1rem;
+    text-shadow: none;
+}
+
+#calendarModal .totals li {
+    display: flex; /* establish flex container */
+    flex-direction: row; /* default value; can be omitted */
+    flex-wrap: nowrap; /* default value; can be omitted */
+    justify-content: space-between; /* switched from default (flex-start, see below) */
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+}
+
+    #calendarModal .totals li:last-child {
+        border-bottom: 0px;
+        margin-bottom: 0px;
+        padding-bottom: 0px;
+    }
+
+#calendarModal .modal-header {
+    background-color: #0F2852;
+    color: #fff;
+}
+
+    #calendarModal .modal-header .btn {
+        line-height: 1;
+    }
+
+#calendarModal .description {
+    color: #0F2852;
+}
+
+#calendarModal .total {
+    color: #707070;
+}
+
+.btn-icon-only {
+    background: none;
+    border: none;
+    border-radius: 0;
+}

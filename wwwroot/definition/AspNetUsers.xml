@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config EngineVersion="1.0.2.25">
+    <version number="1.0.0.155" author="" dateCreation="2019-11-01" dateLastChange="2023-06-06"></version>
+    <connectionString></connectionString>
+    <grid>
+        <viewType>grid</viewType>
+        <pageSize>50</pageSize>
+        <fixedColumns>0</fixedColumns>
+        <title>Users</title>
+        <defaultOrder>UserId</defaultOrder>
+        <templateEdit style=""><![CDATA[]]></templateEdit>
+        <allowExport>True</allowExport>
+        <allowFullScreen>False</allowFullScreen>
+        <allowCustomization>True</allowCustomization>
+        <refreshGridAfterSaveRecord>False</refreshGridAfterSaveRecord>
+        <allowPageSizeSelection>True</allowPageSizeSelection>
+        <allowPageSelection>True</allowPageSelection>
+        <allowMultipleSelection>False</allowMultipleSelection>
+        <defaultMultipleSelection>False</defaultMultipleSelection>
+        <displayRowCursor>True</displayRowCursor>
+        <sqlSelect><![CDATA[select 
+U.[UserId],
+U.[UserName],
+U.[NormalizedUserName],
+U.[Email],
+U.[NormalizedEmail],
+U.[PasswordHash],
+U.[SecurityStamp],
+U.[ConcurrencyStamp],
+U.[FirstName],
+U.[MiddleName],
+U.[LastName],
+U.[UserPhoto],
+U.[IsActive],
+U.[CreateTime],
+U.[CreatedBy],
+U.[ModifyTime],
+U.[ModifiedBy],
+U.[LastLogin],
+U.[LastLoggedOrganizationID],
+U.[Contact_ID],
+U.[MigrationID],
+U.[ExtEmployeeID],
+U.[EmploymentTypeID],
+ET.LOOKUP_NAME as EmploymentTypeName,
+U.[TimeEntrySelf],
+U.[TimeEntryOthers],
+U.TimeEntryTypicalStartTime,
+U.[TimeEntryTypicalEndTime],
+U.[WeeklyWorkCapacity],
+U.[DailyWorkCapacity],
+U.[ExtDealerId],
+U.RUNNING_AS_USERID,
+L.LOOKUP_NAME as StartTimeName,
+LO.LOOKUP_NAME as EndTimeName,
+U.Title,
+U.CONTACT_NAME,
+U.CONT_STATUS_TYPE_ID,
+U.CONT_STATUS_TYPE_NAME,
+U.ContactEmail
+from dbo.GetAspNetUsers(
+	@RUNNING_AS_USERID, 
+	@ORGANIZATION_ID
+) U
+left join [dbo].[GetLooukpValuesByType] ('time_list_15min') L
+	on L.Lookup_Code = U.TimeEntryTypicalStartTime
+left join [dbo].[GetLooukpValuesByType] ('time_list_15min') LO
+	on LO.Lookup_Code = U.TimeEntryTypicalEndTime
+left join [dbo].[GetLooukpValuesByType] ('employment_type') ET
+	on ET.Lookup_Id = U.[EmploymentTypeID]
+WHERE (U.[IsActive] = 1
+OR EXISTS(SELECT 1
+FROM [dbo].[AspNetUserRoles] UR 
+INNER JOIN [dbo].[AspNetRoles] R 
+	ON UR.RoleID = R.RoleID
+WHERE R.IsActive = 1
+	AND NormalizedName = 'GLOBAL ADMIN (INTERNAL)'
+	AND UR.UserID = @RUNNING_AS_USERID))]]>
+<parameters /></sqlSelect>
+        <sqlUpdate where="userid = @USERID" autoUpdateQuery="False" updateTable=""><![CDATA[exec dbo.AspNetUsers_Update
+@USERID=@USERID,
+@EMAIL=@EMAIL,
+@FIRSTNAME=@FIRSTNAME,
+@MIDDLENAME=@MIDDLENAME,
+@LASTNAME=@LASTNAME,
+@ISACTIVE=@ISACTIVE,
+@TIMEENTRYSELF=@TIMEENTRYSELF,
+@TIMEENTRYOTHERS=@TIMEENTRYOTHERS,
+@TIMEENTRYTYPICALSTARTTIME=@TIMEENTRYTYPICALSTARTTIME,
+@TIMEENTRYTYPICALENDTIME=@TIMEENTRYTYPICALENDTIME,
+@WEEKLYWORKCAPACITY=@WEEKLYWORKCAPACITY,
+@DAILYWORKCAPACITY=@DAILYWORKCAPACITY,
+@ORGANIZATIONID = @ORGANIZATION_ID,
+@TITLE = @TITLE,
+@ExtEmployeeID = @ExtEmployeeID,
+@ContactName=@CONTACT_NAME,
+@ContactStatusId=@CONT_STATUS_TYPE_ID,
+@EmploymentTypeID=@EmploymentTypeID]]></sqlUpdate>
+        <sqlInsert where=""><![CDATA[]]></sqlInsert>
+        <sqlDelete><![CDATA[]]></sqlDelete>
+        <buttons>
+<button id="cmdUserOrganizations" actionType="openGrid" gridToOpen="AspNetUserOrganizations" icon="fas fa-city" title="Manage User Organizations" label="User Organizations" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button>
+<button id="cmdUserRoles" actionType="openGrid" gridToOpen="AspNetUserRoles" icon="fas fa-user-lock" title="Manage User Roles" label="User Roles" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button>
+<button id="cmdUserCustomers" actionType="openGrid" gridToOpen="" icon="fas fa-user-tie" title="Manage User Customers" label="User Customers" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button>
+<button id="cmdUserPasswordReset" actionType="openGrid" gridToOpen="" icon="fas fa-key" title="Reset User Password" label="Reset User Password" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button>
+<button id="cmdUserInactivate" actionType="executeSQL" gridToOpen="" icon="fa-trash" title="Inactivate User" label="Inactivate User" target="" sqlParameters="UserId" confirmationMessage="Are you sure you want to inactivate this user?" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[declare @USERID2 BIGINT =  (SELECT TOP 1 CAST(UserId AS BIGINT) FROM @UserId)
+update dbo.aspnetusers  
+set [IsActive] = 0,
+	[ModifyTime] = GETUTCDATE(),
+	[ModifiedBy] = @RUNNING_AS_USERID
+where userid = @USERID2
+	and IsActive = 1]]></sqlSentence></button>
+<button id="cmdLSPs" actionType="openGrid" gridToOpen="AspNetUserLSP" icon="fa-asterisk" title="Local Service Providers" label="Local Service Providers" target="popUp" sqlParameters="" confirmationMessage="" multiselect="False" refreshDataAfterExecution="True" url="">
+<sqlSentence><![CDATA[]]></sqlSentence></button></buttons>
+        <columns>
+<column id="UserId" label="UserId" width="80" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="UserName" label="Username" width="170" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="Email" label="Email" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="FirstName" label="First Name" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="MiddleName" label="Middle Name" width="80" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="LastName" label="Last Name" width="150" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="IsActive" label="Is Active" width="80" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="False" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="TimeEntrySelf" label="Time Entry Self" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="TimeEntryOthers" label="Time Entry Others" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="checkbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="TimeEntryTypicalStartTime" label="Typical Start Time" width="75" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="StartTimeName" dataSelectCacheOnClient="False" preloadDataSelect="True" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[select LOOKUP_CODE as TimeEntryTypicalStartTime, LOOKUP_NAME as StartTimeName  from [dbo].[GetLooukpValuesByType] ('time_list_15min' ) ]]></dataSelect></column>
+<column id="TimeEntryTypicalEndTime" label="Typical End Time" width="75" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="EndTimeName" dataSelectCacheOnClient="False" preloadDataSelect="True" totalize="False" defaultFilter="" filterText="" size="200">
+<dataSelect><![CDATA[select LOOKUP_CODE as TimeEntryTypicalEndTime, LOOKUP_NAME as EndTimeName  from [dbo].[GetLooukpValuesByType] ('time_list_15min' ) ]]></dataSelect></column>
+<column id="WeeklyWorkCapacity" label="Weekly Work Capacity" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="DailyWorkCapacity" label="Daily Work Capacity" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="10"></column>
+<column id="Title" label="Title" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="ExtEmployeeID" label="ADP File Number" width="300" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="200"></column>
+<column id="CONTACT_NAME" label="Contact Name" width="200" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="CONT_STATUS_TYPE_ID" label="Contact Status" width="100" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="CONT_STATUS_TYPE_NAME" dataSelectCacheOnClient="True" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0">
+<dataSelect><![CDATA[select LOOKUP_ID as CONT_STATUS_TYPE_ID, LOOKUP_NAME as CONT_STATUS_TYPE_NAME  
+from [dbo].[GetLooukpValuesByType] ('contact_status_type')
+]]></dataSelect></column>
+<column id="ContactEmail" label="Contact Email" width="200" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="True" format="" labelField="" dataSelect="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0"></column>
+<column id="EmploymentTypeName" label="EmploymentTypeName" width="150" editable="False" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="textbox" visible="False" format="" labelField="" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="0">
+<dataSelect><![CDATA[
+]]></dataSelect></column>
+<column id="EmploymentTypeID" label="Employment Type" width="120" editable="True" filterable="True" filterItemsSize="100" resizable="True" customizable="True" labelPrefix="" labelSuffix="" align="left" headerAlign="left" editorType="listbox" visible="True" format="" labelField="EmploymentTypeName" dataSelectCacheOnClient="False" preloadDataSelect="False" totalize="False" defaultFilter="" filterText="" size="250">
+<dataSelect><![CDATA[SELECT TOP 100 PERCENT LOOKUP_ID AS EmploymentTypeID, lookup_name AS EmploymentTypeName
+FROM [dbo].[GetLooukpValuesByType] ('employment_type')
+WHERE lookup_active_flag = 'Y'
+ORDER BY SEQUENCE_NO]]></dataSelect></column></columns>
+        <sqlColumns><![CDATA[]]></sqlColumns>
+        <sqlTemplateEdit><![CDATA[]]></sqlTemplateEdit>
+        <sqlGridProperties><![CDATA[]]></sqlGridProperties>
+    </grid>
+</config>
